@@ -114,7 +114,7 @@ router.post("/login", async (req, res) => {
 
     // Generate JWT token
     const token = jwt.sign(
-      { userId: user.id, username: user.username },
+      { userId: user.id, username: user.username, role: user.role },
       process.env.JWT_SECRET || "your-secret-key",
       { expiresIn: "7d" }
     );
@@ -126,12 +126,78 @@ router.post("/login", async (req, res) => {
         id: user.id,
         username: user.username,
         email: user.email,
-        name: user.name
+        name: user.name,
+        role: user.role
       }
     });
   } catch (error) {
     console.error("Login error:", error);
     res.status(500).json({ error: "Login failed" });
+  }
+});
+
+// Admin login endpoint
+router.post("/admin/login", async (req, res) => {
+  try {
+    const { username, password } = req.body;
+
+    // Validate required fields
+    if (!username || !password) {
+      return res.status(400).json({ 
+        error: "Username and password are required" 
+      });
+    }
+
+    // Find admin user by username or email
+    const user = await prisma.user.findFirst({
+      where: {
+        AND: [
+          {
+            OR: [
+              { username: username },
+              { email: username }
+            ]
+          },
+          { role: "admin" }
+        ]
+      }
+    });
+
+    if (!user) {
+      return res.status(401).json({ 
+        error: "Invalid admin credentials" 
+      });
+    }
+
+    // Check password
+    const isValidPassword = await bcrypt.compare(password, user.password);
+    if (!isValidPassword) {
+      return res.status(401).json({ 
+        error: "Invalid admin credentials" 
+      });
+    }
+
+    // Generate JWT token with admin role
+    const token = jwt.sign(
+      { userId: user.id, username: user.username, role: user.role },
+      process.env.JWT_SECRET || "your-secret-key",
+      { expiresIn: "7d" }
+    );
+
+    res.json({
+      message: "Admin login successful",
+      token,
+      user: {
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        name: user.name,
+        role: user.role
+      }
+    });
+  } catch (error) {
+    console.error("Admin login error:", error);
+    res.status(500).json({ error: "Admin login failed" });
   }
 });
 

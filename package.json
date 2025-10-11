@@ -5,10 +5,10 @@
   "private": true,
   "scripts": {
     "dev": "vite --host 0.0.0.0 --port 5173",
-    "start": "vite --host 0.0.0.0 --port $PORT",
+    "start": "vite --host 0.0.0.0 --port ${PORT:-5173}",
     "build": "node tools/generate-llms.js && vite build",
     "preview": "vite preview --host 0.0.0.0 --port 5173",
-    "preview:render": "vite preview --host 0.0.0.0 --port $PORT",
+    "preview:render": "vite preview --host 0.0.0.0 --port ${PORT:-5173}",
     "env:dev": "./scripts/setup-env.sh development",
     "env:local": "./scripts/setup-env.sh local",
     "env:prod": "./scripts/setup-env.sh production",

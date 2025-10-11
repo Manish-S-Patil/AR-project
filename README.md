@@ -4,13 +4,15 @@ A modern React-based frontend application for the AR Cybersecurity Awareness Pla
 
 ## 🚀 Features
 
-- **🔐 User Authentication**: Secure login and registration system
+- **🔐 Dual Authentication System**: Separate user and admin login interfaces
+- **👑 Admin Panel Access**: Secure admin-only dashboard with role-based access
 - **📱 Responsive Design**: Mobile-first, modern UI with glass effects
 - **🎮 Interactive Learning**: AR scenarios, quizzes, and educational games
-- **👥 Admin Panel**: Complete user management dashboard
+- **👥 User Management**: Complete user management dashboard for admins
 - **🎨 Modern UI/UX**: Beautiful animations and smooth transitions
 - **📊 Progress Tracking**: User progress and statistics
 - **🌐 PWA Ready**: Progressive Web App capabilities
+- **🔒 Role-based Security**: JWT-based authentication with user roles
 
 ## 🛠️ Tech Stack
 
@@ -28,33 +30,79 @@ A modern React-based frontend application for the AR Cybersecurity Awareness Pla
 - Node.js (v18 or higher)
 - npm or yarn
 - Backend API running (see backend README)
+- PostgreSQL database (for backend)
+- Redis (optional, for caching)
 
 ## 🔧 Installation
 
 1. **Clone the repository**
    ```bash
    git clone <repository-url>
-   cd AR-project-frontend
+   cd AR-project
    ```
 
-2. **Install dependencies**
+2. **Install frontend dependencies**
    ```bash
    npm install
    ```
 
-3. **Environment Setup**
+3. **Install backend dependencies**
+   ```bash
+   cd AR-project-backend
+   npm install
+   cd ..
+   ```
+
+4. **Environment Setup**
    Create a `.env` file in the root directory:
    ```env
    VITE_API_URL=http://localhost:5001
    VITE_APP_TITLE=AR Cybersecurity Awareness Platform
    ```
 
-4. **Start the development server**
+5. **Backend Environment Setup**
+   Create a `.env` file in the `AR-project-backend` directory:
+   ```env
+   DATABASE_URL="your-postgresql-connection-string"
+   JWT_SECRET="your-jwt-secret-key"
+   PORT=5001
+   ```
+
+6. **Database Setup**
    ```bash
+   cd AR-project-backend
+   npx prisma migrate dev
+   node scripts/create-admin.js
+   cd ..
+   ```
+
+7. **Start the development servers**
+   ```bash
+   # Terminal 1 - Backend
+   cd AR-project-backend
+   npm start
+
+   # Terminal 2 - Frontend
    npm run dev
    ```
 
 The application will be available at `http://localhost:5173`
+
+## 🚀 Quick Start
+
+### For Regular Users
+1. Open `http://localhost:5173`
+2. Select "User Login" tab
+3. Click "Don't have an account? Sign up" to register
+4. Or click "Continue as Guest" for limited access
+
+### For Administrators
+1. Open `http://localhost:5173`
+2. Select "Admin Login" tab
+3. Use default credentials:
+   - **Username**: `admin`
+   - **Password**: `AdminSecure123!`
+4. Access admin panel at `/admin`
 
 ## 🚀 Available Scripts
 
@@ -68,9 +116,11 @@ The application will be available at `http://localhost:5173`
 ## 📱 Pages & Features
 
 ### 🔐 Authentication (`/`)
-- **Login**: Secure user authentication
-- **Registration**: New user account creation
-- **Guest Access**: Explore without registration
+- **Dual Login System**: Toggle between User and Admin login
+- **User Login**: Secure user authentication with registration
+- **Admin Login**: Separate admin authentication with role-based access
+- **Guest Access**: Explore without registration (user mode only)
+- **Role-based Routing**: Automatic redirection based on user role
 
 ### 📖 Introduction (`/introduction`)
 - Platform overview and features
@@ -106,7 +156,8 @@ The application will be available at `http://localhost:5173`
 - **User Management**: View all registered users
 - **Statistics Dashboard**: User metrics and analytics
 - **Real-time Data**: Live user information
-- **Secure Access**: Authentication required
+- **Secure Access**: Admin role authentication required
+- **Role-based Access**: Only users with `role: "admin"` can access
 
 ## 🎨 UI Components
 
@@ -169,21 +220,40 @@ The project uses Tailwind CSS with custom configuration:
 - **Learning**: Web browsing security
 - **AR Features**: Website security indicators
 
-## 🔐 Authentication Flow
+## 🔐 Authentication System
 
+### User Authentication
 1. **Registration**: Users create accounts with username, email, and password
 2. **Login**: Secure authentication with JWT tokens
 3. **Token Storage**: Secure token management in localStorage
 4. **Session Management**: Automatic token validation
 5. **Logout**: Secure session termination
 
+### Admin Authentication
+1. **Separate Login**: Dedicated admin login interface
+2. **Role-based Access**: Only users with `role: "admin"` can access admin panel
+3. **Secure Endpoints**: Separate API endpoints for admin authentication
+4. **JWT with Roles**: Tokens include role information for authorization
+5. **Protected Routes**: Admin panel requires admin role authentication
+
+### Default Admin Credentials
+```
+Username: admin
+Password: AdminSecure123!
+Email: admin@arcyberguard.com
+```
+
+**⚠️ Important**: Change the default admin password after first login for security.
+
 ## 📊 Admin Panel Features
 
 - **User Statistics**: Total users, active users, new users this week
 - **User Table**: Complete user information display
 - **Real-time Updates**: Refresh user data
-- **Secure Access**: JWT-based authentication
+- **Secure Access**: JWT-based authentication with admin role
 - **Responsive Design**: Works on all devices
+- **Role Management**: View and manage user roles
+- **Admin Dashboard**: Comprehensive admin interface
 
 ## 🚀 Deployment
 
@@ -220,28 +290,64 @@ EXPOSE 80
 CMD ["nginx", "-g", "daemon off;"]
 ```
 
+## 🔐 Login Interface
+
+### User Login Features
+- **Username/Email**: Login with username or email address
+- **Password**: Secure password authentication
+- **Registration**: New user account creation
+- **Guest Access**: Explore platform without registration
+- **Form Validation**: Real-time input validation
+- **Password Visibility**: Toggle password visibility
+
+### Admin Login Features
+- **Dedicated Interface**: Separate admin login card
+- **Admin Credentials**: Username and password authentication
+- **Visual Distinction**: Amber/orange theme for admin interface
+- **Credential Display**: Default admin credentials shown
+- **Role Validation**: Server-side admin role verification
+- **Secure Access**: JWT tokens with admin role information
+
+### Login Type Toggle
+- **User Mode**: Standard user login and registration
+- **Admin Mode**: Admin-only login interface
+- **Visual Indicators**: Clear distinction between login types
+- **Responsive Design**: Works on desktop and mobile devices
+
 ## 📁 Project Structure
 
 ```
-src/
-├── components/
-│   ├── ui/                 # Reusable UI components
-│   ├── CallToAction.jsx    # Call-to-action component
-│   ├── HeroImage.jsx       # Hero image component
-│   └── WelcomeMessage.jsx  # Welcome message component
-├── lib/
-│   └── utils.js            # Utility functions
-├── pages/
-│   ├── LoginPage.jsx       # Authentication page
-│   ├── IntroductionPage.jsx # Platform introduction
-│   ├── Dashboard.jsx       # Main dashboard
-│   ├── ARScenarios.jsx     # AR scenarios page
-│   ├── Quiz.jsx            # Quiz interface
-│   ├── Game.jsx            # Interactive games
-│   └── AdminPanel.jsx      # Admin dashboard
-├── App.jsx                 # Main app component
-├── main.jsx                # App entry point
-└── index.css               # Global styles
+AR-project/
+├── src/
+│   ├── components/
+│   │   ├── ui/                    # Reusable UI components
+│   │   ├── ProtectedRoute.jsx     # Route protection component
+│   │   ├── CallToAction.jsx       # Call-to-action component
+│   │   ├── HeroImage.jsx          # Hero image component
+│   │   └── WelcomeMessage.jsx     # Welcome message component
+│   ├── lib/
+│   │   ├── api.js                 # API configuration
+│   │   └── utils.js               # Utility functions
+│   ├── pages/
+│   │   ├── LoginPage.jsx          # Dual authentication page
+│   │   ├── IntroductionPage.jsx   # Platform introduction
+│   │   ├── Dashboard.jsx          # Main dashboard
+│   │   ├── ARScenarios.jsx        # AR scenarios page
+│   │   ├── Quiz.jsx               # Quiz interface
+│   │   ├── Game.jsx               # Interactive games
+│   │   └── AdminPanel.jsx         # Admin dashboard
+│   ├── App.jsx                    # Main app component
+│   ├── main.jsx                   # App entry point
+│   └── index.css                  # Global styles
+├── AR-project-backend/
+│   ├── routes/
+│   │   └── authRoutes.js          # Authentication routes
+│   ├── prisma/
+│   │   └── schema.prisma          # Database schema
+│   ├── scripts/
+│   │   └── create-admin.js        # Admin user creation
+│   └── server.js                  # Backend server
+└── README.md                      # This file
 ```
 
 ## 🎨 Design System
@@ -298,6 +404,8 @@ src/
    - Check JWT token validity
    - Verify localStorage permissions
    - Clear browser cache and cookies
+   - Verify admin credentials are correct
+   - Check if user has admin role in database
 
 4. **Styling Issues**
    - Verify Tailwind CSS is properly configured
@@ -319,6 +427,28 @@ src/
 - Test on multiple devices and browsers
 - Document new features and components
 
+## 🔒 Security Features
+
+### Authentication Security
+- **JWT Tokens**: Secure token-based authentication
+- **Password Hashing**: Bcrypt encryption for all passwords
+- **Role-based Access**: Separate user and admin authentication
+- **Input Validation**: Server-side validation for all inputs
+- **CORS Protection**: Configured CORS for API security
+
+### Admin Security
+- **Separate Endpoints**: Dedicated admin authentication routes
+- **Role Verification**: Server-side admin role validation
+- **Protected Routes**: Admin panel requires admin role
+- **Default Credentials**: Pre-configured admin account for initial setup
+- **Password Change**: Admin should change default password
+
+### Data Protection
+- **Environment Variables**: Sensitive data in environment files
+- **Database Security**: Prisma ORM with parameterized queries
+- **Token Expiration**: JWT tokens expire after 7 days
+- **Secure Headers**: Proper security headers configuration
+
 ## 📄 License
 
 This project is licensed under the MIT License.
@@ -339,4 +469,6 @@ For support and questions:
 
 - [Backend API Documentation](../AR-project-backend/README.md)
 - [Deployment Guide](../DEPLOYMENT_GUIDE.md)
+- [Component Library](./src/components/ui/)
+
 - [Component Library](./src/components/ui/)

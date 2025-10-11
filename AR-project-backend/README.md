@@ -4,7 +4,10 @@ A robust Node.js backend API for the AR Cybersecurity Awareness Platform, provid
 
 ## 🚀 Features
 
+- **Dual Authentication System**: Separate user and admin authentication endpoints
+- **Role-based Access Control**: User roles (user/admin) with different permissions
 - **User Authentication**: JWT-based authentication with bcrypt password hashing
+- **Admin Authentication**: Dedicated admin login with role verification
 - **User Management**: Complete CRUD operations for user accounts
 - **Admin Panel**: Secure admin endpoints for user management
 - **Database Integration**: PostgreSQL with Prisma ORM
@@ -60,14 +63,21 @@ A robust Node.js backend API for the AR Cybersecurity Awareness Platform, provid
 4. **Database Setup**
    ```bash
    # Generate Prisma client
-   npm run prisma:generate
+   npx prisma generate
    
    # Run database migrations
-   npm run prisma:migrate
+   npx prisma migrate dev
    
-   # Or push schema directly (for development)
-   npm run prisma:push
+   # Create default admin user
+   node scripts/create-admin.js
    ```
+
+5. **Default Admin Credentials**
+   The setup script creates a default admin user:
+   - **Username**: `admin`
+   - **Password**: `AdminSecure123!`
+   - **Email**: `admin@arcyberguard.com`
+   - **Role**: `admin`
 
 ## 🚀 Running the Application
 
@@ -92,6 +102,7 @@ The server will be available at `http://localhost:5001`
 |--------|----------|-------------|---------------|
 | POST | `/register` | Register a new user | No |
 | POST | `/login` | User login | No |
+| POST | `/admin/login` | Admin login | No |
 | GET | `/profile` | Get current user profile | Yes |
 
 ### User Routes (`/api/users`)
@@ -102,13 +113,24 @@ The server will be available at `http://localhost:5001`
 | POST | `/` | Create a new user | No |
 | GET | `/admin/all` | Get all users (admin) | Yes |
 
-## 🔐 Authentication
+## 🔐 Authentication System
 
-The API uses JWT (JSON Web Tokens) for authentication. Include the token in the Authorization header:
+The API uses JWT (JSON Web Tokens) for authentication with role-based access control. Include the token in the Authorization header:
 
 ```
 Authorization: Bearer <your-jwt-token>
 ```
+
+### User Roles
+- **user**: Default role for regular users
+- **admin**: Administrative role with elevated permissions
+
+### Authentication Flow
+1. **User Registration**: Creates user with default "user" role
+2. **User Login**: Authenticates users and returns JWT with role
+3. **Admin Login**: Separate endpoint for admin authentication
+4. **Role Verification**: Server validates user role for protected endpoints
+5. **Token Validation**: JWT tokens include role information for authorization
 
 ### Registration Request
 ```json
@@ -121,12 +143,21 @@ POST /api/auth/register
 }
 ```
 
-### Login Request
+### User Login Request
 ```json
 POST /api/auth/login
 {
   "username": "johndoe",
   "password": "securepassword123"
+}
+```
+
+### Admin Login Request
+```json
+POST /api/auth/admin/login
+{
+  "username": "admin",
+  "password": "AdminSecure123!"
 }
 ```
 
@@ -139,7 +170,23 @@ POST /api/auth/login
     "id": 1,
     "username": "johndoe",
     "email": "john@example.com",
-    "name": "John Doe"
+    "name": "John Doe",
+    "role": "user"
+  }
+}
+```
+
+### Admin Login Response
+```json
+{
+  "message": "Admin login successful",
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "user": {
+    "id": 1,
+    "username": "admin",
+    "email": "admin@arcyberguard.com",
+    "name": "System Administrator",
+    "role": "admin"
   }
 }
 ```
@@ -154,6 +201,7 @@ model User {
   email    String  @unique
   password String
   name     String?
+  role     String  @default("user") // "user" or "admin"
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -162,11 +210,41 @@ model User {
 ## 🔒 Security Features
 
 - **Password Hashing**: Uses bcryptjs with salt rounds
-- **JWT Tokens**: Secure token-based authentication
+- **JWT Tokens**: Secure token-based authentication with role information
+- **Role-based Access**: Separate authentication for users and admins
+- **Admin Verification**: Server-side admin role validation
 - **CORS**: Configurable cross-origin resource sharing
 - **Input Validation**: Request body validation
 - **SQL Injection Protection**: Prisma ORM prevents SQL injection
 - **Rate Limiting**: Can be easily added with express-rate-limit
+
+## 👑 Admin Management
+
+### Creating Admin Users
+Admin users can be created using the provided script:
+
+```bash
+node scripts/create-admin.js
+```
+
+### Admin User Properties
+- **Username**: Must be unique
+- **Email**: Must be unique
+- **Password**: Hashed with bcrypt
+- **Role**: Set to "admin"
+- **Name**: Display name for the admin
+
+### Admin Authentication
+- **Separate Endpoint**: `/api/auth/admin/login`
+- **Role Validation**: Only users with `role: "admin"` can authenticate
+- **JWT Token**: Includes role information for frontend authorization
+- **Security**: Same security measures as user authentication
+
+### Admin Script Features
+- **Duplicate Check**: Prevents creating multiple admin users
+- **Secure Password**: Generates strong default password
+- **Database Integration**: Uses Prisma for database operations
+- **Error Handling**: Comprehensive error handling and logging
 
 ## 🧪 Testing
 
@@ -180,6 +258,11 @@ curl http://localhost:5001/
 curl -X POST http://localhost:5001/api/auth/register \
   -H "Content-Type: application/json" \
   -d '{"username":"testuser","email":"test@example.com","password":"testpass123","name":"Test User"}'
+
+# Test admin login
+curl -X POST http://localhost:5001/api/auth/admin/login \
+  -H "Content-Type: application/json" \
+  -d '{"username":"admin","password":"AdminSecure123!"}'
 ```
 
 ## 📁 Project Structure
@@ -194,8 +277,10 @@ AR-project-backend/
 ├── redis/
 │   └── client.js          # Redis client configuration
 ├── routes/
-│   ├── authRoutes.js      # Authentication routes
+│   ├── authRoutes.js      # Authentication routes (user & admin)
 │   └── userRoutes.js      # User management routes
+├── scripts/
+│   └── create-admin.js    # Admin user creation script
 ├── server.js              # Main server file
 ├── package.json           # Dependencies and scripts
 └── .env                   # Environment variables
@@ -255,6 +340,13 @@ Redis is optional but recommended for caching. If Redis is not available, the ap
 3. **Redis Connection Issues**
    - Redis is optional - app works without it
    - Check REDIS_URL if using Redis
+
+4. **Admin Authentication Issues**
+   - Verify admin user exists in database
+   - Check if user has `role: "admin"`
+   - Verify admin credentials are correct
+   - Run `node scripts/create-admin.js` to create admin user
+   - Check JWT token includes role information
 
 ### Logs
 The server logs important events to the console. Check the terminal output for error messages.
