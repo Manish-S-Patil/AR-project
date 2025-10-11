@@ -59,8 +59,11 @@ const LoginPage = () => {
             name: formData.username
           };
 
-      // Use environment variable for API URL
-      const apiUrl = import.meta.env.VITE_API_URL;
+      // Use local backend for testing (with updated CORS)
+      const apiUrl = 'http://localhost:5001';
+      
+      console.log('API URL:', apiUrl);
+      console.log('Full endpoint:', `${apiUrl}${endpoint}`);
       
       const response = await fetch(`${apiUrl}${endpoint}`, {
         method: 'POST',

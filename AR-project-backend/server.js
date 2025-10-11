@@ -12,11 +12,7 @@ const PORT = process.env.PORT || 5001;
 
 // Middleware
 app.use(cors({
-  origin: [
-    'http://localhost:5173',
-    'https://ar-project-331a.onrender.com',
-    'https://ar-project-331a.onrender.com/'
-  ],
+  origin: true, // Allow all origins for development
   credentials: true
 }));
 app.use(express.json());
