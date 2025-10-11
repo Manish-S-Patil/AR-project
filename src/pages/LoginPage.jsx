@@ -7,6 +7,7 @@ import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import { toast } from '../components/ui/use-toast';
+import API_CONFIG from '../lib/api';
 
 const LoginPage = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -49,7 +50,7 @@ const LoginPage = () => {
     }
 
     try {
-      const endpoint = isLogin ? '/api/auth/login' : '/api/auth/register';
+      const endpoint = isLogin ? API_CONFIG.endpoints.auth.login : API_CONFIG.endpoints.auth.register;
       const requestData = isLogin 
         ? { username: formData.username, password: formData.password }
         : { 
@@ -59,17 +60,12 @@ const LoginPage = () => {
             name: formData.username
           };
 
-      // Use local backend for testing (with updated CORS)
-      const apiUrl = 'http://localhost:5001';
+      console.log('API URL:', API_CONFIG.baseURL);
+      console.log('Full endpoint:', API_CONFIG.getUrl(endpoint));
       
-      console.log('API URL:', apiUrl);
-      console.log('Full endpoint:', `${apiUrl}${endpoint}`);
-      
-      const response = await fetch(`${apiUrl}${endpoint}`, {
+      const response = await fetch(API_CONFIG.getUrl(endpoint), {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: API_CONFIG.getDefaultHeaders(),
         body: JSON.stringify(requestData),
       });
 

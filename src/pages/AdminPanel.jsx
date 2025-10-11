@@ -17,6 +17,7 @@ import {
 import { Button } from '../components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import { toast } from '../components/ui/use-toast';
+import API_CONFIG from '../lib/api';
 
 const AdminPanel = () => {
   const [users, setUsers] = useState([]);
@@ -38,6 +39,17 @@ const AdminPanel = () => {
       navigate('/');
       return;
     }
+    
+    // If user is a guest, show message and redirect
+    if (userData.isGuest) {
+      toast({
+        title: "Guest Access",
+        description: "Admin panel requires authentication. Please log in.",
+        variant: "destructive"
+      });
+      navigate('/');
+      return;
+    }
   }, [userData, navigate]);
 
   const fetchUsers = async () => {
@@ -45,18 +57,25 @@ const AdminPanel = () => {
       setLoading(true);
       setError(null);
       
-      const apiUrl = 'http://localhost:5001';
-      const response = await fetch(`${apiUrl}/api/users/admin/all`, {
+      const response = await fetch(API_CONFIG.getUrl(API_CONFIG.endpoints.users.admin), {
         method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${userData.token}`
-        }
+        headers: API_CONFIG.getAuthHeaders(userData.token)
       });
 
       const data = await response.json();
 
       if (!response.ok) {
+        if (response.status === 401 || response.status === 403) {
+          // Token is invalid or expired
+          localStorage.removeItem('userData');
+          toast({
+            title: "Session Expired",
+            description: "Please log in again to access the admin panel.",
+            variant: "destructive"
+          });
+          navigate('/');
+          return;
+        }
         throw new Error(data.error || 'Failed to fetch users');
       }
 
@@ -117,6 +136,26 @@ const AdminPanel = () => {
     hidden: { opacity: 0, y: 20 },
     visible: { opacity: 1, y: 0 }
   };
+
+  // Show loading or redirect if not authenticated
+  if (!userData.token || userData.isGuest) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+        <Card className="glass-effect cyber-border max-w-md">
+          <CardContent className="p-8 text-center">
+            <Shield className="w-16 h-16 mx-auto mb-4 text-red-400" />
+            <h2 className="text-2xl font-bold mb-2">Access Required</h2>
+            <p className="text-muted-foreground mb-4">
+              The admin panel requires authentication. Please log in to continue.
+            </p>
+            <Button onClick={() => navigate('/')} className="w-full">
+              Go to Login
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen p-6 bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">

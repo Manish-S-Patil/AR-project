@@ -8,7 +8,12 @@
     "start": "vite --host 0.0.0.0 --port $PORT",
     "build": "node tools/generate-llms.js && vite build",
     "preview": "vite preview --host 0.0.0.0 --port 5173",
-    "preview:render": "vite preview --host 0.0.0.0 --port $PORT"
+    "preview:render": "vite preview --host 0.0.0.0 --port $PORT",
+    "env:dev": "./scripts/setup-env.sh development",
+    "env:local": "./scripts/setup-env.sh local",
+    "env:prod": "./scripts/setup-env.sh production",
+    "env:staging": "./scripts/setup-env.sh staging",
+    "setup": "chmod +x scripts/setup-env.sh && echo 'Environment setup script ready!'"
   },
   "dependencies": {
     "@radix-ui/react-alert-dialog": "^1.0.5",
