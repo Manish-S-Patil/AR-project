@@ -11,7 +11,8 @@ import {
   Usb, 
   Globe,
   User,
-  LogOut
+  LogOut,
+  Settings
 } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
@@ -112,6 +113,14 @@ const Dashboard = () => {
               <User className="w-4 h-4" />
               <span className="text-sm">{userData.username || 'Guest'}</span>
             </div>
+            <Button
+              variant="outline"
+              onClick={() => navigate('/admin')}
+              className="glass-effect"
+            >
+              <Settings className="w-4 h-4 mr-2" />
+              Admin Panel
+            </Button>
             <Button
               variant="outline"
               onClick={handleLogout}

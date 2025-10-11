@@ -1,0 +1,283 @@
+# AR Cybersecurity Awareness Platform - Backend
+
+A robust Node.js backend API for the AR Cybersecurity Awareness Platform, providing user authentication, user management, and admin functionality.
+
+## 🚀 Features
+
+- **User Authentication**: JWT-based authentication with bcrypt password hashing
+- **User Management**: Complete CRUD operations for user accounts
+- **Admin Panel**: Secure admin endpoints for user management
+- **Database Integration**: PostgreSQL with Prisma ORM
+- **Caching**: Redis integration for improved performance
+- **Security**: CORS enabled, input validation, and secure password handling
+
+## 🛠️ Tech Stack
+
+- **Runtime**: Node.js
+- **Framework**: Express.js
+- **Database**: PostgreSQL
+- **ORM**: Prisma
+- **Authentication**: JWT + bcryptjs
+- **Caching**: Redis
+- **Environment**: dotenv
+
+## 📋 Prerequisites
+
+- Node.js (v18 or higher)
+- PostgreSQL database
+- Redis server (optional, for caching)
+- npm or yarn
+
+## 🔧 Installation
+
+1. **Clone the repository**
+   ```bash
+   git clone <repository-url>
+   cd AR-project-backend
+   ```
+
+2. **Install dependencies**
+   ```bash
+   npm install
+   ```
+
+3. **Environment Setup**
+   Create a `.env` file in the root directory:
+   ```env
+   # Database
+   DATABASE_URL="postgresql://username:password@localhost:5432/ar_cybersecurity_db"
+   
+   # JWT Secret
+   JWT_SECRET="your-super-secret-jwt-key-here"
+   
+   # Server
+   PORT=5001
+   
+   # Redis (optional)
+   REDIS_URL="redis://localhost:6379"
+   ```
+
+4. **Database Setup**
+   ```bash
+   # Generate Prisma client
+   npm run prisma:generate
+   
+   # Run database migrations
+   npm run prisma:migrate
+   
+   # Or push schema directly (for development)
+   npm run prisma:push
+   ```
+
+## 🚀 Running the Application
+
+### Development Mode
+```bash
+npm run dev
+```
+The server will start with nodemon for auto-restart on file changes.
+
+### Production Mode
+```bash
+npm start
+```
+
+The server will be available at `http://localhost:5001`
+
+## 📚 API Endpoints
+
+### Authentication Routes (`/api/auth`)
+
+| Method | Endpoint | Description | Auth Required |
+|--------|----------|-------------|---------------|
+| POST | `/register` | Register a new user | No |
+| POST | `/login` | User login | No |
+| GET | `/profile` | Get current user profile | Yes |
+
+### User Routes (`/api/users`)
+
+| Method | Endpoint | Description | Auth Required |
+|--------|----------|-------------|---------------|
+| GET | `/` | Get all users (basic) | No |
+| POST | `/` | Create a new user | No |
+| GET | `/admin/all` | Get all users (admin) | Yes |
+
+## 🔐 Authentication
+
+The API uses JWT (JSON Web Tokens) for authentication. Include the token in the Authorization header:
+
+```
+Authorization: Bearer <your-jwt-token>
+```
+
+### Registration Request
+```json
+POST /api/auth/register
+{
+  "username": "johndoe",
+  "email": "john@example.com",
+  "password": "securepassword123",
+  "name": "John Doe"
+}
+```
+
+### Login Request
+```json
+POST /api/auth/login
+{
+  "username": "johndoe",
+  "password": "securepassword123"
+}
+```
+
+### Response Format
+```json
+{
+  "message": "Login successful",
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "user": {
+    "id": 1,
+    "username": "johndoe",
+    "email": "john@example.com",
+    "name": "John Doe"
+  }
+}
+```
+
+## 🗄️ Database Schema
+
+### User Model
+```prisma
+model User {
+  id       Int     @id @default(autoincrement())
+  username String  @unique
+  email    String  @unique
+  password String
+  name     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+```
+
+## 🔒 Security Features
+
+- **Password Hashing**: Uses bcryptjs with salt rounds
+- **JWT Tokens**: Secure token-based authentication
+- **CORS**: Configurable cross-origin resource sharing
+- **Input Validation**: Request body validation
+- **SQL Injection Protection**: Prisma ORM prevents SQL injection
+- **Rate Limiting**: Can be easily added with express-rate-limit
+
+## 🧪 Testing
+
+Test the API endpoints using tools like Postman, curl, or the included test script:
+
+```bash
+# Test basic connectivity
+curl http://localhost:5001/
+
+# Test user registration
+curl -X POST http://localhost:5001/api/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{"username":"testuser","email":"test@example.com","password":"testpass123","name":"Test User"}'
+```
+
+## 📁 Project Structure
+
+```
+AR-project-backend/
+├── models/                 # Database models (if using separate model files)
+├── prisma/
+│   ├── client.js          # Prisma client configuration
+│   ├── schema.prisma      # Database schema
+│   └── migrations/        # Database migrations
+├── redis/
+│   └── client.js          # Redis client configuration
+├── routes/
+│   ├── authRoutes.js      # Authentication routes
+│   └── userRoutes.js      # User management routes
+├── server.js              # Main server file
+├── package.json           # Dependencies and scripts
+└── .env                   # Environment variables
+```
+
+## 🚀 Deployment
+
+### Environment Variables for Production
+```env
+NODE_ENV=production
+DATABASE_URL="postgresql://user:pass@host:port/db"
+JWT_SECRET="your-production-secret-key"
+PORT=5001
+REDIS_URL="redis://your-redis-host:6379"
+```
+
+### Docker Deployment (Optional)
+```dockerfile
+FROM node:18-alpine
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci --only=production
+COPY . .
+RUN npm run prisma:generate
+EXPOSE 5001
+CMD ["npm", "start"]
+```
+
+## 🔧 Configuration
+
+### CORS Settings
+The server is configured to allow all origins in development. For production, update the CORS configuration in `server.js`:
+
+```javascript
+app.use(cors({
+  origin: ['https://yourdomain.com', 'https://www.yourdomain.com'],
+  credentials: true
+}));
+```
+
+### Redis Configuration
+Redis is optional but recommended for caching. If Redis is not available, the application will continue to work without caching.
+
+## 🐛 Troubleshooting
+
+### Common Issues
+
+1. **Database Connection Error**
+   - Verify DATABASE_URL in .env file
+   - Ensure PostgreSQL is running
+   - Check database credentials
+
+2. **JWT Token Issues**
+   - Verify JWT_SECRET is set in .env
+   - Check token expiration (default: 7 days)
+
+3. **Redis Connection Issues**
+   - Redis is optional - app works without it
+   - Check REDIS_URL if using Redis
+
+### Logs
+The server logs important events to the console. Check the terminal output for error messages.
+
+## 📝 Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Test thoroughly
+5. Submit a pull request
+
+## 📄 License
+
+This project is licensed under the MIT License.
+
+## 🆘 Support
+
+For support and questions:
+- Create an issue in the repository
+- Check the troubleshooting section above
+- Review the API documentation
+
+---
+
+**Built with ❤️ for cybersecurity education**
