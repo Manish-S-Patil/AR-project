@@ -11,8 +11,24 @@ const app = express();
 const PORT = process.env.PORT || 5001;
 
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: [
+    'http://localhost:5173',
+    'https://ar-project-331a.onrender.com',
+    'https://ar-project-331a.onrender.com/'
+  ],
+  credentials: true
+}));
 app.use(express.json());
+
+// Health check route
+app.get("/", (req, res) => {
+  res.json({ 
+    message: "AR Project Backend API", 
+    status: "running",
+    timestamp: new Date().toISOString()
+  });
+});
 
 // Routes
 app.use("/api/users", userRoutes);

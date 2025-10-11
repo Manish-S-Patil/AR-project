@@ -59,9 +59,8 @@ const LoginPage = () => {
             name: formData.username
           };
 
-      // Determine API URL based on environment
-      const apiUrl = import.meta.env.VITE_API_URL || 
-        (window.location.hostname === 'localhost' ? 'http://localhost:5001' : 'https://ar-project-backend.onrender.com');
+      // Use environment variable for API URL
+      const apiUrl = import.meta.env.VITE_API_URL;
       
       const response = await fetch(`${apiUrl}${endpoint}`, {
         method: 'POST',
