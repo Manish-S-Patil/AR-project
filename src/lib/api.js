@@ -7,7 +7,6 @@ const API_CONFIG = {
   endpoints: {
     auth: {
       login: '/api/auth/login',
-      adminLogin: '/api/auth/admin/login',
       register: '/api/auth/register',
       profile: '/api/auth/profile'
     },

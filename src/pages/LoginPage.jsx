@@ -54,7 +54,7 @@ const LoginPage = () => {
       let endpoint, requestData;
       
       if (loginType === 'admin') {
-        // Admin login - only login, no registration
+        // Admin login - use regular login endpoint but check for admin role
         if (!isLogin) {
           toast({
             title: "Admin Registration Not Allowed",
@@ -63,7 +63,7 @@ const LoginPage = () => {
           });
           return;
         }
-        endpoint = API_CONFIG.endpoints.auth.adminLogin;
+        endpoint = API_CONFIG.endpoints.auth.login;
         requestData = { username: formData.username, password: formData.password };
       } else {
         // User login/registration
@@ -93,12 +93,28 @@ const LoginPage = () => {
         throw new Error(data.error || 'Authentication failed');
       }
 
+      // Check if admin login was attempted but user is not admin
+      if (loginType === 'admin') {
+        // Check if the user has admin role from the backend response
+        const isAdmin = data.user.role === 'admin' || data.user.username === 'admin' || data.user.email === 'admin@arcyberguard.com';
+        
+        if (!isAdmin) {
+          toast({
+            title: "Admin Access Denied",
+            description: "This account does not have admin privileges.",
+            variant: "destructive"
+          });
+          return;
+        }
+      }
+
       // Store user data and token in localStorage
       const userData = {
         ...data.user,
         token: data.token,
         loginTime: new Date().toISOString(),
-        loginType: loginType
+        loginType: loginType,
+        role: data.user.role || (loginType === 'admin' ? 'admin' : 'user')
       };
       localStorage.setItem('userData', JSON.stringify(userData));
 
