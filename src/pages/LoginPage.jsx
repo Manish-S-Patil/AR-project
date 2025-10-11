@@ -25,7 +25,7 @@ const LoginPage = () => {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     
     if (isLogin) {
@@ -48,22 +48,60 @@ const LoginPage = () => {
       }
     }
 
-    // Store user data in localStorage
-    const userData = {
-      username: formData.username,
-      email: formData.email,
-      loginTime: new Date().toISOString()
-    };
-    localStorage.setItem('userData', JSON.stringify(userData));
+    try {
+      const endpoint = isLogin ? '/api/auth/login' : '/api/auth/register';
+      const requestData = isLogin 
+        ? { username: formData.username, password: formData.password }
+        : { 
+            username: formData.username, 
+            email: formData.email, 
+            password: formData.password,
+            name: formData.username
+          };
 
-    toast({
-      title: isLogin ? "Login Successful!" : "Account Created!",
-      description: "Welcome to the AR Cybersecurity Platform."
-    });
+      // Determine API URL based on environment
+      const apiUrl = import.meta.env.VITE_API_URL || 
+        (window.location.hostname === 'localhost' ? 'http://localhost:5001' : 'https://ar-project-backend.onrender.com');
+      
+      const response = await fetch(`${apiUrl}${endpoint}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestData),
+      });
 
-    setTimeout(() => {
-      navigate('/introduction');
-    }, 1000);
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Authentication failed');
+      }
+
+      // Store user data and token in localStorage
+      const userData = {
+        ...data.user,
+        token: data.token,
+        loginTime: new Date().toISOString()
+      };
+      localStorage.setItem('userData', JSON.stringify(userData));
+
+      toast({
+        title: isLogin ? "Login Successful!" : "Account Created!",
+        description: "Welcome to the AR Cybersecurity Platform."
+      });
+
+      setTimeout(() => {
+        navigate('/introduction');
+      }, 1000);
+
+    } catch (error) {
+      console.error('Authentication error:', error);
+      toast({
+        title: "Authentication Failed",
+        description: error.message || "Please check your credentials and try again.",
+        variant: "destructive"
+      });
+    }
   };
 
   const handleGuestAccess = () => {

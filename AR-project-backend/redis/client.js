@@ -9,10 +9,15 @@ redis.on('error', (err) => {
 })
 
 export async function ensureRedisConnection() {
-  if (!redis.isOpen) {
-    await redis.connect()
+  try {
+    if (!redis.isOpen) {
+      await redis.connect()
+    }
+    return redis
+  } catch (error) {
+    console.warn('Redis connection failed:', error.message)
+    throw error
   }
-  return redis
 }
 
 export default redis

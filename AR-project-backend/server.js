@@ -2,8 +2,9 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import userRoutes from "./routes/userRoutes.js";
+import authRoutes from "./routes/authRoutes.js";
 import prisma from "./prisma/client.js";
-import redis, { ensureRedisConnection } from "./redis/client.js";
+// import redis, { ensureRedisConnection } from "./redis/client.js";
 
 dotenv.config();
 const app = express();
@@ -15,6 +16,7 @@ app.use(express.json());
 
 // Routes
 app.use("/api/users", userRoutes);
+app.use("/api/auth", authRoutes);
 
 // Startup
 async function start() {
@@ -26,14 +28,13 @@ async function start() {
     process.exit(1);
   }
 
-  try {
-    await ensureRedisConnection();
-    console.log("✅ Redis connected");
-  } catch (err) {
-    console.warn("⚠️ Redis not available, continuing without cache.");
-  }
+  // Redis temporarily disabled
+  console.log("⚠️ Redis disabled for testing");
 
-  app.listen(PORT, () => console.log(`🚀 Server running on http://localhost:${PORT}`));
+  app.listen(PORT, () => {
+    console.log(`🚀 Server running on http://localhost:${PORT}`);
+    console.log(`📡 Auth endpoints available at http://localhost:${PORT}/api/auth`);
+  });
 }
 
 start();
