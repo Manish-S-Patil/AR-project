@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { 
@@ -19,7 +19,8 @@ const ARScenarios = () => {
   const [selectedScenario, setSelectedScenario] = useState(null);
   const [isSimulating, setIsSimulating] = useState(false);
   const [simulationStep, setSimulationStep] = useState(0);
-  const [showThreat, setShowThreat] = useState(false);
+  // Threat overlays removed per requirements
+  const modelViewerRef = useRef(null);
 
   const scenarios = {
     'phishing': {
@@ -108,14 +109,33 @@ const ARScenarios = () => {
   const startSimulation = () => {
     setIsSimulating(true);
     setSimulationStep(0);
-    setShowThreat(false);
+    // no threat overlays
     
+    // Attempt to launch AR session via model-viewer when available
+    const el = modelViewerRef.current;
+    if (el && typeof el.activateAR === 'function') {
+      // give the UI a tick to ensure element is ready
+      setTimeout(() => {
+        const launched = el.activateAR();
+        if (launched === false) {
+          toast({
+            title: 'AR not supported',
+            description: 'Your device/browser may not support AR mode. Showing 3D preview instead.'
+          });
+        }
+      }, 50);
+    } else {
+      toast({
+        title: 'AR not available',
+        description: 'Model viewer AR interface is unavailable. Showing 3D preview instead.'
+      });
+    }
+
     // Simulate AR model presentation progression
     const interval = setInterval(() => {
       setSimulationStep(prev => {
         if (prev >= 3) {
           clearInterval(interval);
-          setShowThreat(true);
           return prev;
         }
         return prev + 1;
@@ -126,7 +146,7 @@ const ARScenarios = () => {
   const stopSimulation = () => {
     setIsSimulating(false);
     setSimulationStep(0);
-    setShowThreat(false);
+    // no threat overlays
   };
 
   const resetSimulation = () => {
@@ -144,74 +164,27 @@ const ARScenarios = () => {
     const scenario = scenarios[selectedScenario];
 
     return (
-      <div className="relative w-full h-96 bg-gradient-to-br from-gray-900 to-gray-800 rounded-lg overflow-hidden border-2 border-purple-500/30">
-        {/* AR Preview Background */}
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-900/20 to-purple-900/20">
-          <img 
-            className="w-full h-full object-cover opacity-60" 
-            alt="AR preview background"
-           src="https://images.unsplash.com/photo-1651505942687-efc26cb528ba" />
-        </div>
+      <div className="relative w-full h-96 bg-[#74c0d4] rounded-lg overflow-hidden border-2 border-purple-500/30">
+        {/* Web AR Viewer (model-viewer) */}
+        <model-viewer
+          ref={modelViewerRef}
+          src="/models/Astronaut.glb"
+          ios-src="/models/Astronaut.usdz"
+          poster="/models/loading_screen.gif"
+          alt="A 3D model"
+          ar
+          ar-modes="webxr scene-viewer quick-look"
+          camera-controls
+          auto-rotate
+          shadow-intensity="1"
+          style={{ width: '100%', height: '100%', background: 'transparent' }}
+        />
 
-        {/* AR Model Presentation Animation */}
-        {isSimulating && !showThreat && (
-          <motion.div
-            className="absolute inset-0 border-2 border-cyan-400"
-            initial={{ scale: 0.8, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ duration: 0.5 }}
-          >
-            <div className="ar-model-line absolute inset-0" />
-            <motion.div
-              className="absolute top-4 left-4 text-cyan-400 text-sm font-mono"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.5 }}
-            >
-              Presenting AR model... {Math.min(simulationStep + 1, 4)}/4
-            </motion.div>
-          </motion.div>
-        )}
+        {/* Attribution bar removed per request */}
 
-        {/* AR Threat Indicators */}
-        <AnimatePresence>
-          {showThreat && scenario.threats.map((threat, index) => (
-            <motion.div
-              key={index}
-              className={`absolute ${getPositionClass(threat.position)} transform -translate-x-1/2 -translate-y-1/2`}
-              initial={{ scale: 0, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ delay: index * 0.3, type: "spring", stiffness: 200 }}
-            >
-              <div className={`flex items-center space-x-2 px-3 py-2 rounded-full border-2 ${getThreatColor(threat.color)} glass-effect`}>
-                <AlertTriangle className="w-4 h-4" />
-                <span className="text-sm font-medium">{threat.type}</span>
-              </div>
-              <motion.div
-                className={`absolute -inset-2 rounded-full border-2 ${getThreatColor(threat.color)} opacity-50`}
-                animate={{ scale: [1, 1.2, 1] }}
-                transition={{ duration: 2, repeat: Infinity }}
-              />
-            </motion.div>
-          ))}
-        </AnimatePresence>
+        {/* Threat indicators removed */}
 
-        {/* AR UI Elements */}
-        {isSimulating && (
-          <div className="absolute bottom-4 left-4 right-4">
-            <div className="glass-effect rounded-lg p-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                  <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
-                  <span className="text-sm text-green-400">AR Active</span>
-                </div>
-                <div className="text-sm text-muted-foreground">
-                  {scenario.steps[Math.min(simulationStep, scenario.steps.length - 1)]}
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
+        {/* Removed bottom AR status bar for a cleaner viewer */}
       </div>
     );
   };
@@ -405,38 +378,7 @@ const ARScenarios = () => {
               </CardContent>
             </Card>
 
-            {/* Threat Detection */}
-            {showThreat && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-              >
-                <Card className="glass-effect cyber-border border-red-500/30">
-                  <CardHeader>
-                    <div className="flex items-center space-x-2">
-                      <AlertTriangle className="w-5 h-5 text-red-400" />
-                      <CardTitle className="text-lg text-red-400">Threats Detected</CardTitle>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-2">
-                      {scenario.threats.map((threat, index) => (
-                        <motion.div
-                          key={index}
-                          className="flex items-center space-x-3 p-2 rounded-lg bg-red-500/10 border border-red-500/20"
-                          initial={{ opacity: 0, x: -20 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ delay: index * 0.2 }}
-                        >
-                          <AlertTriangle className="w-4 h-4 text-red-400" />
-                          <span className="text-sm text-red-400">{threat.type}</span>
-                        </motion.div>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            )}
+            {/* Threat detection UI removed */}
 
             {/* Actions */}
             <Card className="glass-effect cyber-border">
