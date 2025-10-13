@@ -29,8 +29,8 @@ const ARScenarios = () => {
       title: 'Phishing Email Detection',
       description: 'Learn to identify suspicious emails through AR visualization',
       steps: [
-        'Point your camera at an email',
-        'AR highlights suspicious elements',
+        'View email AR model',
+        'AR model highlights suspicious elements',
         'Learn what makes it dangerous',
         'Practice identifying threats'
       ],
@@ -44,8 +44,8 @@ const ARScenarios = () => {
       title: 'Fake Login Page Detection',
       description: 'Detect fraudulent login pages with AR warnings',
       steps: [
-        'Scan a login page',
-        'AR checks URL authenticity',
+        'Open login page AR model',
+        'AR model shows URL authenticity cues',
         'Identifies security indicators',
         'Shows safety recommendations'
       ],
@@ -74,8 +74,8 @@ const ARScenarios = () => {
       title: 'Malware USB Detection',
       description: 'AR warnings for potentially dangerous USB devices',
       steps: [
-        'Point camera at USB device',
-        'AR scans for threats',
+        'View USB device AR model',
+        'AR model explains potential threats',
         'Shows risk assessment',
         'Provides safety guidance'
       ],
@@ -89,8 +89,8 @@ const ARScenarios = () => {
       title: 'Safe Browsing Tips',
       description: 'AR overlays showing website security indicators',
       steps: [
-        'Scan a website',
-        'AR checks security status',
+        'Open website AR model',
+        'AR model shows security status',
         'Shows trust indicators',
         'Provides browsing tips'
       ],
@@ -113,7 +113,7 @@ const ARScenarios = () => {
     setSimulationStep(0);
     setShowThreat(false);
     
-    // Simulate AR scanning process
+    // Simulate AR model presentation progression
     const interval = setInterval(() => {
       setSimulationStep(prev => {
         if (prev >= 3) {
@@ -148,15 +148,15 @@ const ARScenarios = () => {
 
     return (
       <div className="relative w-full h-96 bg-gradient-to-br from-gray-900 to-gray-800 rounded-lg overflow-hidden border-2 border-purple-500/30">
-        {/* Camera View Background */}
+        {/* AR Preview Background */}
         <div className="absolute inset-0 bg-gradient-to-br from-blue-900/20 to-purple-900/20">
           <img 
             className="w-full h-full object-cover opacity-60" 
-            alt="AR camera view background"
+            alt="AR preview background"
            src="https://images.unsplash.com/photo-1651505942687-efc26cb528ba" />
         </div>
 
-        {/* Scanning Animation */}
+        {/* AR Model Presentation Animation */}
         {isSimulating && !showThreat && (
           <motion.div
             className="absolute inset-0 border-2 border-cyan-400"
@@ -164,14 +164,14 @@ const ARScenarios = () => {
             animate={{ scale: 1, opacity: 1 }}
             transition={{ duration: 0.5 }}
           >
-            <div className="scan-line absolute inset-0" />
+            <div className="ar-model-line absolute inset-0" />
             <motion.div
               className="absolute top-4 left-4 text-cyan-400 text-sm font-mono"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.5 }}
             >
-              Scanning... {Math.min(simulationStep + 1, 4)}/4
+              Presenting AR model... {Math.min(simulationStep + 1, 4)}/4
             </motion.div>
           </motion.div>
         )}
@@ -331,10 +331,10 @@ const ARScenarios = () => {
             <Card className="glass-effect cyber-border">
               <CardHeader>
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
-                    <Camera className="w-6 h-6 text-purple-400" />
-                    <CardTitle>AR Camera View</CardTitle>
-                  </div>
+                <div className="flex items-center space-x-3">
+                  <Camera className="w-6 h-6 text-purple-400" />
+                  <CardTitle>AR Preview</CardTitle>
+                </div>
                   <div className="flex items-center space-x-2">
                     {!isSimulating ? (
                       <Button

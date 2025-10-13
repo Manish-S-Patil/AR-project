@@ -279,7 +279,7 @@ const IntroductionPage = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 1, duration: 0.5 }}
             >
-              <p className="text-cyan-400 font-medium">Point your camera → See digital content</p>
+              <p className="text-cyan-400 font-medium">AR overlay → Explore interactive content</p>
             </motion.div>
           </div>
         );
@@ -317,7 +317,7 @@ const IntroductionPage = () => {
         return (
           <div className="space-y-6">
             <p className="text-lg text-muted-foreground">
-              Experience realistic cyber threat scenarios through your camera and learn how to identify and prevent them.
+              Experience realistic cyber threat scenarios with AR overlays and learn how to identify and prevent them.
             </p>
             <div className="grid grid-cols-1 gap-4">
               <motion.div
