@@ -175,7 +175,7 @@ const Quiz = () => {
       questions: [
         {
           question: 'What should you do with a found USB drive?',
-          options: ['Plug it in immediately', 'Scan it first', 'Never use it', 'Share with others'],
+          options: ['Plug it in immediately', 'Report it to IT/security', 'Never use it', 'Share with others'],
           correct: 2,
           explanation: 'Unknown USB drives can contain malware and should never be used on your devices.'
         },
@@ -193,9 +193,9 @@ const Quiz = () => {
         },
         {
           question: 'To protect against USB threats:',
-          options: ['Disable USB ports', 'Use only trusted devices', 'Scan everything', 'All of the above'],
+          options: ['Disable USB ports', 'Use only trusted devices', 'Keep autorun disabled', 'All of the above'],
           correct: 3,
-          explanation: 'Comprehensive USB security includes disabling unnecessary ports, using trusted devices, and scanning.'
+          explanation: 'Comprehensive USB security includes disabling unnecessary ports, using trusted devices, and keeping autorun disabled.'
         },
         {
           question: 'Auto-run features on USB devices:',
