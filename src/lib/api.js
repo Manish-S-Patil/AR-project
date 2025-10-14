@@ -14,6 +14,14 @@ const API_CONFIG = {
     users: {
       all: '/api/users/',
       admin: '/api/users/admin/all'
+    },
+    quiz: {
+      categories: '/api/quiz/categories',
+      byCategoryKey: (key) => `/api/quiz/category/${key}`,
+      admin: {
+        upsertCategory: '/api/quiz/admin/category',
+        createQuestion: '/api/quiz/admin/question'
+      }
     }
   },
   

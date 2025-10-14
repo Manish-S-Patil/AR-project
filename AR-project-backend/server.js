@@ -3,6 +3,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 import userRoutes from "./routes/userRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
+import quizRoutes from "./routes/quizRoutes.js";
 import prisma from "./prisma/client.js";
 // import redis, { ensureRedisConnection } from "./redis/client.js";
 
@@ -29,6 +30,7 @@ app.get("/", (req, res) => {
 // Routes
 app.use("/api/users", userRoutes);
 app.use("/api/auth", authRoutes);
+app.use("/api/quiz", quizRoutes);
 
 // Startup
 async function start() {
@@ -46,6 +48,7 @@ async function start() {
   app.listen(PORT, () => {
     console.log(`🚀 Server running on http://localhost:${PORT}`);
     console.log(`📡 Auth endpoints available at http://localhost:${PORT}/api/auth`);
+    console.log(`🧩 Quiz endpoints available at http://localhost:${PORT}/api/quiz`);
   });
 }
 

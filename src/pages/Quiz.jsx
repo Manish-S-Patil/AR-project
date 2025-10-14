@@ -13,6 +13,7 @@ import {
 import { Button } from '../components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import { toast } from '../components/ui/use-toast';
+import API_CONFIG from '../lib/api';
 
 const Quiz = () => {
   const navigate = useNavigate();
@@ -23,6 +24,9 @@ const Quiz = () => {
   const [showResult, setShowResult] = useState(false);
   const [timeLeft, setTimeLeft] = useState(30);
   const [quizCompleted, setQuizCompleted] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [fetchedQuiz, setFetchedQuiz] = useState(null);
 
   const quizData = {
     general: {
@@ -243,7 +247,53 @@ const Quiz = () => {
     }
   };
 
-  const currentQuiz = quizData[scenario] || quizData.general;
+  const currentQuiz = fetchedQuiz || quizData[scenario] || quizData.general;
+
+  // Fetch quiz from backend by category key
+  useEffect(() => {
+    const keyMap = {
+      general: 'general',
+      phishing: 'phishing',
+      'fake-login': 'fake-login',
+      'weak-password': 'weak-password',
+      'malware-usb': 'malware-usb',
+      'safe-browsing': 'safe-browsing'
+    };
+    const key = keyMap[scenario] || 'general';
+    let cancelled = false;
+    async function load() {
+      try {
+        setLoading(true);
+        setError(null);
+        setFetchedQuiz(null);
+        const url = API_CONFIG.getUrl(API_CONFIG.endpoints.quiz.byCategoryKey(key));
+        const res = await fetch(url, { headers: API_CONFIG.getDefaultHeaders() });
+        if (!res.ok) throw new Error('Failed to load quiz');
+        const data = await res.json();
+        if (cancelled) return;
+        // normalize to local shape
+        const normalized = {
+          title: data.title || quizData[key]?.title || 'Quiz',
+          description: data.description || quizData[key]?.description || '',
+          questions: (data.questions || []).map((q) => ({
+            question: q.question,
+            options: q.options,
+            correct: typeof q.correctIndex === 'number' ? q.correctIndex : 0,
+            explanation: q.explanation || ''
+          }))
+        };
+        if (normalized.questions.length > 0) {
+          setFetchedQuiz(normalized);
+        }
+      } catch (e) {
+        setError(e.message);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }
+    load();
+    return () => { cancelled = true; };
+  }, [scenario]);
 
   useEffect(() => {
     if (!quizCompleted && timeLeft > 0) {
@@ -445,11 +495,16 @@ const Quiz = () => {
           <div className="lg:col-span-2">
             <Card className="glass-effect cyber-border">
               <CardHeader>
-                <CardTitle className="text-xl">{question.question}</CardTitle>
+                <CardTitle className="text-xl">{loading ? 'Loading question...' : question.question}</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  {question.options.map((option, index) => (
+                {error && (
+                  <div className="mb-4 p-3 rounded border border-red-500/40 text-red-300 text-sm">
+                    {error} — showing built-in questions.
+                  </div>
+                )}
+                <div className="space-y-4 opacity-100">
+                  {(question.options || []).map((option, index) => (
                     <motion.button
                       key={index}
                       onClick={() => !showResult && handleAnswer(index)}

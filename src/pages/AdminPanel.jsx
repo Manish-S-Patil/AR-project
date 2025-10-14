@@ -357,9 +357,155 @@ const AdminPanel = () => {
             </CardContent>
           </Card>
         </motion.div>
+
+        {/* Quiz Management */}
+        <motion.div variants={itemVariants} className="mt-8">
+          <Card className="glass-effect cyber-border">
+            <CardHeader>
+              <div className="flex justify-between items-center">
+                <div>
+                  <CardTitle className="text-2xl">Quiz Management</CardTitle>
+                  <CardDescription>Create quiz categories and questions</CardDescription>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <QuizManager />
+            </CardContent>
+          </Card>
+        </motion.div>
       </div>
     </div>
   );
 };
 
 export default AdminPanel;
+
+// Inline QuizManager component for brevity
+const QuizManager = () => {
+  const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+  const [categoryKey, setCategoryKey] = useState('general');
+  const [categoryTitle, setCategoryTitle] = useState('General Cybersecurity Quiz');
+  const [categoryDescription, setCategoryDescription] = useState('');
+  const [question, setQuestion] = useState('');
+  const [explanation, setExplanation] = useState('');
+  const [options, setOptions] = useState(['', '', '', '']);
+  const [correctIndex, setCorrectIndex] = useState(0);
+  const [saving, setSaving] = useState(false);
+
+  const preset = [
+    { key: 'general', title: 'General Cybersecurity Quiz' },
+    { key: 'phishing', title: 'Phishing Detection Quiz' },
+    { key: 'fake-login', title: 'Fake Login Page Quiz' },
+    { key: 'weak-password', title: 'Password Security Quiz' },
+    { key: 'malware-usb', title: 'USB Security Quiz' },
+    { key: 'safe-browsing', title: 'Safe Browsing Quiz' }
+  ];
+
+  const upsertCategory = async () => {
+    try {
+      setSaving(true);
+      const res = await fetch(API_CONFIG.getUrl(API_CONFIG.endpoints.quiz.admin.upsertCategory), {
+        method: 'POST',
+        headers: API_CONFIG.getAuthHeaders(userData.token),
+        body: JSON.stringify({ key: categoryKey, title: categoryTitle, description: categoryDescription })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to save category');
+      toast({ title: 'Category saved', description: `${data.title} (${data.key})` });
+    } catch (e) {
+      toast({ title: 'Error', description: e.message, variant: 'destructive' });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const createQuestion = async () => {
+    try {
+      setSaving(true);
+      const payload = { categoryKey, question, explanation, options, correctIndex };
+      const res = await fetch(API_CONFIG.getUrl(API_CONFIG.endpoints.quiz.admin.createQuestion), {
+        method: 'POST',
+        headers: API_CONFIG.getAuthHeaders(userData.token),
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to create question');
+      toast({ title: 'Question created', description: `ID #${data.id}` });
+      setQuestion('');
+      setExplanation('');
+      setOptions(['', '', '', '']);
+      setCorrectIndex(0);
+    } catch (e) {
+      toast({ title: 'Error', description: e.message, variant: 'destructive' });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="grid md:grid-cols-3 gap-4">
+        <div className="md:col-span-1">
+          <label className="block text-sm mb-1">Category</label>
+          <select
+            className="w-full bg-transparent border rounded p-2"
+            value={categoryKey}
+            onChange={(e) => {
+              const key = e.target.value;
+              setCategoryKey(key);
+              const found = preset.find(p => p.key === key);
+              if (found) setCategoryTitle(found.title);
+            }}
+          >
+            {preset.map(p => (
+              <option key={p.key} value={p.key}>{p.title}</option>
+            ))}
+          </select>
+        </div>
+        <div className="md:col-span-1">
+          <label className="block text-sm mb-1">Title</label>
+          <input className="w-full bg-transparent border rounded p-2" value={categoryTitle} onChange={e => setCategoryTitle(e.target.value)} />
+        </div>
+        <div className="md:col-span-1">
+          <label className="block text-sm mb-1">Description</label>
+          <input className="w-full bg-transparent border rounded p-2" value={categoryDescription} onChange={e => setCategoryDescription(e.target.value)} />
+        </div>
+      </div>
+      <div className="flex gap-3">
+        <Button onClick={upsertCategory} disabled={saving} className="glass-effect">Save Category</Button>
+      </div>
+
+      <div className="grid md:grid-cols-2 gap-4 mt-6">
+        <div className="md:col-span-2">
+          <label className="block text-sm mb-1">Question</label>
+          <input className="w-full bg-transparent border rounded p-2" value={question} onChange={e => setQuestion(e.target.value)} />
+        </div>
+        {options.map((opt, idx) => (
+          <div key={idx} className="flex items-center gap-2">
+            <input
+              className="flex-1 bg-transparent border rounded p-2"
+              value={opt}
+              placeholder={`Option ${idx + 1}`}
+              onChange={e => {
+                const copy = [...options];
+                copy[idx] = e.target.value;
+                setOptions(copy);
+              }}
+            />
+            <label className="flex items-center gap-1 text-sm">
+              <input type="radio" name="correct" checked={correctIndex === idx} onChange={() => setCorrectIndex(idx)} /> Correct
+            </label>
+          </div>
+        ))}
+        <div className="md:col-span-2">
+          <label className="block text-sm mb-1">Explanation (optional)</label>
+          <input className="w-full bg-transparent border rounded p-2" value={explanation} onChange={e => setExplanation(e.target.value)} />
+        </div>
+      </div>
+      <div className="flex gap-3">
+        <Button onClick={createQuestion} disabled={saving} className="glass-effect">Create Question</Button>
+      </div>
+    </div>
+  );
+};
