@@ -18,6 +18,43 @@ app.use(cors({
 }));
 app.use(express.json());
 
+// Request/Response logger (redacts sensitive auth payloads)
+app.use((req, res, next) => {
+  const startTimeMs = Date.now();
+  const url = req.originalUrl || req.url;
+  const isSensitive =
+    url.startsWith('/api/auth') ||
+    (req.body && (req.body.password || req.body.currentPassword || req.body.newPassword));
+
+  const safeBody = isSensitive ? '[redacted]' : req.body;
+  try {
+    console.log('➡️ ', req.method, url, 'body:', JSON.stringify(safeBody));
+  } catch {
+    console.log('➡️ ', req.method, url, 'body: [unserializable]');
+  }
+
+  const originalJson = res.json.bind(res);
+  res.json = (payload) => {
+    const durationMs = Date.now() - startTimeMs;
+    try {
+      const preview = isSensitive ? '[redacted]' : JSON.stringify(payload)?.slice(0, 800);
+      console.log('⬅️ ', res.statusCode, req.method, url, `${durationMs}ms`, 'resp:', preview);
+    } catch {
+      console.log('⬅️ ', res.statusCode, req.method, url, `${durationMs}ms`, 'resp: [unserializable]');
+    }
+    return originalJson(payload);
+  };
+
+  res.on('finish', () => {
+    // In case response wasn't JSON (e.g., sendStatus, send), still log duration
+    const durationMs = Date.now() - startTimeMs;
+    if (res.getHeader('content-type')?.toString().includes('application/json')) return;
+    console.log('⬅️ ', res.statusCode, req.method, url, `${durationMs}ms`);
+  });
+
+  next();
+});
+
 // Health check route
 app.get("/", (req, res) => {
   res.json({ 
