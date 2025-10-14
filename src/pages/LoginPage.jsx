@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { Shield, Eye, EyeOff, User, Mail, Lock, Crown, Users } from 'lucide-react';
+import { Shield, Eye, EyeOff, User, Mail, Lock, Crown, Users, Loader2 } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
@@ -13,6 +13,7 @@ const LoginPage = () => {
   const [loginType, setLoginType] = useState('user'); // 'user' or 'admin'
   const [isLogin, setIsLogin] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     username: '',
     email: '',
@@ -29,6 +30,7 @@ const LoginPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (isSubmitting) return;
     
     if (isLogin) {
       if (!formData.username || !formData.password) {
@@ -51,6 +53,7 @@ const LoginPage = () => {
     }
 
     try {
+      setIsSubmitting(true);
       let endpoint, requestData;
       
       if (loginType === 'admin') {
@@ -140,6 +143,8 @@ const LoginPage = () => {
         description: error.message || "Please check your credentials and try again.",
         variant: "destructive"
       });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -265,6 +270,7 @@ const LoginPage = () => {
                       onChange={handleInputChange}
                       className="glass-effect"
                       required
+                      disabled={isSubmitting}
                     />
                   </div>
 
@@ -288,6 +294,7 @@ const LoginPage = () => {
                         onChange={handleInputChange}
                         className="glass-effect"
                         required
+                        disabled={isSubmitting}
                       />
                     </motion.div>
                   )}
@@ -307,6 +314,7 @@ const LoginPage = () => {
                         onChange={handleInputChange}
                         className="glass-effect pr-10"
                         required
+                        disabled={isSubmitting}
                       />
                       <button
                         type="button"
@@ -321,9 +329,16 @@ const LoginPage = () => {
                   <Button
                     type="submit"
                     className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 glow-effect"
-                    disabled={loginType !== 'user'}
+                    disabled={loginType !== 'user' || isSubmitting}
                   >
-                    {isLogin ? 'Sign In' : 'Create Account'}
+                    {isSubmitting ? (
+                      <span className="inline-flex items-center gap-2">
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        {isLogin ? 'Signing In...' : 'Creating Account...'}
+                      </span>
+                    ) : (
+                      isLogin ? 'Sign In' : 'Create Account'
+                    )}
                   </Button>
                 </form>
 
@@ -342,6 +357,7 @@ const LoginPage = () => {
                     variant="outline"
                     className="w-full glass-effect hover:bg-muted/50"
                     onClick={handleGuestAccess}
+                    disabled={isSubmitting}
                   >
                     Continue as Guest
                   </Button>
@@ -387,7 +403,7 @@ const LoginPage = () => {
                       <User className="w-4 h-4" />
                       Admin Username
                     </Label>
-                    <Input
+                      <Input
                       id="admin-username"
                       name="username"
                       type="text"
@@ -395,7 +411,8 @@ const LoginPage = () => {
                       value={formData.username}
                       onChange={handleInputChange}
                       className="glass-effect"
-                      required
+                        required
+                        disabled={isSubmitting}
                     />
                   </div>
 
@@ -414,6 +431,7 @@ const LoginPage = () => {
                         onChange={handleInputChange}
                         className="glass-effect pr-10"
                         required
+                        disabled={isSubmitting}
                       />
                       <button
                         type="button"
@@ -428,9 +446,16 @@ const LoginPage = () => {
                   <Button
                     type="submit"
                     className="w-full bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 glow-effect"
-                    disabled={loginType !== 'admin'}
+                    disabled={loginType !== 'admin' || isSubmitting}
                   >
-                    Admin Sign In
+                    {isSubmitting ? (
+                      <span className="inline-flex items-center gap-2">
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        Admin Signing In...
+                      </span>
+                    ) : (
+                      'Admin Sign In'
+                    )}
                   </Button>
                 </form>
 

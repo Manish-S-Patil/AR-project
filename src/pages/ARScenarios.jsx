@@ -163,22 +163,41 @@ const ARScenarios = () => {
 
     const scenario = scenarios[selectedScenario];
 
+    // Pick model per scenario (no backups/fallbacks)
+    const scenarioToModel = {
+      phishing: {
+        glb: '/models/phishing_email_.glb',
+        usdz: null
+      }
+      // Add more mappings here when assets are available
+    };
+
+    const mapping = scenarioToModel[selectedScenario] || { glb: null, usdz: null };
+    const modelSrc = mapping.glb;
+    const iosSrc = mapping.usdz;
+
     return (
       <div className="relative w-full h-96 bg-[#74c0d4] rounded-lg overflow-hidden border-2 border-purple-500/30">
         {/* Web AR Viewer (model-viewer) */}
-        <model-viewer
-          ref={modelViewerRef}
-          src="/models/Astronaut.glb"
-          ios-src="/models/Astronaut.usdz"
-          poster="/models/loading_screen.gif"
-          alt="A 3D model"
-          ar
-          ar-modes="webxr scene-viewer quick-look"
-          camera-controls
-          auto-rotate
-          shadow-intensity="1"
-          style={{ width: '100%', height: '100%', background: 'transparent' }}
-        />
+        {modelSrc ? (
+          <model-viewer
+            ref={modelViewerRef}
+            src={modelSrc}
+            {...(iosSrc ? { 'ios-src': iosSrc } : {})}
+            poster="/models/loading_screen.gif"
+            alt="A 3D model"
+            ar
+            ar-modes="webxr scene-viewer quick-look"
+            camera-controls
+            auto-rotate
+            shadow-intensity="1"
+            style={{ width: '100%', height: '100%', background: 'transparent' }}
+          />
+        ) : (
+          <div className="flex items-center justify-center w-full h-full bg-black/20 text-white/80 text-sm">
+            AR model for this scenario is coming soon.
+          </div>
+        )}
 
         {/* Attribution bar removed per request */}
 
