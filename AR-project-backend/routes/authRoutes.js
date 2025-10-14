@@ -1,10 +1,36 @@
 import express from "express";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import crypto from "crypto";
 import prisma from "../prisma/client.js";
 import redis from "../redis/client.js";
 
 const router = express.Router();
+
+const REFRESH_COOKIE = 'refresh_token';
+const REFRESH_TTL_DAYS = parseInt(process.env.REFRESH_TTL_DAYS || '30', 10);
+
+function createAccessToken(payload) {
+  return jwt.sign(payload, process.env.JWT_SECRET || "your-secret-key", { expiresIn: process.env.JWT_EXPIRES_IN || "7d" });
+}
+
+function generateRefreshTokenValue() {
+  return crypto.randomBytes(48).toString('hex');
+}
+
+async function issueRefreshToken(res, userId) {
+  const token = generateRefreshTokenValue();
+  const expiresAt = new Date(Date.now() + REFRESH_TTL_DAYS * 24 * 60 * 60 * 1000);
+  await prisma.refreshToken.create({ data: { token, userId, expiresAt } });
+  const isProd = process.env.NODE_ENV === 'production';
+  res.cookie(REFRESH_COOKIE, token, {
+    httpOnly: true,
+    secure: isProd,
+    sameSite: 'lax',
+    expires: expiresAt,
+    path: '/'
+  });
+}
 
 // Register new user
 router.post("/register", async (req, res) => {
@@ -48,12 +74,9 @@ router.post("/register", async (req, res) => {
       }
     });
 
-    // Generate JWT token
-    const token = jwt.sign(
-      { userId: user.id, username: user.username },
-      process.env.JWT_SECRET || "your-secret-key",
-      { expiresIn: "7d" }
-    );
+    // Generate tokens
+    const token = createAccessToken({ userId: user.id, username: user.username, role: user.role });
+    await issueRefreshToken(res, user.id);
 
     // Clear users cache
     if (redis.isOpen) {
@@ -112,12 +135,8 @@ router.post("/login", async (req, res) => {
       });
     }
 
-    // Generate JWT token
-    const token = jwt.sign(
-      { userId: user.id, username: user.username, role: user.role },
-      process.env.JWT_SECRET || "your-secret-key",
-      { expiresIn: "7d" }
-    );
+    const token = createAccessToken({ userId: user.id, username: user.username, role: user.role });
+    await issueRefreshToken(res, user.id);
 
     res.json({
       message: "Login successful",
@@ -177,12 +196,8 @@ router.post("/admin/login", async (req, res) => {
       });
     }
 
-    // Generate JWT token with admin role
-    const token = jwt.sign(
-      { userId: user.id, username: user.username, role: user.role },
-      process.env.JWT_SECRET || "your-secret-key",
-      { expiresIn: "7d" }
-    );
+    const token = createAccessToken({ userId: user.id, username: user.username, role: user.role });
+    await issueRefreshToken(res, user.id);
 
     res.json({
       message: "Admin login successful",
@@ -306,3 +321,39 @@ router.post("/change-password", authenticateToken, async (req, res) => {
 });
 
 export default router;
+
+// Refresh token endpoint
+router.post('/refresh', async (req, res) => {
+  try {
+    const rt = req.cookies?.[REFRESH_COOKIE];
+    if (!rt) return res.status(401).json({ error: 'No refresh token' });
+    const record = await prisma.refreshToken.findUnique({ where: { token: rt } });
+    if (!record || record.revokedAt || new Date(record.expiresAt) < new Date()) {
+      return res.status(401).json({ error: 'Invalid refresh token' });
+    }
+    const user = await prisma.user.findUnique({ where: { id: record.userId } });
+    if (!user) return res.status(401).json({ error: 'User not found' });
+    const token = createAccessToken({ userId: user.id, username: user.username, role: user.role });
+    res.json({ token });
+  } catch (e) {
+    console.error('Refresh error:', e);
+    res.status(500).json({ error: 'Failed to refresh token' });
+  }
+});
+
+// Logout: revoke refresh token
+router.post('/logout', async (req, res) => {
+  try {
+    const rt = req.cookies?.[REFRESH_COOKIE];
+    if (rt) {
+      await prisma.refreshToken.update({
+        where: { token: rt },
+        data: { revokedAt: new Date() }
+      }).catch(() => {});
+    }
+    res.clearCookie(REFRESH_COOKIE, { path: '/' });
+    res.json({ message: 'Logged out' });
+  } catch (e) {
+    res.json({ message: 'Logged out' });
+  }
+});

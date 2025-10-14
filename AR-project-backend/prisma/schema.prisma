@@ -18,6 +18,7 @@ model User {
   role     String  @default("user") // "user" or "admin"
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  refreshTokens RefreshToken[]
 }
 
 
@@ -49,6 +50,16 @@ model QuizOption {
   isCorrect   Boolean      @default(false)
   questionId  Int
   question    QuizQuestion @relation(fields: [questionId], references: [id])
+}
+
+model RefreshToken {
+  id         Int      @id @default(autoincrement())
+  token      String   @unique
+  userId     Int
+  user       User     @relation(fields: [userId], references: [id])
+  expiresAt  DateTime
+  revokedAt  DateTime?
+  createdAt  DateTime @default(now())
 }
 
 
