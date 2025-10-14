@@ -33,12 +33,13 @@ Path: `src/pages/AdminPanel.jsx`
     - Select the correct option.
     - Optionally add an explanation.
     - Click "Create Question".
+  - Note: The frontend shows an empty state if a category has zero questions.
 
 - Game Content Management
   - Create phishing email entries used by the "Phishing Email Detective" game.
   - Fields: Sender, Subject, Content, Indicators (comma separated), Is Phishing.
   - Click "Create Phishing Email" to add.
-  - The game fetches active entries from `/api/game/phishing-emails`.
+  - The game fetches active entries from `/api/game/phishing-emails`. If there are none, the game shows an empty state instead of fallback content.
 
 ### 4) Quiz API (for Admin)
 Base path: `/api/quiz`

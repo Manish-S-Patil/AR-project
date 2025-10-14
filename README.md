@@ -8,11 +8,12 @@ A modern React-based frontend application for the AR Cybersecurity Awareness Pla
 - **👑 Admin Panel Access**: Secure admin-only dashboard with role-based access
 - **📱 Responsive Design**: Mobile-first, modern UI with glass effects
 - **🎮 Interactive Learning**: AR scenarios, quizzes, and educational games
+- **🗂️ DB‑Driven Content**: Quizzes and phishing game content are loaded from the database (no built‑ins)
 - **👥 User Management**: Complete user management dashboard for admins
 - **🎨 Modern UI/UX**: Beautiful animations and smooth transitions
 - **📊 Progress Tracking**: User progress and statistics
 - **🌐 PWA Ready**: Progressive Web App capabilities
-- **🔒 Role-based Security**: JWT-based authentication with user roles
+- **🔒 Role-based Security**: JWT-based authentication with user roles + refresh tokens
 
 ## 🛠️ Tech Stack
 
@@ -142,15 +143,15 @@ The application will be available at `http://localhost:5173`
 - **Safe Browsing Tips**: Website security indicators
 
 ### 🧠 Quiz System (`/quiz/:scenario?`)
-- **General Quiz**: Comprehensive cybersecurity knowledge test
-- **Scenario-specific**: Targeted quizzes for each AR scenario
+- **DB‑Driven**: Questions are fetched from the backend per category
+- **Empty State**: If no questions exist, users see a clear message
 - **Instant Feedback**: Real-time scoring and explanations
 - **Progress Tracking**: Track quiz completion and scores
 
 ### 🎮 Interactive Games (`/game`)
-- **Educational Mini-games**: Learn through play
-- **Cybersecurity Concepts**: Reinforce learning objectives
-- **Engaging Interface**: Fun and interactive experience
+- **Phishing Email Detective**: Loads phishing email entries from DB
+- **Empty State**: Shows message if no game content exists
+- **Hacker Hunter**: Interactive reaction game (local state)
 
 ### 👥 Admin Panel (`/admin`)
 - **User Management**: View all registered users
@@ -192,6 +193,7 @@ The project uses Tailwind CSS with custom configuration:
 - **React Plugin**: Fast development with HMR
 - **Build Optimization**: Production-ready builds
 - **Environment Variables**: Secure configuration
+ - **SPA Rewrites**: `static.json` added to serve `index.html` for deep links
 
 ## 🎯 AR Scenarios Details
 
@@ -225,8 +227,8 @@ The project uses Tailwind CSS with custom configuration:
 ### User Authentication
 1. **Registration**: Users create accounts with username, email, and password
 2. **Login**: Secure authentication with JWT tokens
-3. **Token Storage**: Secure token management in localStorage
-4. **Session Management**: Automatic token validation
+3. **Access Token**: 7‑day JWT stored client-side
+4. **Refresh Token**: HttpOnly cookie; `/api/auth/refresh` issues new access tokens
 5. **Logout**: Secure session termination
 
 ### Admin Authentication
@@ -236,14 +238,7 @@ The project uses Tailwind CSS with custom configuration:
 4. **JWT with Roles**: Tokens include role information for authorization
 5. **Protected Routes**: Admin panel requires admin role authentication
 
-### Default Admin Credentials
-```
-Username: admin
-Password: AdminSecure123!
-Email: admin@arcyberguard.com
-```
-
-**⚠️ Important**: Change the default admin password after first login for security.
+> Create an admin using the backend script or endpoint and set a strong password.
 
 ## 📊 Admin Panel Features
 
@@ -268,12 +263,26 @@ VITE_API_URL=https://your-backend-api.com
 VITE_APP_TITLE=AR Cybersecurity Awareness Platform
 ```
 
+Backend env (examples):
+```env
+DATABASE_URL=postgresql://...
+JWT_SECRET=your-secret
+JWT_EXPIRES_IN=7d
+REFRESH_TTL_DAYS=30
+PORT=5001
+```
+
 ### Static Hosting
 The built files in `/dist` can be deployed to any static hosting service:
 - **Vercel**: `vercel --prod`
 - **Netlify**: Drag and drop `/dist` folder
 - **GitHub Pages**: Use GitHub Actions
 - **AWS S3**: Upload `/dist` contents
+
+For single‑page app routing on static hosts:
+- Render: `static.json` with `{ "routes": [{ "src": "/.*", "dest": "/index.html" }] }`
+- Netlify: `_redirects` → `/* /index.html 200`
+- Nginx: `try_files $uri /index.html;`
 
 ### Docker Deployment
 ```dockerfile
@@ -377,6 +386,8 @@ AR-project/
 2. **Navigation**: Verify all routes work correctly
 3. **Responsive**: Test on different screen sizes
 4. **Admin Panel**: Verify admin functionality
+5. **Quizzes**: Ensure DB contains questions (Admin → Quiz Management)
+6. **Games**: Ensure DB contains phishing emails (Admin → Game Content)
 5. **AR Scenarios**: Test all scenario interactions
 
 ### Browser Compatibility

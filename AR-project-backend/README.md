@@ -13,6 +13,9 @@ A robust Node.js backend API for the AR Cybersecurity Awareness Platform, provid
 - **Database Integration**: PostgreSQL with Prisma ORM
 - **Caching**: Redis integration for improved performance
 - **Security**: CORS enabled, input validation, and secure password handling
+ - **Quizzes & Game Content**: DB-backed quiz categories/questions and phishing game entries
+ - **Refresh Tokens**: HttpOnly cookie-based refresh flow for access token renewal
+ - **Request Logging**: Lightweight request/response logger with redaction
 
 ## 🛠️ Tech Stack
 
@@ -23,6 +26,7 @@ A robust Node.js backend API for the AR Cybersecurity Awareness Platform, provid
 - **Authentication**: JWT + bcryptjs
 - **Caching**: Redis
 - **Environment**: dotenv
+ - **Cookies**: cookie-parser (for refresh tokens)
 
 ## 📋 Prerequisites
 
@@ -52,6 +56,8 @@ A robust Node.js backend API for the AR Cybersecurity Awareness Platform, provid
    
    # JWT Secret
    JWT_SECRET="your-super-secret-jwt-key-here"
+   JWT_EXPIRES_IN="7d"
+   REFRESH_TTL_DAYS="30"
    
    # Server
    PORT=5001
@@ -104,6 +110,8 @@ The server will be available at `http://localhost:5001`
 | POST | `/login` | User login | No |
 | POST | `/admin/login` | Admin login | No |
 | GET | `/profile` | Get current user profile | Yes |
+| POST | `/refresh` | Issue new access token from refresh cookie | No (cookie) |
+| POST | `/logout` | Revoke refresh token and clear cookie | No (cookie) |
 
 ### User Routes (`/api/users`)
 
@@ -113,9 +121,26 @@ The server will be available at `http://localhost:5001`
 | POST | `/` | Create a new user | No |
 | GET | `/admin/all` | Get all users (admin) | Yes |
 
+### Quiz Routes (`/api/quiz`)
+
+| Method | Endpoint | Description | Auth Required |
+|--------|----------|-------------|---------------|
+| GET | `/categories` | List quiz categories | No |
+| GET | `/category/:key` | Get questions for a category | No |
+| POST | `/admin/category` | Upsert category | Yes (admin) |
+| POST | `/admin/question` | Create question with options | Yes (admin) |
+
+### Game Routes (`/api/game`)
+
+| Method | Endpoint | Description | Auth Required |
+|--------|----------|-------------|---------------|
+| GET | `/phishing-emails` | List active phishing email entries | No |
+| POST | `/admin/phishing-email` | Create phishing email entry | Yes (admin) |
+| PATCH | `/admin/phishing-email/:id` | Update/toggle phishing email | Yes (admin) |
+
 ## 🔐 Authentication System
 
-The API uses JWT (JSON Web Tokens) for authentication with role-based access control. Include the token in the Authorization header:
+The API uses short‑lived access JWTs with role-based access control and long‑lived refresh tokens (HttpOnly cookie). Include the access token in the Authorization header:
 
 ```
 Authorization: Bearer <your-jwt-token>
@@ -125,12 +150,12 @@ Authorization: Bearer <your-jwt-token>
 - **user**: Default role for regular users
 - **admin**: Administrative role with elevated permissions
 
-### Authentication Flow
-1. **User Registration**: Creates user with default "user" role
-2. **User Login**: Authenticates users and returns JWT with role
-3. **Admin Login**: Separate endpoint for admin authentication
-4. **Role Verification**: Server validates user role for protected endpoints
-5. **Token Validation**: JWT tokens include role information for authorization
+### Authentication & Session Flow
+1. **User Registration / Login / Admin Login**: Issues an access JWT (default 7d) and sets a `refresh_token` cookie (default 30d).
+2. **Accessing Protected Routes**: Send the access token via `Authorization: Bearer <token>`.
+3. **Refresh**: When the access token expires, call `POST /api/auth/refresh` (cookie is sent automatically) to receive a new access token.
+4. **Logout**: `POST /api/auth/logout` revokes the current refresh token and clears the cookie.
+5. **Role Verification**: Server validates user role for protected endpoints.
 
 ### Registration Request
 ```json
@@ -205,6 +230,61 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
+
+### Quiz & Game Models (Prisma)
+
+```prisma
+model QuizCategory {
+  id          Int            @id @default(autoincrement())
+  key         String         @unique
+  title       String
+  description String?
+  questions   QuizQuestion[]
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+}
+
+model QuizQuestion {
+  id          Int           @id @default(autoincrement())
+  question    String
+  explanation String?
+  categoryId  Int
+  category    QuizCategory  @relation(fields: [categoryId], references: [id])
+  options     QuizOption[]
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+}
+
+model QuizOption {
+  id          Int          @id @default(autoincrement())
+  text        String
+  isCorrect   Boolean      @default(false)
+  questionId  Int
+  question    QuizQuestion @relation(fields: [questionId], references: [id])
+}
+
+model PhishingEmail {
+  id         Int      @id @default(autoincrement())
+  sender     String
+  subject    String
+  content    String
+  isPhishing Boolean  @default(true)
+  indicators String[]
+  active     Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model RefreshToken {
+  id        Int      @id @default(autoincrement())
+  token     String   @unique
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id])
+  expiresAt DateTime
+  revokedAt DateTime?
+  createdAt DateTime @default(now())
+}
+```
 ```
 
 ## 🔒 Security Features
@@ -311,14 +391,15 @@ CMD ["npm", "start"]
 
 ## 🔧 Configuration
 
-### CORS Settings
-The server is configured to allow all origins in development. For production, update the CORS configuration in `server.js`:
+### CORS & Cookies
+The server is configured to allow all origins in development with `credentials: true` for cookie support. For production, set explicit origins and keep `credentials: true` so refresh cookies work:
 
 ```javascript
 app.use(cors({
   origin: ['https://yourdomain.com', 'https://www.yourdomain.com'],
   credentials: true
 }));
+app.use(cookieParser());
 ```
 
 ### Redis Configuration
@@ -335,7 +416,7 @@ Redis is optional but recommended for caching. If Redis is not available, the ap
 
 2. **JWT Token Issues**
    - Verify JWT_SECRET is set in .env
-   - Check token expiration (default: 7 days)
+   - Check token expiration (default: 7 days). If using refresh flow, ensure `cookie-parser` is enabled and cookies are allowed by CORS.
 
 3. **Redis Connection Issues**
    - Redis is optional - app works without it
@@ -347,6 +428,7 @@ Redis is optional but recommended for caching. If Redis is not available, the ap
    - Verify admin credentials are correct
    - Run `node scripts/create-admin.js` to create admin user
    - Check JWT token includes role information
+ - If access token expired, call `/api/auth/refresh` to obtain a new token
 
 ### Logs
 The server logs important events to the console. Check the terminal output for error messages.

@@ -35,7 +35,7 @@ Mounted at `/api/quiz` in `AR-project-backend/server.js` via `routes/quizRoutes.
 
 ### Frontend Integration
 - `src/lib/api.js` extended with `endpoints.quiz` entries.
-- `src/pages/Quiz.jsx` fetches backend quiz by category key and gracefully falls back to built‑in questions if API is empty/unreachable.
+- `src/pages/Quiz.jsx` fetches backend quiz by category key. There is no built‑in fallback now. If no questions are present, the UI shows a clear empty state.
 - `src/pages/AdminPanel.jsx` includes a simple "Quiz Management" section to upsert categories and create questions.
 
 ---
@@ -54,7 +54,7 @@ Mounted at `/api/game` in `AR-project-backend/server.js` via `routes/gameRoutes.
   - `PATCH /api/game/admin/phishing-email/:id` → update/toggle fields
 
 ### Frontend Integration
-- `src/pages/Game.jsx` loads phishing emails from the API when the "Phishing Email Detective" game starts; if none are returned, it falls back to the built‑in seed array.
+- `src/pages/Game.jsx` loads phishing emails from the API when the "Phishing Email Detective" game starts. There is no built‑in fallback now; an empty state is shown if none exist.
 - Admin Panel hosts a simple creator UI for phishing emails (see section below).
 
 ---

@@ -33,6 +33,7 @@ const Game = () => {
   // Hacker Game State
   const [hackers, setHackers] = useState([]);
   const [clickedHackers, setClickedHackers] = useState([]);
+  const [noGameContent, setNoGameContent] = useState(false);
 
   const games = [
     {
@@ -53,48 +54,7 @@ const Game = () => {
     }
   ];
 
-  const phishingEmailData = [
-    {
-      id: 1,
-      sender: 'security@paypaI.com',
-      subject: 'URGENT: Account Suspended - Verify Now!',
-      content: 'Your account has been suspended due to suspicious activity. Click here to verify immediately or lose access forever!',
-      isPhishing: true,
-      indicators: ['Misspelled domain (paypaI vs paypal)', 'Urgent language', 'Threats of account loss']
-    },
-    {
-      id: 2,
-      sender: 'newsletter@techcompany.com',
-      subject: 'Weekly Tech Newsletter',
-      content: 'Here are this week\'s top tech stories and updates from our team.',
-      isPhishing: false,
-      indicators: ['Legitimate sender', 'Normal subject', 'No urgent calls to action']
-    },
-    {
-      id: 3,
-      sender: 'support@bank-security.net',
-      subject: 'Security Alert: Login from New Device',
-      content: 'We detected a login from a new device. If this wasn\'t you, click here to secure your account.',
-      isPhishing: true,
-      indicators: ['Suspicious domain', 'Generic greeting', 'Pressure to click link']
-    },
-    {
-      id: 4,
-      sender: 'hr@yourcompany.com',
-      subject: 'Team Meeting Tomorrow',
-      content: 'Don\'t forget about our team meeting tomorrow at 2 PM in the conference room.',
-      isPhishing: false,
-      indicators: ['Internal sender', 'Normal business content', 'No suspicious links']
-    },
-    {
-      id: 5,
-      sender: 'winner@lottery-international.biz',
-      subject: 'Congratulations! You\'ve Won $1,000,000!',
-      content: 'You\'ve been selected as our grand prize winner! Send your personal details to claim your prize.',
-      isPhishing: true,
-      indicators: ['Too good to be true', 'Requests personal info', 'Suspicious domain']
-    }
-  ];
+  // Removed built-in phishing email seed; content must come from the backend
 
   useEffect(() => {
     if (gameState === 'playing' && timeLeft > 0) {
@@ -110,6 +70,7 @@ const Game = () => {
     if (selectedGame === 'phishing-detector' && gameState === 'playing') {
       (async () => {
         try {
+          setNoGameContent(false);
           const res = await fetch(API_CONFIG.getUrl(API_CONFIG.endpoints.game.phishingEmails), {
             headers: API_CONFIG.getDefaultHeaders()
           });
@@ -128,10 +89,12 @@ const Game = () => {
               return;
             }
           }
-          // fallback to local seed
-          setPhishingEmails(shuffleArray([...phishingEmailData]));
+          // no content available
+          setNoGameContent(true);
+          setPhishingEmails([]);
         } catch (e) {
-          setPhishingEmails(shuffleArray([...phishingEmailData]));
+          setNoGameContent(true);
+          setPhishingEmails([]);
         }
       })();
     } else if (selectedGame === 'hacker-hunter' && gameState === 'playing') {
@@ -229,8 +192,8 @@ const Game = () => {
       if (currentEmail < phishingEmails.length - 1) {
         setCurrentEmail(currentEmail + 1);
       } else {
-        // Reshuffle and continue
-        setPhishingEmails(shuffleArray([...phishingEmailData]));
+        // Reshuffle and continue with the same fetched set
+        setPhishingEmails(shuffleArray([...phishingEmails]));
         setCurrentEmail(0);
         setLevel(level + 1);
       }
@@ -313,6 +276,20 @@ const Game = () => {
   );
 
   const renderPhishingGame = () => {
+    if (noGameContent) {
+      return (
+        <div className="space-y-6">
+          <Card className="glass-effect cyber-border max-w-md mx-auto text-center">
+            <CardHeader>
+              <CardTitle className="text-xl">No game content added yet</CardTitle>
+              <CardDescription>
+                The phishing email entries are not available in the database.
+              </CardDescription>
+            </CardHeader>
+          </Card>
+        </div>
+      );
+    }
     if (!phishingEmails.length) return null;
     
     const email = phishingEmails[currentEmail];
