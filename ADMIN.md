@@ -34,6 +34,12 @@ Path: `src/pages/AdminPanel.jsx`
     - Optionally add an explanation.
     - Click "Create Question".
 
+- Game Content Management
+  - Create phishing email entries used by the "Phishing Email Detective" game.
+  - Fields: Sender, Subject, Content, Indicators (comma separated), Is Phishing.
+  - Click "Create Phishing Email" to add.
+  - The game fetches active entries from `/api/game/phishing-emails`.
+
 ### 4) Quiz API (for Admin)
 Base path: `/api/quiz`
 
@@ -66,11 +72,41 @@ Authorization: Bearer <admin-access-token>
 GET /api/quiz/category/phishing
 ```
 
-### 5) Environment and CORS
+### 5) Game API (for Admin)
+Base path: `/api/game`
+
+- Create Phishing Email
+```
+POST /api/game/admin/phishing-email
+Authorization: Bearer <admin-access-token>
+{
+  "sender": "security@paypaI.com",
+  "subject": "URGENT: Verify Now!",
+  "content": "...",
+  "isPhishing": true,
+  "indicators": ["Misspelled domain", "Urgent language"]
+}
+```
+
+- Update/Toggle Phishing Email
+```
+PATCH /api/game/admin/phishing-email/:id
+Authorization: Bearer <admin-access-token>
+{
+  "active": false
+}
+```
+
+- List Active Emails (Public)
+```
+GET /api/game/phishing-emails
+```
+
+### 6) Environment and CORS
 - Backend `.env` must be set (see `IMPLEMENTATION_GUIDE.md`).
 - For cookies (refresh token) to work across domains, the frontend must send `credentials: 'include'` and the backend CORS `origin` must be set to the frontend URL.
 
-### 6) Troubleshooting
+### 7) Troubleshooting
 - 404 on `/api/quiz/admin/...`: backend isn’t deployed with the new routes or route not mounted. Ensure `server.js` has `app.use("/api/quiz", quizRoutes);`.
 - `P1012 DATABASE_URL not found`: set `DATABASE_URL` in backend `.env` and run migrations.
 - 401/403 on admin actions: ensure you’re logged in as an admin and the Authorization header is present.

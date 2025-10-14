@@ -5,6 +5,7 @@ import cookieParser from "cookie-parser";
 import userRoutes from "./routes/userRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
 import quizRoutes from "./routes/quizRoutes.js";
+import gameRoutes from "./routes/gameRoutes.js";
 import prisma from "./prisma/client.js";
 // import redis, { ensureRedisConnection } from "./redis/client.js";
 
@@ -70,6 +71,7 @@ app.get("/", (req, res) => {
 app.use("/api/users", userRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/quiz", quizRoutes);
+app.use("/api/game", gameRoutes);
 
 // Startup
 async function start() {
@@ -88,6 +90,7 @@ async function start() {
     console.log(`🚀 Server running on http://localhost:${PORT}`);
     console.log(`📡 Auth endpoints available at http://localhost:${PORT}/api/auth`);
     console.log(`🧩 Quiz endpoints available at http://localhost:${PORT}/api/quiz`);
+    console.log(`🎮 Game endpoints available at http://localhost:${PORT}/api/game`);
   });
 }
 

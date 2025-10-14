@@ -15,6 +15,7 @@ import {
 import { Button } from '../components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import { toast } from '../components/ui/use-toast';
+import API_CONFIG from '../lib/api';
 
 const Game = () => {
   const navigate = useNavigate();
@@ -103,9 +104,35 @@ const Game = () => {
     }
   }, [timeLeft, gameState]);
 
+  // Load phishing emails from backend when starting the phishing game
   useEffect(() => {
     if (selectedGame === 'phishing-detector' && gameState === 'playing') {
-      setPhishingEmails(shuffleArray([...phishingEmailData]));
+      (async () => {
+        try {
+          const res = await fetch(API_CONFIG.getUrl(API_CONFIG.endpoints.game.phishingEmails), {
+            headers: API_CONFIG.getDefaultHeaders()
+          });
+          if (res.ok) {
+            const data = await res.json();
+            const emails = (data.emails || []).map(e => ({
+              id: e.id,
+              sender: e.sender,
+              subject: e.subject,
+              content: e.content,
+              isPhishing: e.isPhishing,
+              indicators: e.indicators || []
+            }));
+            if (emails.length) {
+              setPhishingEmails(shuffleArray(emails));
+              return;
+            }
+          }
+          // fallback to local seed
+          setPhishingEmails(shuffleArray([...phishingEmailData]));
+        } catch (e) {
+          setPhishingEmails(shuffleArray([...phishingEmailData]));
+        }
+      })();
     } else if (selectedGame === 'hacker-hunter' && gameState === 'playing') {
       generateHackers();
     }

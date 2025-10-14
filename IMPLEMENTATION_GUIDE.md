@@ -40,7 +40,26 @@ Mounted at `/api/quiz` in `AR-project-backend/server.js` via `routes/quizRoutes.
 
 ---
 
-## 3) Auth, JWTs, and Refresh Tokens
+## 3) Game Content from Database
+
+### Prisma Models
+- `PhishingEmail` (sender, subject, content, isPhishing, indicators[], active)
+
+### REST Endpoints
+Mounted at `/api/game` in `AR-project-backend/server.js` via `routes/gameRoutes.js`.
+- Public
+  - `GET /api/game/phishing-emails` → list active emails
+- Admin (Bearer token, role `admin`)
+  - `POST /api/game/admin/phishing-email` → create phishing email entry
+  - `PATCH /api/game/admin/phishing-email/:id` → update/toggle fields
+
+### Frontend Integration
+- `src/pages/Game.jsx` loads phishing emails from the API when the "Phishing Email Detective" game starts; if none are returned, it falls back to the built‑in seed array.
+- Admin Panel hosts a simple creator UI for phishing emails (see section below).
+
+---
+
+## 4) Auth, JWTs, and Refresh Tokens
 
 ### Access Token (JWT)
 - 7‑day expiry by default (`JWT_EXPIRES_IN=7d`).
@@ -59,14 +78,14 @@ Mounted at `/api/quiz` in `AR-project-backend/server.js` via `routes/quizRoutes.
 
 ---
 
-## 4) Request/Response Logging
+## 5) Request/Response Logging
 - Lightweight logger added in `server.js` after `express.json()`.
 - Logs incoming method/URL and outgoing status/duration.
 - Redacts sensitive auth payloads/response previews.
 
 ---
 
-## 5) Environment & Setup
+## 6) Environment & Setup
 
 ### Backend `.env`
 ```
@@ -96,7 +115,7 @@ Ensure `VITE_API_URL` points to your backend.
 
 ---
 
-## 6) Quick Admin Flow (cURL)
+## 7) Quick Admin Flow (cURL)
 
 Login (admin):
 ```bash
@@ -126,7 +145,23 @@ curl -s $API/api/quiz/category/phishing | jq
 
 ---
 
-## 7) Common Issues
+## 8) Game Content (cURL)
+
+Create a phishing email (admin):
+```bash
+curl -s -X POST $API/api/game/admin/phishing-email \
+  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
+  -d '{"sender":"security@paypaI.com","subject":"URGENT: Verify Now!","content":"...","isPhishing":true,"indicators":["Misspelled domain","Urgent language"]}'
+```
+
+List active emails (public):
+```bash
+curl -s $API/api/game/phishing-emails | jq
+```
+
+---
+
+## 9) Common Issues
 - 404 on `/api/quiz/...`: backend not redeployed with `quizRoutes` or route not mounted.
 - `P1012 DATABASE_URL not found`: set `DATABASE_URL` in backend `.env` before migrations.
 - `background.js: Attempting to use a disconnected port object`: browser extension error; test in Incognito.

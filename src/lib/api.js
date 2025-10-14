@@ -22,6 +22,13 @@ const API_CONFIG = {
         upsertCategory: '/api/quiz/admin/category',
         createQuestion: '/api/quiz/admin/question'
       }
+    },
+    game: {
+      phishingEmails: '/api/game/phishing-emails',
+      admin: {
+        createPhishingEmail: '/api/game/admin/phishing-email',
+        updatePhishingEmail: (id) => `/api/game/admin/phishing-email/${id}`
+      }
     }
   },
   

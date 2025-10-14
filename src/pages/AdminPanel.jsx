@@ -374,6 +374,23 @@ const AdminPanel = () => {
             </CardContent>
           </Card>
         </motion.div>
+
+        {/* Game Content Management */}
+        <motion.div variants={itemVariants} className="mt-8">
+          <Card className="glass-effect cyber-border">
+            <CardHeader>
+              <div className="flex justify-between items-center">
+                <div>
+                  <CardTitle className="text-2xl">Game Content Management</CardTitle>
+                  <CardDescription>Create phishing email entries for the game</CardDescription>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <PhishingEmailManager />
+            </CardContent>
+          </Card>
+        </motion.div>
       </div>
     </div>
   );
@@ -505,6 +522,71 @@ const QuizManager = () => {
       </div>
       <div className="flex gap-3">
         <Button onClick={createQuestion} disabled={saving} className="glass-effect">Create Question</Button>
+      </div>
+    </div>
+  );
+};
+
+const PhishingEmailManager = () => {
+  const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+  const [sender, setSender] = useState('security@paypaI.com');
+  const [subject, setSubject] = useState('URGENT: Account Suspended - Verify Now!');
+  const [content, setContent] = useState('Your account has been suspended due to suspicious activity. Click here to verify immediately or lose access forever!');
+  const [isPhishing, setIsPhishing] = useState(true);
+  const [indicators, setIndicators] = useState('Misspelled domain (paypaI vs paypal), Urgent language, Threats of account loss');
+  const [saving, setSaving] = useState(false);
+
+  const createEmail = async () => {
+    try {
+      setSaving(true);
+      const payload = {
+        sender,
+        subject,
+        content,
+        isPhishing,
+        indicators: indicators.split(',').map(s => s.trim()).filter(Boolean)
+      };
+      const res = await fetch(API_CONFIG.getUrl(API_CONFIG.endpoints.game.admin.createPhishingEmail), {
+        method: 'POST',
+        headers: API_CONFIG.getAuthHeaders(userData.token),
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to create entry');
+      toast({ title: 'Entry created', description: `ID #${data.id}` });
+    } catch (e) {
+      toast({ title: 'Error', description: e.message, variant: 'destructive' });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="grid md:grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm mb-1">Sender</label>
+          <input className="w-full bg-transparent border rounded p-2" value={sender} onChange={e => setSender(e.target.value)} />
+        </div>
+        <div>
+          <label className="block text-sm mb-1">Subject</label>
+          <input className="w-full bg-transparent border rounded p-2" value={subject} onChange={e => setSubject(e.target.value)} />
+        </div>
+        <div className="md:col-span-2">
+          <label className="block text-sm mb-1">Content</label>
+          <textarea className="w-full bg-transparent border rounded p-2" rows={3} value={content} onChange={e => setContent(e.target.value)} />
+        </div>
+        <div>
+          <label className="block text-sm mb-1">Indicators (comma separated)</label>
+          <input className="w-full bg-transparent border rounded p-2" value={indicators} onChange={e => setIndicators(e.target.value)} />
+        </div>
+        <div className="flex items-center gap-2 mt-6">
+          <input type="checkbox" checked={isPhishing} onChange={e => setIsPhishing(e.target.checked)} id="isPhishing" />
+          <label htmlFor="isPhishing" className="text-sm">Is Phishing</label>
+        </div>
+      </div>
+      <div className="flex gap-3">
+        <Button onClick={createEmail} disabled={saving} className="glass-effect">Create Phishing Email</Button>
       </div>
     </div>
   );

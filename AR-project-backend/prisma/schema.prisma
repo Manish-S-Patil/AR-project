@@ -62,4 +62,17 @@ model RefreshToken {
   createdAt  DateTime @default(now())
 }
 
+// Game content for "Phishing Email Detective"
+model PhishingEmail {
+  id         Int      @id @default(autoincrement())
+  sender     String
+  subject    String
+  content    String
+  isPhishing Boolean  @default(true)
+  indicators String[] // list of hints/indicators
+  active     Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
 
