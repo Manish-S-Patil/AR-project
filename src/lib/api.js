@@ -8,7 +8,8 @@ const API_CONFIG = {
     auth: {
       login: '/api/auth/login',
       register: '/api/auth/register',
-      profile: '/api/auth/profile'
+      profile: '/api/auth/profile',
+      changePassword: '/api/auth/change-password'
     },
     users: {
       all: '/api/users/',

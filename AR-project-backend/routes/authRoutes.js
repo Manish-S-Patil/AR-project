@@ -244,4 +244,65 @@ router.get("/profile", authenticateToken, async (req, res) => {
   }
 });
 
+// Change password endpoint
+router.post("/change-password", authenticateToken, async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+
+    // Validate required fields
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({ 
+        error: "Current password and new password are required" 
+      });
+    }
+
+    // Validate new password strength
+    if (newPassword.length < 6) {
+      return res.status(400).json({ 
+        error: "New password must be at least 6 characters long" 
+      });
+    }
+
+    // Get user with password
+    const user = await prisma.user.findUnique({
+      where: { id: req.user.userId }
+    });
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    // Verify current password
+    const isValidPassword = await bcrypt.compare(currentPassword, user.password);
+    if (!isValidPassword) {
+      return res.status(401).json({ 
+        error: "Current password is incorrect" 
+      });
+    }
+
+    // Hash new password
+    const saltRounds = 10;
+    const hashedNewPassword = await bcrypt.hash(newPassword, saltRounds);
+
+    // Update password
+    await prisma.user.update({
+      where: { id: req.user.userId },
+      data: { password: hashedNewPassword }
+    });
+
+    // Clear user cache
+    if (redis.isOpen) {
+      await redis.del("users:all");
+      await redis.del(`user:${req.user.userId}`);
+    }
+
+    res.json({
+      message: "Password changed successfully"
+    });
+  } catch (error) {
+    console.error("Change password error:", error);
+    res.status(500).json({ error: "Failed to change password" });
+  }
+});
+
 export default router;

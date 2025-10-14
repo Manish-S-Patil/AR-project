@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { 
@@ -12,14 +12,17 @@ import {
   Globe,
   User,
   LogOut,
-  Settings
+  Settings,
+  Key
 } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import { toast } from '../components/ui/use-toast';
+import PasswordChangeModal from '../components/PasswordChangeModal';
 
 const Dashboard = () => {
   const navigate = useNavigate();
+  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
   
   const userData = JSON.parse(localStorage.getItem('userData') || '{}');
 
@@ -113,6 +116,14 @@ const Dashboard = () => {
               <User className="w-4 h-4" />
               <span className="text-sm">{userData.username || 'Guest'}</span>
             </div>
+            <Button
+              variant="outline"
+              onClick={() => setIsPasswordModalOpen(true)}
+              className="glass-effect"
+            >
+              <Key className="w-4 h-4 mr-2" />
+              Change Password
+            </Button>
             <Button
               variant="outline"
               onClick={() => navigate('/admin')}
@@ -291,6 +302,12 @@ const Dashboard = () => {
           </motion.div>
         </motion.div>
       </div>
+      
+      {/* Password Change Modal */}
+      <PasswordChangeModal 
+        isOpen={isPasswordModalOpen}
+        onClose={() => setIsPasswordModalOpen(false)}
+      />
     </div>
   );
 };
