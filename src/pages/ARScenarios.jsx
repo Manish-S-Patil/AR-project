@@ -21,6 +21,7 @@ const ARScenarios = () => {
   const [simulationStep, setSimulationStep] = useState(0);
   // Threat overlays removed per requirements
   const modelViewerRef = useRef(null);
+  const [isARSupported, setIsARSupported] = useState(null); // null=unknown, true/false after check
 
   const scenarios = {
     'phishing': {
@@ -106,6 +107,30 @@ const ARScenarios = () => {
     }
   }, [location.state]);
 
+  // Detect AR capability (WebXR / Scene Viewer / Quick Look)
+  useEffect(() => {
+    let cancelled = false;
+    const checkARSupport = async () => {
+      try {
+        // Prefer WebXR immersive-ar capability when available
+        if (navigator && 'xr' in navigator && navigator.xr?.isSessionSupported) {
+          const supported = await navigator.xr.isSessionSupported('immersive-ar');
+          if (!cancelled) setIsARSupported(!!supported);
+          return;
+        }
+      } catch {}
+      // Fallback to model-viewer heuristic once element exists
+      const el = modelViewerRef.current;
+      if (el && typeof el.canActivateAR !== 'undefined') {
+        setIsARSupported(!!el.canActivateAR);
+      } else {
+        setIsARSupported(false);
+      }
+    };
+    checkARSupport();
+    return () => { cancelled = true; };
+  }, [selectedScenario]);
+
   const startSimulation = () => {
     setIsSimulating(true);
     setSimulationStep(0);
@@ -177,7 +202,7 @@ const ARScenarios = () => {
     const iosSrc = mapping.usdz;
 
     return (
-      <div className="relative w-full h-96 bg-[#74c0d4] rounded-lg overflow-hidden border-2 border-purple-500/30">
+      <div className="relative w-full h-96 rounded-lg overflow-hidden border-2 border-purple-500/30">
         {/* Web AR Viewer (model-viewer) */}
         {modelSrc ? (
           <model-viewer
@@ -196,6 +221,16 @@ const ARScenarios = () => {
         ) : (
           <div className="flex items-center justify-center w-full h-full bg-black/20 text-white/80 text-sm">
             AR model for this scenario is coming soon.
+          </div>
+        )}
+
+        {/* AR capability fallback */}
+        {isARSupported === false && (
+          <div className="absolute inset-0 flex items-center justify-center bg-black/60 text-white p-4 text-center">
+            <div>
+              <p className="font-medium">AR is not supported on this device or browser.</p>
+              <p className="text-white/80 text-sm mt-1">Try a WebXR-capable browser on Android (Chrome), iOS Quick Look with USDZ, or a device that supports AR.</p>
+            </div>
           </div>
         )}
 
