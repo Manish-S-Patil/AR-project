@@ -18,6 +18,7 @@ import {
 import { Button } from '../components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import { toast } from '../components/ui/use-toast';
+import '../styles/pages.css';
 import PasswordChangeModal from '../components/PasswordChangeModal';
 
 const Dashboard = () => {
@@ -94,32 +95,32 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="min-h-screen p-6">
+    <div className="page-container">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="flex justify-between items-center mb-8"
+          className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-8"
         >
-          <div>
-            <h1 className="text-4xl font-bold cyber-text mb-2">
+          <div className="min-w-0">
+            <h1 className="text-3xl sm:text-4xl font-bold cyber-text mb-1 sm:mb-2 break-words">
               AR CyberGuard Dashboard
             </h1>
-            <p className="text-muted-foreground">
+            <p className="text-sm sm:text-base text-muted-foreground">
               Welcome back, {userData.username || 'User'}! Ready to explore cybersecurity through AR?
             </p>
           </div>
           
-          <div className="flex items-center space-x-4">
-            <div className="flex items-center space-x-2 glass-effect px-4 py-2 rounded-lg">
+          <div className="flex items-center sm:space-x-4 gap-2 sm:gap-0 flex-wrap">
+            <div className="flex items-center space-x-2 glass-effect px-3 sm:px-4 py-2 rounded-lg">
               <User className="w-4 h-4" />
-              <span className="text-sm">{userData.username || 'Guest'}</span>
+              <span className="text-xs sm:text-sm truncate max-w-[120px] sm:max-w-none">{userData.username || 'Guest'}</span>
             </div>
             <Button
               variant="outline"
               onClick={() => setIsPasswordModalOpen(true)}
-              className="glass-effect"
+              className="glass-effect w-full sm:w-auto"
             >
               <Key className="w-4 h-4 mr-2" />
               Change Password
@@ -127,7 +128,7 @@ const Dashboard = () => {
             <Button
               variant="outline"
               onClick={() => navigate('/admin')}
-              className="glass-effect"
+              className="glass-effect w-full sm:w-auto"
             >
               <Settings className="w-4 h-4 mr-2" />
               Admin Panel
@@ -135,7 +136,7 @@ const Dashboard = () => {
             <Button
               variant="outline"
               onClick={handleLogout}
-              className="glass-effect"
+              className="glass-effect w-full sm:w-auto"
             >
               <LogOut className="w-4 h-4 mr-2" />
               Logout
@@ -148,7 +149,7 @@ const Dashboard = () => {
           variants={containerVariants}
           initial="hidden"
           animate="visible"
-          className="grid lg:grid-cols-3 gap-8"
+          className="grid lg:grid-cols-3 gap-6 sm:gap-8"
         >
           {/* AR Scenarios Section */}
           <motion.div variants={itemVariants} className="lg:col-span-2">

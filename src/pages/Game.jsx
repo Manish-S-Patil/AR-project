@@ -16,6 +16,7 @@ import { Button } from '../components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import { toast } from '../components/ui/use-toast';
 import API_CONFIG from '../lib/api';
+import '../styles/pages.css';
 
 const Game = () => {
   const navigate = useNavigate();
@@ -384,7 +385,7 @@ const Game = () => {
           </div>
         </CardHeader>
         <CardContent>
-          <div className="relative w-full h-96 bg-gradient-to-br from-gray-900 to-gray-800 rounded-lg overflow-hidden border-2 border-purple-500/30">
+          <div className="relative w-full game-field-height bg-gradient-to-br from-gray-900 to-gray-800 rounded-lg overflow-hidden border-2 border-purple-500/30">
             <img 
               className="w-full h-full object-cover opacity-40" 
               alt="Cyber network background"
@@ -512,7 +513,7 @@ const Game = () => {
   };
 
   return (
-    <div className="min-h-screen p-6">
+    <div className="page-container">
       <div className="max-w-6xl mx-auto">
         <motion.div
           initial={{ opacity: 0, y: 20 }}

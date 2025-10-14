@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import '../styles/pages.css';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { 
@@ -202,7 +203,7 @@ const ARScenarios = () => {
     const iosSrc = mapping.usdz;
 
     return (
-      <div className="relative w-full h-96 rounded-lg overflow-hidden border-2 border-purple-500/30">
+      <div className="relative w-full ar-view-height rounded-lg overflow-hidden border-2 border-purple-500/30">
         {/* Web AR Viewer (model-viewer) */}
         {modelSrc ? (
           <model-viewer

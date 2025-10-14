@@ -14,6 +14,7 @@ import { Button } from '../components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import { toast } from '../components/ui/use-toast';
 import API_CONFIG from '../lib/api';
+import '../styles/pages.css';
 
 const Quiz = () => {
   const navigate = useNavigate();
@@ -456,7 +457,7 @@ const Quiz = () => {
   const question = currentQuiz.questions[currentQuestion];
 
   return (
-    <div className="min-h-screen p-6">
+    <div className="page-container">
       <div className="max-w-4xl mx-auto">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -491,11 +492,11 @@ const Quiz = () => {
           </div>
         </motion.div>
 
-        <div className="grid lg:grid-cols-3 gap-8">
+        <div className="grid lg:grid-cols-3 gap-6 sm:gap-8">
           <div className="lg:col-span-2">
             <Card className="glass-effect cyber-border">
               <CardHeader>
-                <CardTitle className="text-xl">{loading ? 'Loading question...' : question.question}</CardTitle>
+                <CardTitle className="text-lg sm:text-xl">{loading ? 'Loading question...' : question.question}</CardTitle>
               </CardHeader>
               <CardContent>
                 {error && (
