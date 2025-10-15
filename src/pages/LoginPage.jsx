@@ -453,7 +453,7 @@ const LoginPage = () => {
                   </div>
                 )}
 
-                {forgotStage && !resetStage && (
+                {forgotStage && !resetStage && !awaitingVerification && (
                   <div className="space-y-4 mt-4">
                     <div className="text-center text-sm text-muted-foreground">
                       Enter your registered email and we'll send a verification code.
@@ -498,14 +498,14 @@ const LoginPage = () => {
                       >
                         Send Code
                       </Button>
-                      <Button onClick={() => { setForgotStage(false); setResetStage(false); }} variant="outline" className="w-full glass-effect" disabled={isSubmitting}>
+                      <Button onClick={() => { setForgotStage(false); setResetStage(false); setAwaitingVerification(false); }} variant="outline" className="w-full glass-effect" disabled={isSubmitting}>
                         Back
                       </Button>
                     </div>
                   </div>
                 )}
 
-                {resetStage && (
+                {resetStage && !awaitingVerification && (
                   <div className="space-y-4 mt-4">
                     <div className="space-y-2">
                       <Label htmlFor="reset-code" className="flex items-center gap-2">
@@ -550,7 +550,7 @@ const LoginPage = () => {
                       >
                         Update Password
                       </Button>
-                      <Button onClick={() => { setResetStage(false); }} variant="outline" className="w-full glass-effect" disabled={isSubmitting}>
+                      <Button onClick={() => { setResetStage(false); setAwaitingVerification(false); }} variant="outline" className="w-full glass-effect" disabled={isSubmitting}>
                         Back
                       </Button>
                     </div>
@@ -603,7 +603,7 @@ const LoginPage = () => {
                       <div>
                         <button
                           type="button"
-                          onClick={() => { setForgotStage(true); setResetStage(false); }}
+                          onClick={() => { setForgotStage(true); setResetStage(false); setAwaitingVerification(false); }}
                           className="text-sm text-muted-foreground hover:text-foreground underline"
                         >
                           Forgot password?
