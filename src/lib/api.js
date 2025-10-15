@@ -9,7 +9,9 @@ const API_CONFIG = {
       login: '/api/auth/login',
       register: '/api/auth/register',
       profile: '/api/auth/profile',
-      changePassword: '/api/auth/change-password'
+      changePassword: '/api/auth/change-password',
+      verifyEmail: '/api/auth/verify-email',
+      resendCode: '/api/auth/resend-code'
     },
     users: {
       all: '/api/users/',

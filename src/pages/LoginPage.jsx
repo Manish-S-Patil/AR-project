@@ -14,6 +14,8 @@ const LoginPage = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [awaitingVerification, setAwaitingVerification] = useState(false);
+  const [verificationCode, setVerificationCode] = useState('');
   const [formData, setFormData] = useState({
     username: '',
     email: '',
@@ -111,6 +113,11 @@ const LoginPage = () => {
         }
       }
 
+      if (!isLogin) {
+        // After registration, prompt for verification
+        setAwaitingVerification(true);
+      }
+
       // Store user data and token in localStorage
       const userData = {
         ...data.user,
@@ -143,6 +150,52 @@ const LoginPage = () => {
         description: error.message || "Please check your credentials and try again.",
         variant: "destructive"
       });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleVerify = async () => {
+    if (!formData.email || !verificationCode) {
+      toast({ title: 'Missing code', description: 'Enter the code sent to your email.', variant: 'destructive' });
+      return;
+    }
+    try {
+      setIsSubmitting(true);
+      const res = await fetch(API_CONFIG.getUrl(API_CONFIG.endpoints.auth.verifyEmail), {
+        method: 'POST',
+        headers: API_CONFIG.getDefaultHeaders(),
+        body: JSON.stringify({ email: formData.email, code: verificationCode })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Verification failed');
+      toast({ title: 'Verified', description: 'Your email has been verified.' });
+      setAwaitingVerification(false);
+      setVerificationCode('');
+    } catch (e) {
+      toast({ title: 'Verification Failed', description: e.message, variant: 'destructive' });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleResend = async () => {
+    if (!formData.email) {
+      toast({ title: 'Missing email', description: 'Enter your email first.', variant: 'destructive' });
+      return;
+    }
+    try {
+      setIsSubmitting(true);
+      const res = await fetch(API_CONFIG.getUrl(API_CONFIG.endpoints.auth.resendCode), {
+        method: 'POST',
+        headers: API_CONFIG.getDefaultHeaders(),
+        body: JSON.stringify({ email: formData.email })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to resend code');
+      toast({ title: 'Code Sent', description: 'A new verification code has been sent.' });
+    } catch (e) {
+      toast({ title: 'Resend Failed', description: e.message, variant: 'destructive' });
     } finally {
       setIsSubmitting(false);
     }
@@ -255,7 +308,8 @@ const LoginPage = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <form onSubmit={handleSubmit} className="space-y-4">
+                {!awaitingVerification ? (
+                  <form onSubmit={handleSubmit} className="space-y-4">
                   <div className="space-y-2">
                     <Label htmlFor="username" className="flex items-center gap-2">
                       <User className="w-4 h-4" />
@@ -341,6 +395,38 @@ const LoginPage = () => {
                     )}
                   </Button>
                 </form>
+                ) : (
+                  <div className="space-y-4">
+                    <div className="text-center text-sm text-muted-foreground">
+                      We sent a 6-digit verification code to {formData.email}. Enter it below to verify your email.
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="otp" className="flex items-center gap-2">
+                        <Mail className="w-4 h-4" />
+                        Verification Code
+                      </Label>
+                      <Input
+                        id="otp"
+                        type="text"
+                        inputMode="numeric"
+                        pattern="[0-9]*"
+                        placeholder="Enter 6-digit code"
+                        value={verificationCode}
+                        onChange={(e) => setVerificationCode(e.target.value)}
+                        className="glass-effect"
+                        disabled={isSubmitting}
+                      />
+                    </div>
+                    <div className="flex gap-2">
+                      <Button onClick={handleVerify} disabled={isSubmitting} className="w-full bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600">
+                        Verify Email
+                      </Button>
+                      <Button onClick={handleResend} variant="outline" disabled={isSubmitting} className="w-full glass-effect">
+                        Resend Code
+                      </Button>
+                    </div>
+                  </div>
+                )}
 
                 <div className="mt-6 space-y-4">
                   <div className="relative">

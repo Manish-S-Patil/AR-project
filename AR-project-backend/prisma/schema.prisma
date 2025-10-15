@@ -16,6 +16,7 @@ model User {
   password String
   name     String?
   role     String  @default("user") // "user" or "admin"
+  isVerified Boolean @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   refreshTokens RefreshToken[]
@@ -73,6 +74,16 @@ model PhishingEmail {
   active     Boolean  @default(true)
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
+}
+
+// Email verification codes
+model EmailVerification {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id])
+  code      String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
 }
 
 
