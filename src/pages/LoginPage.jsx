@@ -397,7 +397,7 @@ const LoginPage = () => {
                     ) : (
                       isLogin ? 'Sign In' : 'Create Account'
                     )}
-                  </div>
+                  </Button>
                 ) : (
                   <form onSubmit={handleSubmit} className="space-y-4">
                     <div className="text-center text-sm text-muted-foreground">
