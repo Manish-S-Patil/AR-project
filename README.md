@@ -5,6 +5,7 @@ A modern React-based frontend application for the AR Cybersecurity Awareness Pla
 ## 🚀 Features
 
 - **🔐 Dual Authentication System**: Separate user and admin login interfaces
+- **📧 Email Verification (OTP)**: New users verify email with a 6‑digit code
 - **👑 Admin Panel Access**: Secure admin-only dashboard with role-based access
 - **📱 Responsive Design**: Mobile-first, modern UI with glass effects
 - **🎮 Interactive Learning**: AR scenarios, quizzes, and educational games
@@ -226,10 +227,11 @@ The project uses Tailwind CSS with custom configuration:
 
 ### User Authentication
 1. **Registration**: Users create accounts with username, email, and password
-2. **Login**: Secure authentication with JWT tokens
-3. **Access Token**: 7‑day JWT stored client-side
-4. **Refresh Token**: HttpOnly cookie; `/api/auth/refresh` issues new access tokens
-5. **Logout**: Secure session termination
+2. **Email Verification (OTP)**: Signup sends a 6‑digit code; users verify before login
+3. **Login**: Secure authentication with JWT tokens
+4. **Access Token**: 7‑day JWT stored client‑side
+5. **Refresh Token**: HttpOnly cookie; `/api/auth/refresh` issues new access tokens
+6. **Logout**: Secure session termination
 
 ### Admin Authentication
 1. **Separate Login**: Dedicated admin login interface
@@ -316,6 +318,7 @@ CMD ["nginx", "-g", "daemon off;"]
 - **Credential Display**: Default admin credentials shown
 - **Role Validation**: Server-side admin role verification
 - **Secure Access**: JWT tokens with admin role information
+- **Email Verified**: Admin accounts must be verified like users (if created via register)
 
 ### Login Type Toggle
 - **User Mode**: Standard user login and registration
@@ -388,6 +391,7 @@ AR-project/
 4. **Admin Panel**: Verify admin functionality
 5. **Quizzes**: Ensure DB contains questions (Admin → Quiz Management)
 6. **Games**: Ensure DB contains phishing emails (Admin → Game Content)
+7. **Email Verification**: Register a new user → enter OTP → verify success
 5. **AR Scenarios**: Test all scenario interactions
 
 ### Browser Compatibility

@@ -14,8 +14,30 @@ const app = express();
 const PORT = process.env.PORT || 5001;
 
 // Middleware
+const allowedOrigins = (process.env.ALLOWED_ORIGINS || [
+  'http://localhost:5173',
+  'http://127.0.0.1:5173',
+  'https://ar-cybersecurity.netlify.app',
+  'https://ar-project-5ojn.onrender.com',
+  'https://ar-project-frontend.onrender.com'
+].join(',')).split(',').map(s => s.trim());
+
 app.use(cors({
-  origin: true, // Allow all origins for development
+  origin: (origin, callback) => {
+    if (!origin) return callback(null, true); // allow server-to-server, curl, etc.
+    if (allowedOrigins.includes(origin)) return callback(null, true);
+    return callback(null, false);
+  },
+  credentials: true
+}));
+
+// Optional: handle preflight for any route
+app.options('*', cors({
+  origin: (origin, callback) => {
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin)) return callback(null, true);
+    return callback(null, false);
+  },
   credentials: true
 }));
 app.use(express.json());
