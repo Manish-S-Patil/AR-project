@@ -6,6 +6,7 @@ A modern React-based frontend application for the AR Cybersecurity Awareness Pla
 
 - **🔐 Dual Authentication System**: Separate user and admin login interfaces
 - **📧 Email Verification (OTP)**: New users verify email with a 6‑digit code
+ - **🔑 Forgot Password (OTP)**: Request a reset code and set a new password
 - **👑 Admin Panel Access**: Secure admin-only dashboard with role-based access
 - **📱 Responsive Design**: Mobile-first, modern UI with glass effects
 - **🎮 Interactive Learning**: AR scenarios, quizzes, and educational games
@@ -231,7 +232,8 @@ The project uses Tailwind CSS with custom configuration:
 3. **Login**: Secure authentication with JWT tokens
 4. **Access Token**: 7‑day JWT stored client‑side
 5. **Refresh Token**: HttpOnly cookie; `/api/auth/refresh` issues new access tokens
-6. **Logout**: Secure session termination
+6. **Forgot Password (OTP)**: Request code, then reset password with `{ email, code, newPassword }`
+7. **Logout**: Secure session termination
 
 ### Admin Authentication
 1. **Separate Login**: Dedicated admin login interface
@@ -392,6 +394,7 @@ AR-project/
 5. **Quizzes**: Ensure DB contains questions (Admin → Quiz Management)
 6. **Games**: Ensure DB contains phishing emails (Admin → Game Content)
 7. **Email Verification**: Register a new user → enter OTP → verify success
+8. **Forgot Password**: Request code → reset with code and new password
 5. **AR Scenarios**: Test all scenario interactions
 
 ### Browser Compatibility

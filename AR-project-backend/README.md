@@ -112,6 +112,10 @@ The server will be available at `http://localhost:5001`
 | GET | `/profile` | Get current user profile | Yes |
 | POST | `/refresh` | Issue new access token from refresh cookie | No (cookie) |
 | POST | `/logout` | Revoke refresh token and clear cookie | No (cookie) |
+| POST | `/verify-email` | Verify signup OTP `{ email, code }` | No |
+| POST | `/resend-code` | Resend signup OTP `{ email }` | No |
+| POST | `/forgot-password` | Request reset OTP `{ email }` | No |
+| POST | `/reset-password` | Reset password `{ email, code, newPassword }` | No |
 
 ### User Routes (`/api/users`)
 
@@ -282,6 +286,15 @@ model RefreshToken {
   user      User     @relation(fields: [userId], references: [id])
   expiresAt DateTime
   revokedAt DateTime?
+  createdAt DateTime @default(now())
+}
+
+model PasswordReset {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id])
+  code      String
+  expiresAt DateTime
   createdAt DateTime @default(now())
 }
 ```

@@ -402,8 +402,29 @@ const LoginPage = () => {
                 ) : (
                   <div className="space-y-4">
                     <div className="text-center text-sm text-muted-foreground">
-                      We sent a 6-digit verification code to {formData.email}. Enter it below to verify your email.
+                      {formData.email
+                        ? <>We sent a 6-digit verification code to {formData.email}. Enter it below to verify your email.</>
+                        : <>Enter your registered email and the 6-digit code you received to verify your account.</>
+                      }
                     </div>
+                    {!formData.email && (
+                      <div className="space-y-2">
+                        <Label htmlFor="verify-email" className="flex items-center gap-2">
+                          <Mail className="w-4 h-4" />
+                          Email
+                        </Label>
+                        <Input
+                          id="verify-email"
+                          name="email"
+                          type="email"
+                          placeholder="Enter your email"
+                          value={formData.email}
+                          onChange={handleInputChange}
+                          className="glass-effect"
+                          disabled={isSubmitting}
+                        />
+                      </div>
+                    )}
                     <div className="space-y-2">
                       <Label htmlFor="otp" className="flex items-center gap-2">
                         <Mail className="w-4 h-4" />
@@ -567,6 +588,17 @@ const LoginPage = () => {
                         : "Already have an account? Sign in"
                       }
                     </button>
+                    {!isLogin && !awaitingVerification && !forgotStage && !resetStage && (
+                      <div>
+                        <button
+                          type="button"
+                          onClick={() => setAwaitingVerification(true)}
+                          className="text-sm text-muted-foreground hover:text-foreground underline"
+                        >
+                          Have a verification code?
+                        </button>
+                      </div>
+                    )}
                     {isLogin && !awaitingVerification && !forgotStage && !resetStage && (
                       <div>
                         <button
