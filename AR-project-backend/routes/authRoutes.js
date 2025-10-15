@@ -4,6 +4,7 @@ import jwt from "jsonwebtoken";
 import crypto from "crypto";
 import prisma from "../prisma/client.js";
 import redis from "../redis/client.js";
+import { sendVerificationCode, sendPasswordResetCode } from "../env-configs/mailer.js";
 
 const router = express.Router();
 
@@ -76,7 +77,7 @@ router.post("/register", async (req, res) => {
     const code = Math.floor(100000 + Math.random() * 900000).toString();
     const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
     await prisma.emailVerification.create({ data: { userId: user.id, code, expiresAt } });
-    console.log("📧 Verification code for", email, code);
+    await sendVerificationCode(normalizedEmail, code);
 
     // Generate tokens
     const token = createAccessToken({ userId: user.id, username: user.username, role: user.role });
@@ -363,7 +364,7 @@ router.post('/resend-code', async (req, res) => {
     const code = Math.floor(100000 + Math.random() * 900000).toString();
     const expiresAt = new Date(Date.now() + 15 * 60 * 1000);
     await prisma.emailVerification.create({ data: { userId: user.id, code, expiresAt } });
-    console.log("📧 Verification code for", email, code);
+    await sendVerificationCode(email.trim().toLowerCase(), code);
     res.json({ message: 'Verification code sent' });
   } catch (e) {
     console.error('Resend code error:', e);
@@ -382,7 +383,7 @@ router.post('/forgot-password', async (req, res) => {
     const code = Math.floor(100000 + Math.random() * 900000).toString();
     const expiresAt = new Date(Date.now() + 15 * 60 * 1000);
     await prisma.passwordReset.create({ data: { userId: user.id, code, expiresAt } });
-    console.log('🔑 Password reset code for', user.email, code);
+    await sendPasswordResetCode(user.email, code);
     return res.json({ message: 'If the email exists, a code has been sent' });
   } catch (e) {
     console.error('Forgot password error:', e);
