@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { Shield, Eye, EyeOff, User, Mail, Lock, Crown, Users, Loader2 } from 'lucide-react';
+import { Shield, Eye, EyeOff, User, Mail, Lock, Crown, Users, Loader2, Key } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
