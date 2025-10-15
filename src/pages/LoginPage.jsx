@@ -312,8 +312,8 @@ const LoginPage = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                {!awaitingVerification && !forgotStage && !resetStage ? (
-                  <form onSubmit={handleSubmit} className="space-y-4">
+                {awaitingVerification ? (
+                  <div className="space-y-4">
                   <div className="space-y-2">
                     <Label htmlFor="username" className="flex items-center gap-2">
                       <User className="w-4 h-4" />
@@ -397,10 +397,9 @@ const LoginPage = () => {
                     ) : (
                       isLogin ? 'Sign In' : 'Create Account'
                     )}
-                  </Button>
-                </form>
+                  </div>
                 ) : (
-                  <div className="space-y-4">
+                  <form onSubmit={handleSubmit} className="space-y-4">
                     <div className="text-center text-sm text-muted-foreground">
                       {formData.email
                         ? <>We sent a 6-digit verification code to {formData.email}. Enter it below to verify your email.</>
@@ -426,31 +425,47 @@ const LoginPage = () => {
                       </div>
                     )}
                     <div className="space-y-2">
-                      <Label htmlFor="otp" className="flex items-center gap-2">
-                        <Mail className="w-4 h-4" />
-                        Verification Code
+                      <Label htmlFor="password" className="flex items-center gap-2">
+                        <Lock className="w-4 h-4" />
+                        Password
                       </Label>
-                      <Input
-                        id="otp"
-                        type="text"
-                        inputMode="numeric"
-                        pattern="[0-9]*"
-                        placeholder="Enter 6-digit code"
-                        value={verificationCode}
-                        onChange={(e) => setVerificationCode(e.target.value)}
-                        className="glass-effect"
-                        disabled={isSubmitting}
-                      />
+                      <div className="relative">
+                        <Input
+                          id="password"
+                          name="password"
+                          type={showPassword ? 'text' : 'password'}
+                          placeholder="Enter your password"
+                          value={formData.password}
+                          onChange={handleInputChange}
+                          className="glass-effect pr-10"
+                          required
+                          disabled={isSubmitting}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword(!showPassword)}
+                          className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                        >
+                          {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                        </button>
+                      </div>
                     </div>
-                    <div className="flex gap-2">
-                      <Button onClick={handleVerify} disabled={isSubmitting} className="w-full bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600">
-                        Verify Email
-                      </Button>
-                      <Button onClick={handleResend} variant="outline" disabled={isSubmitting} className="w-full glass-effect">
-                        Resend Code
-                      </Button>
-                    </div>
-                  </div>
+
+                    <Button
+                      type="submit"
+                      className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 glow-effect"
+                      disabled={loginType !== 'user' || isSubmitting}
+                    >
+                      {isSubmitting ? (
+                        <span className="inline-flex items-center gap-2">
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                          {isLogin ? 'Signing In...' : 'Creating Account...'}
+                        </span>
+                      ) : (
+                        isLogin ? 'Sign In' : 'Create Account'
+                      )}
+                    </Button>
+                  </form>
                 )}
 
                 {forgotStage && !resetStage && !awaitingVerification && (
