@@ -16,6 +16,10 @@ const LoginPage = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [awaitingVerification, setAwaitingVerification] = useState(false);
   const [verificationCode, setVerificationCode] = useState('');
+  const [forgotStage, setForgotStage] = useState(false);
+  const [resetStage, setResetStage] = useState(false);
+  const [resetCode, setResetCode] = useState('');
+  const [newPassword, setNewPassword] = useState('');
   const [formData, setFormData] = useState({
     username: '',
     email: '',
@@ -308,7 +312,7 @@ const LoginPage = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                {!awaitingVerification ? (
+                {!awaitingVerification && !forgotStage && !resetStage ? (
                   <form onSubmit={handleSubmit} className="space-y-4">
                   <div className="space-y-2">
                     <Label htmlFor="username" className="flex items-center gap-2">
@@ -428,6 +432,110 @@ const LoginPage = () => {
                   </div>
                 )}
 
+                {forgotStage && !resetStage && (
+                  <div className="space-y-4 mt-4">
+                    <div className="text-center text-sm text-muted-foreground">
+                      Enter your registered email and we'll send a verification code.
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="forgot-email" className="flex items-center gap-2">
+                        <Mail className="w-4 h-4" />
+                        Registered Email
+                      </Label>
+                      <Input
+                        id="forgot-email"
+                        type="email"
+                        placeholder="Enter your email"
+                        name="email"
+                        value={formData.email}
+                        onChange={handleInputChange}
+                        className="glass-effect"
+                        disabled={isSubmitting}
+                      />
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        onClick={async () => {
+                          try {
+                            setIsSubmitting(true);
+                            const res = await fetch(API_CONFIG.getUrl(API_CONFIG.endpoints.auth.forgotPassword), {
+                              method: 'POST',
+                              headers: API_CONFIG.getDefaultHeaders(),
+                              body: JSON.stringify({ email: formData.email })
+                            });
+                            await res.json();
+                            toast({ title: 'Check your inbox', description: 'If the email exists, a code has been sent.' });
+                            setResetStage(true);
+                          } catch (e) {
+                            toast({ title: 'Request failed', description: 'Please try again later.', variant: 'destructive' });
+                          } finally {
+                            setIsSubmitting(false);
+                          }
+                        }}
+                        disabled={isSubmitting || !formData.email}
+                        className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
+                      >
+                        Send Code
+                      </Button>
+                      <Button onClick={() => { setForgotStage(false); setResetStage(false); }} variant="outline" className="w-full glass-effect" disabled={isSubmitting}>
+                        Back
+                      </Button>
+                    </div>
+                  </div>
+                )}
+
+                {resetStage && (
+                  <div className="space-y-4 mt-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="reset-code" className="flex items-center gap-2">
+                        <Key className="w-4 h-4" />
+                        Verification Code
+                      </Label>
+                      <Input id="reset-code" type="text" inputMode="numeric" value={resetCode} onChange={(e) => setResetCode(e.target.value)} className="glass-effect" disabled={isSubmitting} />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="new-password" className="flex items-center gap-2">
+                        <Lock className="w-4 h-4" />
+                        New Password
+                      </Label>
+                      <Input id="new-password" type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} className="glass-effect" disabled={isSubmitting} />
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        onClick={async () => {
+                          try {
+                            setIsSubmitting(true);
+                            const res = await fetch(API_CONFIG.getUrl(API_CONFIG.endpoints.auth.resetPassword), {
+                              method: 'POST',
+                              headers: API_CONFIG.getDefaultHeaders(),
+                              body: JSON.stringify({ email: formData.email, code: resetCode, newPassword })
+                            });
+                            const data = await res.json();
+                            if (!res.ok) throw new Error(data.message || 'Unable to reset');
+                            toast({ title: 'Password updated', description: 'You can now sign in with your new password.' });
+                            setForgotStage(false);
+                            setResetStage(false);
+                            setResetCode('');
+                            setNewPassword('');
+                            setIsLogin(true);
+                          } catch (e) {
+                            toast({ title: 'Reset failed', description: e.message, variant: 'destructive' });
+                          } finally {
+                            setIsSubmitting(false);
+                          }
+                        }}
+                        disabled={isSubmitting || !resetCode || !newPassword}
+                        className="w-full bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600"
+                      >
+                        Update Password
+                      </Button>
+                      <Button onClick={() => { setResetStage(false); }} variant="outline" className="w-full glass-effect" disabled={isSubmitting}>
+                        Back
+                      </Button>
+                    </div>
+                  </div>
+                )}
+
                 <div className="mt-6 space-y-4">
                   <div className="relative">
                     <div className="absolute inset-0 flex items-center">
@@ -448,7 +556,7 @@ const LoginPage = () => {
                     Continue as Guest
                   </Button>
 
-                  <div className="text-center">
+                  <div className="text-center space-y-2">
                     <button
                       type="button"
                       onClick={() => setIsLogin(!isLogin)}
@@ -459,6 +567,17 @@ const LoginPage = () => {
                         : "Already have an account? Sign in"
                       }
                     </button>
+                    {isLogin && !awaitingVerification && !forgotStage && !resetStage && (
+                      <div>
+                        <button
+                          type="button"
+                          onClick={() => { setForgotStage(true); setResetStage(false); }}
+                          className="text-sm text-muted-foreground hover:text-foreground underline"
+                        >
+                          Forgot password?
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </div>
               </CardContent>

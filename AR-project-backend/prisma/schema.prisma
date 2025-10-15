@@ -21,6 +21,7 @@ model User {
   updatedAt DateTime @updatedAt
   refreshTokens RefreshToken[]
   emailVerifications EmailVerification[]
+  passwordResets PasswordReset[]
 }
 
 
@@ -79,6 +80,16 @@ model PhishingEmail {
 
 // Email verification codes
 model EmailVerification {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id])
+  code      String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+}
+
+// Password reset codes
+model PasswordReset {
   id        Int      @id @default(autoincrement())
   userId    Int
   user      User     @relation(fields: [userId], references: [id])

@@ -11,7 +11,9 @@ const API_CONFIG = {
       profile: '/api/auth/profile',
       changePassword: '/api/auth/change-password',
       verifyEmail: '/api/auth/verify-email',
-      resendCode: '/api/auth/resend-code'
+      resendCode: '/api/auth/resend-code',
+      forgotPassword: '/api/auth/forgot-password',
+      resetPassword: '/api/auth/reset-password'
     },
     users: {
       all: '/api/users/',

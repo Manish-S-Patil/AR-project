@@ -370,6 +370,45 @@ router.post('/resend-code', async (req, res) => {
     res.status(500).json({ error: 'Failed to resend code' });
   }
 });
+
+// Request password reset code
+router.post('/forgot-password', async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) return res.status(400).json({ message: 'Email is required' });
+    const user = await prisma.user.findUnique({ where: { email: email.trim().toLowerCase() } });
+    // For privacy, always return success
+    if (!user) return res.json({ message: 'If the email exists, a code has been sent' });
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
+    const expiresAt = new Date(Date.now() + 15 * 60 * 1000);
+    await prisma.passwordReset.create({ data: { userId: user.id, code, expiresAt } });
+    console.log('🔑 Password reset code for', user.email, code);
+    return res.json({ message: 'If the email exists, a code has been sent' });
+  } catch (e) {
+    console.error('Forgot password error:', e);
+    res.status(500).json({ message: 'Unable to process request' });
+  }
+});
+
+// Verify reset code and set new password
+router.post('/reset-password', async (req, res) => {
+  try {
+    const { email, code, newPassword } = req.body;
+    if (!email || !code || !newPassword) return res.status(400).json({ message: 'Email, code and new password are required' });
+    if (newPassword.length < 6) return res.status(400).json({ message: 'New password must be at least 6 characters' });
+    const user = await prisma.user.findUnique({ where: { email: email.trim().toLowerCase() } });
+    if (!user) return res.status(404).json({ message: 'User not found' });
+    const record = await prisma.passwordReset.findFirst({ where: { userId: user.id, code }, orderBy: { id: 'desc' } });
+    if (!record) return res.status(400).json({ message: 'Invalid code' });
+    if (new Date(record.expiresAt) < new Date()) return res.status(400).json({ message: 'Code expired' });
+    const hashed = await bcrypt.hash(newPassword, 10);
+    await prisma.user.update({ where: { id: user.id }, data: { password: hashed } });
+    return res.json({ message: 'Password updated successfully' });
+  } catch (e) {
+    console.error('Reset password error:', e);
+    res.status(500).json({ message: 'Unable to reset password' });
+  }
+});
 // Refresh token endpoint
 router.post('/refresh', async (req, res) => {
   try {
