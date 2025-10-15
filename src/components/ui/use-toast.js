@@ -34,6 +34,11 @@ const toastStore = {
   }
 }
 
+function sanitizeText(text) {
+  if (!text || typeof text !== 'string') return text
+  return text.replace(/\berror\b/gi, 'issue')
+}
+
 export const toast = ({ ...props }) => {
   const id = generateId()
 
@@ -50,10 +55,17 @@ export const toast = ({ ...props }) => {
     toasts: state.toasts.filter((t) => t.id !== id),
   }))
 
+  // sanitize title/description to avoid showing the word "error"
+  const safeProps = {
+    ...props,
+    title: sanitizeText(props.title),
+    description: sanitizeText(props.description),
+  }
+
   toastStore.setState((state) => ({
     ...state,
     toasts: [
-      { ...props, id, dismiss },
+      { ...safeProps, id, dismiss },
       ...state.toasts,
     ].slice(0, TOAST_LIMIT),
   }))
