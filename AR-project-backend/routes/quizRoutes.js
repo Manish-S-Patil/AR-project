@@ -162,6 +162,54 @@ router.delete("/admin/question/:id", authenticateToken, async (req, res) => {
   }
 });
 
+// Admin: update a quiz question and its options
+router.put("/admin/question/:id", authenticateToken, async (req, res) => {
+  try {
+    if (req.user?.role !== "admin") return res.status(403).json({ error: "Admin only" });
+    const questionId = parseInt(req.params.id);
+    if (isNaN(questionId)) return res.status(400).json({ error: "Invalid question ID" });
+
+    const { question, explanation, options, correctIndex, categoryKey } = req.body;
+    if (!question || !Array.isArray(options) || options.length < 2) {
+      return res.status(400).json({ error: "question and at least 2 options required" });
+    }
+    if (correctIndex == null || correctIndex < 0 || correctIndex >= options.length) {
+      return res.status(400).json({ error: "valid correctIndex required" });
+    }
+
+    let categoryId;
+    if (categoryKey) {
+      const category = await prisma.quizCategory.findUnique({ where: { key: categoryKey } });
+      if (!category) return res.status(404).json({ error: "Category not found" });
+      categoryId = category.id;
+    }
+
+    // Replace options to keep logic simple
+    const updated = await prisma.quizQuestion.update({
+      where: { id: questionId },
+      data: {
+        question,
+        explanation: explanation || null,
+        ...(categoryId ? { categoryId } : {}),
+        options: {
+          deleteMany: {},
+          create: options.map((text, idx) => ({ text, isCorrect: idx === correctIndex }))
+        }
+      },
+      include: { options: true, category: { select: { key: true, title: true } } }
+    });
+
+    res.json(updated);
+  } catch (err) {
+    console.error("Update question error:", err);
+    if (err.code === 'P2025') {
+      res.status(404).json({ error: "Question not found" });
+    } else {
+      res.status(500).json({ error: "Failed to update question" });
+    }
+  }
+});
+
 export default router;
 
 
