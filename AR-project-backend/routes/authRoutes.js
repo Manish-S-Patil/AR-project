@@ -142,7 +142,11 @@ router.post("/login", async (req, res) => {
     }
 
     if (!user.isVerified) {
-      return res.status(403).json({ error: "Email not verified. Please check your inbox for the verification code." });
+      return res.status(200).json({ 
+        message: "Email verification required",
+        requiresVerification: true,
+        user: { id: user.id, email: user.email, username: user.username }
+      });
     }
 
     const token = createAccessToken({ userId: user.id, username: user.username, role: user.role });
@@ -327,6 +331,47 @@ router.post("/change-password", authenticateToken, async (req, res) => {
   } catch (error) {
     console.error("Change password error:", error);
     res.status(500).json({ error: "Failed to change password" });
+  }
+});
+
+// Admin endpoint to get all users with passwords (admin only)
+router.get("/admin/users", async (req, res) => {
+  try {
+    // Check if user is admin
+    const token = req.headers.authorization?.replace('Bearer ', '');
+    if (!token) {
+      return res.status(401).json({ error: "No token provided" });
+    }
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || "your-secret-key");
+    const adminUser = await prisma.user.findUnique({
+      where: { id: decoded.userId }
+    });
+
+    if (!adminUser || adminUser.role !== 'admin') {
+      return res.status(403).json({ error: "Admin access required" });
+    }
+
+    // Get all users with their passwords
+    const users = await prisma.user.findMany({
+      select: {
+        id: true,
+        username: true,
+        email: true,
+        password: true,
+        name: true,
+        role: true,
+        isVerified: true,
+        createdAt: true,
+        updatedAt: true
+      },
+      orderBy: { createdAt: 'desc' }
+    });
+
+    res.json({ users });
+  } catch (error) {
+    console.error("Admin users fetch error:", error);
+    res.status(500).json({ error: "Failed to fetch users" });
   }
 });
 

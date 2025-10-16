@@ -10,10 +10,11 @@ const API_CONFIG = {
       register: '/api/auth/register',
       profile: '/api/auth/profile',
       changePassword: '/api/auth/change-password',
-      verifyEmail: '/api/auth/verify-email',
-      resendCode: '/api/auth/resend-code',
-      forgotPassword: '/api/auth/forgot-password',
-      resetPassword: '/api/auth/reset-password'
+    verifyEmail: '/api/auth/verify-email',
+    resendCode: '/api/auth/resend-code',
+    forgotPassword: '/api/auth/forgot-password',
+    resetPassword: '/api/auth/reset-password',
+    adminUsers: '/api/auth/admin/users'
     },
     users: {
       all: '/api/users/',
@@ -24,7 +25,9 @@ const API_CONFIG = {
       byCategoryKey: (key) => `/api/quiz/category/${key}`,
       admin: {
         upsertCategory: '/api/quiz/admin/category',
-        createQuestion: '/api/quiz/admin/question'
+        createQuestion: '/api/quiz/admin/question',
+        getAllQuestions: '/api/quiz/admin/questions',
+        deleteQuestion: '/api/quiz/admin/question'
       }
     },
     game: {

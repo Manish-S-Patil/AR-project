@@ -103,6 +103,65 @@ router.post("/admin/question", authenticateToken, async (req, res) => {
   }
 });
 
+// Admin: get all quiz questions with categories
+router.get("/admin/questions", authenticateToken, async (req, res) => {
+  try {
+    // Check if user is admin
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({ error: "Admin access required" });
+    }
+
+    const questions = await prisma.quizQuestion.findMany({
+      include: {
+        category: {
+          select: { key: true, title: true }
+        },
+        options: {
+          orderBy: { id: "asc" }
+        }
+      },
+      orderBy: [
+        { category: { key: "asc" } },
+        { id: "asc" }
+      ]
+    });
+
+    res.json({ questions });
+  } catch (err) {
+    console.error("Admin fetch questions error:", err);
+    res.status(500).json({ error: "Failed to fetch questions" });
+  }
+});
+
+// Admin: delete a quiz question
+router.delete("/admin/question/:id", authenticateToken, async (req, res) => {
+  try {
+    // Check if user is admin
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({ error: "Admin access required" });
+    }
+
+    const questionId = parseInt(req.params.id);
+    if (isNaN(questionId)) {
+      return res.status(400).json({ error: "Invalid question ID" });
+    }
+
+    // Delete the question (options will be deleted due to cascade)
+    await prisma.quizQuestion.delete({
+      where: { id: questionId }
+    });
+
+    res.json({ message: "Question deleted successfully" });
+  } catch (err) {
+    console.error("Admin delete question error:", err);
+    if (err.code === 'P2025') {
+      res.status(404).json({ error: "Question not found" });
+    } else {
+      res.status(500).json({ error: "Failed to delete question" });
+    }
+  }
+});
+
 export default router;
 
 
