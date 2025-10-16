@@ -31,6 +31,14 @@ export default function Login() {
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || 'Authentication failed')
+      
+      // Check if user needs verification
+      if (data.requiresVerification) {
+        toast({ title: 'Email Verification Required', description: 'Please verify your email to continue.' })
+        navigate('/verify', { state: { email: data.user.email, username: data.user.username } })
+        return
+      }
+      
       localStorage.setItem('userData', JSON.stringify({ ...data.user, token: data.token, loginTime: new Date().toISOString(), loginType: 'user' }))
       toast({ title: 'Login Successful!', description: 'Welcome to the AR Cybersecurity Platform.' })
       navigate('/introduction')

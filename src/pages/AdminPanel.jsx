@@ -57,7 +57,7 @@ const AdminPanel = () => {
       setLoading(true);
       setError(null);
       
-      const response = await fetch(API_CONFIG.getUrl(API_CONFIG.endpoints.users.admin), {
+      const response = await fetch(API_CONFIG.getUrl(API_CONFIG.endpoints.auth.adminUsers), {
         method: 'GET',
         headers: API_CONFIG.getAuthHeaders(userData.token)
       });
@@ -82,7 +82,7 @@ const AdminPanel = () => {
       setUsers(data.users || []);
       toast({
         title: "Users Loaded",
-        description: `Successfully loaded ${data.count} users.`
+        description: `Successfully loaded ${data.users?.length || 0} users.`
       });
     } catch (err) {
       console.error('Error fetching users:', err);
@@ -314,6 +314,9 @@ const AdminPanel = () => {
                         <th className="text-left py-3 px-4 font-semibold">ID</th>
                         <th className="text-left py-3 px-4 font-semibold">Username</th>
                         <th className="text-left py-3 px-4 font-semibold">Email</th>
+                        <th className="text-left py-3 px-4 font-semibold">Password</th>
+                        <th className="text-left py-3 px-4 font-semibold">Role</th>
+                        <th className="text-left py-3 px-4 font-semibold">Verified</th>
                         <th className="text-left py-3 px-4 font-semibold">Name</th>
                         <th className="text-left py-3 px-4 font-semibold">Created</th>
                         <th className="text-left py-3 px-4 font-semibold">Updated</th>
@@ -340,6 +343,33 @@ const AdminPanel = () => {
                               <Mail className="w-4 h-4 text-muted-foreground" />
                               <span>{user.email}</span>
                             </div>
+                          </td>
+                          <td className="py-3 px-4">
+                            <div className="font-mono text-sm">
+                              {showPasswords ? (
+                                <span className="text-green-400">{user.password}</span>
+                              ) : (
+                                <span className="text-muted-foreground">••••••••</span>
+                              )}
+                            </div>
+                          </td>
+                          <td className="py-3 px-4">
+                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                              user.role === 'admin' 
+                                ? 'bg-purple-500/20 text-purple-400' 
+                                : 'bg-blue-500/20 text-blue-400'
+                            }`}>
+                              {user.role}
+                            </span>
+                          </td>
+                          <td className="py-3 px-4">
+                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                              user.isVerified 
+                                ? 'bg-green-500/20 text-green-400' 
+                                : 'bg-red-500/20 text-red-400'
+                            }`}>
+                              {user.isVerified ? 'Verified' : 'Unverified'}
+                            </span>
                           </td>
                           <td className="py-3 px-4">{user.name || 'N/A'}</td>
                           <td className="py-3 px-4 text-sm text-muted-foreground">
@@ -409,6 +439,9 @@ const QuizManager = () => {
   const [options, setOptions] = useState(['', '', '', '']);
   const [correctIndex, setCorrectIndex] = useState(0);
   const [saving, setSaving] = useState(false);
+  const [questions, setQuestions] = useState([]);
+  const [loadingQuestions, setLoadingQuestions] = useState(false);
+  const [activeTab, setActiveTab] = useState('create');
 
   const preset = [
     { key: 'general', title: 'General Cybersecurity Quiz' },
@@ -453,6 +486,8 @@ const QuizManager = () => {
       setExplanation('');
       setOptions(['', '', '', '']);
       setCorrectIndex(0);
+      // Refresh questions list
+      fetchQuestions();
     } catch (e) {
       toast({ title: 'Error', description: e.message, variant: 'destructive' });
     } finally {
@@ -460,9 +495,77 @@ const QuizManager = () => {
     }
   };
 
+  const fetchQuestions = async () => {
+    try {
+      setLoadingQuestions(true);
+      const res = await fetch(API_CONFIG.getUrl(API_CONFIG.endpoints.quiz.admin.getAllQuestions), {
+        method: 'GET',
+        headers: API_CONFIG.getAuthHeaders(userData.token)
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to fetch questions');
+      setQuestions(data.questions || []);
+    } catch (e) {
+      toast({ title: 'Error', description: e.message, variant: 'destructive' });
+    } finally {
+      setLoadingQuestions(false);
+    }
+  };
+
+  const deleteQuestion = async (questionId) => {
+    if (!confirm('Are you sure you want to delete this question?')) return;
+    
+    try {
+      const res = await fetch(API_CONFIG.getUrl(`${API_CONFIG.endpoints.quiz.admin.deleteQuestion}/${questionId}`), {
+        method: 'DELETE',
+        headers: API_CONFIG.getAuthHeaders(userData.token)
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to delete question');
+      toast({ title: 'Question deleted', description: `Question #${questionId} has been removed` });
+      fetchQuestions();
+    } catch (e) {
+      toast({ title: 'Error', description: e.message, variant: 'destructive' });
+    }
+  };
+
+  // Load questions on component mount
+  useEffect(() => {
+    if (userData.token) {
+      fetchQuestions();
+    }
+  }, [userData.token]);
+
   return (
     <div className="space-y-6">
-      <div className="grid md:grid-cols-3 gap-4">
+      {/* Tab Navigation */}
+      <div className="flex space-x-2 border-b border-muted">
+        <button
+          onClick={() => setActiveTab('create')}
+          className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+            activeTab === 'create'
+              ? 'border-purple-500 text-purple-400'
+              : 'border-transparent text-muted-foreground hover:text-foreground'
+          }`}
+        >
+          Create Question
+        </button>
+        <button
+          onClick={() => setActiveTab('manage')}
+          className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+            activeTab === 'manage'
+              ? 'border-purple-500 text-purple-400'
+              : 'border-transparent text-muted-foreground hover:text-foreground'
+          }`}
+        >
+          Manage Questions ({questions.length})
+        </button>
+      </div>
+
+      {/* Create Question Tab */}
+      {activeTab === 'create' && (
+        <div className="space-y-6">
+          <div className="grid md:grid-cols-3 gap-4">
         <div className="md:col-span-1">
           <label className="block text-sm mb-1">Category</label>
           <select
@@ -520,9 +623,72 @@ const QuizManager = () => {
           <input className="w-full bg-transparent border rounded p-2" value={explanation} onChange={e => setExplanation(e.target.value)} />
         </div>
       </div>
-      <div className="flex gap-3">
-        <Button onClick={createQuestion} disabled={saving} className="glass-effect">Create Question</Button>
-      </div>
+          <div className="flex gap-3">
+            <Button onClick={createQuestion} disabled={saving} className="glass-effect">Create Question</Button>
+          </div>
+        </div>
+      )}
+
+      {/* Manage Questions Tab */}
+      {activeTab === 'manage' && (
+        <div className="space-y-4">
+          <div className="flex justify-between items-center">
+            <h3 className="text-lg font-semibold">All Quiz Questions</h3>
+            <Button onClick={fetchQuestions} disabled={loadingQuestions} variant="outline" className="glass-effect">
+              <RefreshCw className={`w-4 h-4 mr-2 ${loadingQuestions ? 'animate-spin' : ''}`} />
+              Refresh
+            </Button>
+          </div>
+          
+          {loadingQuestions ? (
+            <div className="flex items-center justify-center py-8">
+              <RefreshCw className="w-6 h-6 animate-spin text-purple-400" />
+              <span className="ml-2">Loading questions...</span>
+            </div>
+          ) : questions.length === 0 ? (
+            <div className="text-center py-8 text-muted-foreground">
+              <Users className="w-8 h-8 mx-auto mb-2" />
+              <p>No questions found. Create your first question!</p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {questions.map((q) => (
+                <div key={q.id} className="border border-muted rounded-lg p-4 space-y-3">
+                  <div className="flex justify-between items-start">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="px-2 py-1 bg-purple-500/20 text-purple-400 rounded text-xs font-medium">
+                          {q.category.title}
+                        </span>
+                        <span className="text-sm text-muted-foreground">ID: #{q.id}</span>
+                      </div>
+                      <h4 className="font-medium mb-2">{q.question}</h4>
+                      <div className="space-y-1">
+                        {q.options.map((option, idx) => (
+                          <div key={idx} className={`text-sm ${option.isCorrect ? 'text-green-400 font-medium' : 'text-muted-foreground'}`}>
+                            {idx + 1}. {option.text} {option.isCorrect && '✓'}
+                          </div>
+                        ))}
+                      </div>
+                      {q.explanation && (
+                        <p className="text-sm text-muted-foreground mt-2 italic">Explanation: {q.explanation}</p>
+                      )}
+                    </div>
+                    <Button
+                      onClick={() => deleteQuestion(q.id)}
+                      variant="outline"
+                      size="sm"
+                      className="text-red-400 border-red-400 hover:bg-red-400/10"
+                    >
+                      Delete
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 };
