@@ -653,42 +653,125 @@ const QuizManager = () => {
           ) : (
             <div className="space-y-4">
               {questions.map((q) => (
-                <div key={q.id} className="border border-muted rounded-lg p-4 space-y-3">
-                  <div className="flex justify-between items-start">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-2">
-                        <span className="px-2 py-1 bg-purple-500/20 text-purple-400 rounded text-xs font-medium">
-                          {q.category.title}
-                        </span>
-                        <span className="text-sm text-muted-foreground">ID: #{q.id}</span>
-                      </div>
-                      <h4 className="font-medium mb-2">{q.question}</h4>
-                      <div className="space-y-1">
-                        {q.options.map((option, idx) => (
-                          <div key={idx} className={`text-sm ${option.isCorrect ? 'text-green-400 font-medium' : 'text-muted-foreground'}`}>
-                            {idx + 1}. {option.text} {option.isCorrect && '✓'}
-                          </div>
-                        ))}
-                      </div>
-                      {q.explanation && (
-                        <p className="text-sm text-muted-foreground mt-2 italic">Explanation: {q.explanation}</p>
-                      )}
-                    </div>
-                    <Button
-                      onClick={() => deleteQuestion(q.id)}
-                      variant="outline"
-                      size="sm"
-                      className="text-red-400 border-red-400 hover:bg-red-400/10"
-                    >
-                      Delete
-                    </Button>
-                  </div>
-                </div>
+                <QuestionRow key={q.id} q={q} onDeleted={() => fetchQuestions()} />
               ))}
             </div>
           )}
         </div>
       )}
+    </div>
+  );
+};
+
+const QuestionRow = ({ q, onDeleted }) => {
+  const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+  const [isEditing, setIsEditing] = useState(false);
+  const [questionText, setQuestionText] = useState(q.question);
+  const [explanationText, setExplanationText] = useState(q.explanation || '');
+  const [optionsState, setOptionsState] = useState(q.options.map(o => ({ text: o.text, isCorrect: o.isCorrect })));
+  const [saving, setSaving] = useState(false);
+
+  const correctIndex = optionsState.findIndex(o => o.isCorrect);
+
+  const save = async () => {
+    try {
+      setSaving(true);
+      const res = await fetch(API_CONFIG.getUrl(API_CONFIG.endpoints.quiz.admin.updateQuestion(q.id)), {
+        method: 'PUT',
+        headers: API_CONFIG.getAuthHeaders(userData.token),
+        body: JSON.stringify({
+          question: questionText,
+          explanation: explanationText,
+          options: optionsState.map(o => o.text),
+          correctIndex: Math.max(0, correctIndex)
+        })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to update question');
+      toast({ title: 'Question updated', description: `ID #${q.id}` });
+      setIsEditing(false);
+    } catch (e) {
+      toast({ title: 'Update failed', description: e.message, variant: 'destructive' });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const remove = async () => {
+    try {
+      const res = await fetch(API_CONFIG.getUrl(`${API_CONFIG.endpoints.quiz.admin.deleteQuestion}/${q.id}`), {
+        method: 'DELETE',
+        headers: API_CONFIG.getAuthHeaders(userData.token)
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to delete');
+      toast({ title: 'Question deleted' });
+      onDeleted?.();
+    } catch (e) {
+      toast({ title: 'Delete failed', description: e.message, variant: 'destructive' });
+    }
+  };
+
+  return (
+    <div className="border border-muted rounded-lg p-4 space-y-3">
+      <div className="flex justify-between items-start">
+        <div className="flex-1">
+          <div className="flex items-center gap-2 mb-2">
+            <span className="px-2 py-1 bg-purple-500/20 text-purple-400 rounded text-xs font-medium">
+              {q.category.title}
+            </span>
+            <span className="text-sm text-muted-foreground">ID: #{q.id}</span>
+          </div>
+
+          {isEditing ? (
+            <div className="space-y-3">
+              <input className="w-full bg-transparent border rounded p-2" value={questionText} onChange={e=>setQuestionText(e.target.value)} />
+              <div className="space-y-1">
+                {optionsState.map((opt, idx) => (
+                  <div key={idx} className="flex items-center gap-2">
+                    <input className="flex-1 bg-transparent border rounded p-2" value={opt.text} onChange={e=>{
+                      const copy=[...optionsState]; copy[idx]={...copy[idx], text:e.target.value}; setOptionsState(copy);
+                    }} />
+                    <label className="flex items-center gap-1 text-sm">
+                      <input type="radio" name={`correct-${q.id}`} checked={optionsState[idx].isCorrect} onChange={()=>{
+                        setOptionsState(optionsState.map((o,i)=>({...o, isCorrect:i===idx})));
+                      }} /> Correct
+                    </label>
+                  </div>
+                ))}
+              </div>
+              <input className="w-full bg-transparent border rounded p-2" placeholder="Explanation (optional)" value={explanationText} onChange={e=>setExplanationText(e.target.value)} />
+            </div>
+          ) : (
+            <>
+              <h4 className="font-medium mb-2">{q.question}</h4>
+              <div className="space-y-1">
+                {q.options.map((option, idx) => (
+                  <div key={idx} className={`text-sm ${option.isCorrect ? 'text-green-400 font-medium' : 'text-muted-foreground'}`}>
+                    {idx + 1}. {option.text} {option.isCorrect && '✓'}
+                  </div>
+                ))}
+              </div>
+              {q.explanation && (
+                <p className="text-sm text-muted-foreground mt-2 italic">Explanation: {q.explanation}</p>
+              )}
+            </>
+          )}
+        </div>
+        <div className="flex gap-2">
+          {isEditing ? (
+            <>
+              <Button onClick={save} size="sm" className="glass-effect" disabled={saving}>Save</Button>
+              <Button onClick={()=>{setIsEditing(false)}} size="sm" variant="outline" className="glass-effect" disabled={saving}>Cancel</Button>
+            </>
+          ) : (
+            <>
+              <Button onClick={()=>setIsEditing(true)} size="sm" className="glass-effect">Edit</Button>
+              <Button onClick={remove} size="sm" variant="outline" className="text-red-400 border-red-400 hover:bg-red-400/10">Delete</Button>
+            </>
+          )}
+        </div>
+      </div>
     </div>
   );
 };

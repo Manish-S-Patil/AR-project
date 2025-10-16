@@ -27,7 +27,8 @@ const API_CONFIG = {
         upsertCategory: '/api/quiz/admin/category',
         createQuestion: '/api/quiz/admin/question',
         getAllQuestions: '/api/quiz/admin/questions',
-        deleteQuestion: '/api/quiz/admin/question'
+        deleteQuestion: '/api/quiz/admin/question',
+        updateQuestion: (id) => `/api/quiz/admin/question/${id}`
       }
     },
     game: {
