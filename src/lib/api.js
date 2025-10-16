@@ -14,7 +14,8 @@ const API_CONFIG = {
     resendCode: '/api/auth/resend-code',
     forgotPassword: '/api/auth/forgot-password',
     resetPassword: '/api/auth/reset-password',
-    adminUsers: '/api/auth/admin/users'
+    adminUsers: '/api/auth/admin/users',
+    adminDeleteUser: (id) => `/api/auth/admin/user/${id}`
     },
     users: {
       all: '/api/users/',

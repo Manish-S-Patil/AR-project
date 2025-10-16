@@ -320,6 +320,7 @@ const AdminPanel = () => {
                         <th className="text-left py-2 sm:py-3 px-2 sm:px-4 font-semibold">Name</th>
                         <th className="text-left py-2 sm:py-3 px-2 sm:px-4 font-semibold">Created</th>
                         <th className="text-left py-2 sm:py-3 px-2 sm:px-4 font-semibold">Updated</th>
+                        <th className="text-left py-2 sm:py-3 px-2 sm:px-4 font-semibold">Actions</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -377,6 +378,33 @@ const AdminPanel = () => {
                           </td>
                           <td className="py-3 px-4 text-sm text-muted-foreground">
                             {formatDate(user.updatedAt)}
+                          </td>
+                          <td className="py-3 px-4">
+                            <div className="flex gap-2">
+                              <Button
+                                variant="outline"
+                                className={`text-red-400 border-red-400 hover:bg-red-400/10 ${user.role==='admin' ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                disabled={user.role==='admin'}
+                                onClick={async ()=>{
+                                  if (user.role==='admin') return;
+                                  if (!confirm(`Delete user #${user.id} (${user.username})?`)) return;
+                                  try {
+                                    const res = await fetch(API_CONFIG.getUrl(API_CONFIG.endpoints.auth.adminDeleteUser(user.id)), {
+                                      method: 'DELETE',
+                                      headers: API_CONFIG.getAuthHeaders(userData.token)
+                                    });
+                                    const data = await res.json();
+                                    if (!res.ok) throw new Error(data.error || 'Failed to delete user');
+                                    toast({ title: 'User deleted', description: `Removed #${user.id}` });
+                                    fetchUsers();
+                                  } catch (e) {
+                                    toast({ title: 'Delete failed', description: e.message, variant: 'destructive' });
+                                  }
+                                }}
+                              >
+                                Delete
+                              </Button>
+                            </div>
                           </td>
                         </motion.tr>
                       ))}
