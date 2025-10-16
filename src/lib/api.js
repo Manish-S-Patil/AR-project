@@ -35,7 +35,9 @@ const API_CONFIG = {
       phishingEmails: '/api/game/phishing-emails',
       admin: {
         createPhishingEmail: '/api/game/admin/phishing-email',
-        updatePhishingEmail: (id) => `/api/game/admin/phishing-email/${id}`
+        updatePhishingEmail: (id) => `/api/game/admin/phishing-email/${id}`,
+        listPhishingEmails: '/api/game/admin/phishing-emails',
+        deletePhishingEmail: (id) => `/api/game/admin/phishing-email/${id}`
       }
     }
   },
