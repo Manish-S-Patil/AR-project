@@ -20,6 +20,8 @@ const LoginPage = () => {
   const [resetStage, setResetStage] = useState(false);
   const [resetCode, setResetCode] = useState('');
   const [newPassword, setNewPassword] = useState('');
+  // Single-view controller to avoid UI conflicts: 'form' | 'verify' | 'forgot' | 'reset'
+  const [currentView, setCurrentView] = useState('form');
   const [formData, setFormData] = useState({
     username: '',
     email: '',
@@ -120,6 +122,7 @@ const LoginPage = () => {
       if (!isLogin) {
         // After registration, prompt for verification
         setAwaitingVerification(true);
+        setCurrentView('verify');
       }
 
       // Store user data and token in localStorage
@@ -175,6 +178,7 @@ const LoginPage = () => {
       if (!res.ok) throw new Error(data.error || 'Verification failed');
       toast({ title: 'Verified', description: 'Your email has been verified.' });
       setAwaitingVerification(false);
+      setCurrentView('form');
       setVerificationCode('');
     } catch (e) {
       toast({ title: 'Verification Failed', description: e.message, variant: 'destructive' });
@@ -311,93 +315,58 @@ const LoginPage = () => {
                   }
                 </CardDescription>
               </CardHeader>
-              <CardContent>
-                {awaitingVerification ? (
+            <CardContent>
+                {currentView==='verify' ? (
                   <div className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="username" className="flex items-center gap-2">
-                      <User className="w-4 h-4" />
-                      Username
-                    </Label>
-                    <Input
-                      id="username"
-                      name="username"
-                      type="text"
-                      placeholder="Enter your username"
-                      value={formData.username}
-                      onChange={handleInputChange}
-                      className="glass-effect"
-                      required
-                      disabled={isSubmitting}
-                    />
-                  </div>
-
-                  {!isLogin && (
-                    <motion.div
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: 'auto' }}
-                      exit={{ opacity: 0, height: 0 }}
-                      className="space-y-2"
-                    >
-                      <Label htmlFor="email" className="flex items-center gap-2">
+                    <div className="text-center text-sm text-muted-foreground">
+                      {formData.email
+                        ? <>We sent a 6-digit verification code to {formData.email}. Enter it below to verify your email.</>
+                        : <>Enter your registered email and the 6-digit code you received to verify your account.</>
+                      }
+                    </div>
+                    {!formData.email && (
+                      <div className="space-y-2">
+                        <Label htmlFor="verify-email" className="flex items-center gap-2">
+                          <Mail className="w-4 h-4" />
+                          Email
+                        </Label>
+                        <Input
+                          id="verify-email"
+                          name="email"
+                          type="email"
+                          placeholder="Enter your email"
+                          value={formData.email}
+                          onChange={handleInputChange}
+                          className="glass-effect"
+                          disabled={isSubmitting}
+                        />
+                      </div>
+                    )}
+                    <div className="space-y-2">
+                      <Label htmlFor="otp" className="flex items-center gap-2">
                         <Mail className="w-4 h-4" />
-                        Email
+                        Verification Code
                       </Label>
                       <Input
-                        id="email"
-                        name="email"
-                        type="email"
-                        placeholder="Enter your email"
-                        value={formData.email}
-                        onChange={handleInputChange}
+                        id="otp"
+                        type="text"
+                        inputMode="numeric"
+                        pattern="[0-9]*"
+                        placeholder="Enter 6-digit code"
+                        value={verificationCode}
+                        onChange={(e) => setVerificationCode(e.target.value)}
                         className="glass-effect"
-                        required
                         disabled={isSubmitting}
                       />
-                    </motion.div>
-                  )}
-
-                  <div className="space-y-2">
-                    <Label htmlFor="password" className="flex items-center gap-2">
-                      <Lock className="w-4 h-4" />
-                      Password
-                    </Label>
-                    <div className="relative">
-                      <Input
-                        id="password"
-                        name="password"
-                        type={showPassword ? 'text' : 'password'}
-                        placeholder="Enter your password"
-                        value={formData.password}
-                        onChange={handleInputChange}
-                        className="glass-effect pr-10"
-                        required
-                        disabled={isSubmitting}
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                      >
-                        {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                      </button>
                     </div>
-                  </div>
-
-                  <Button
-                    type="submit"
-                    className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 glow-effect"
-                    disabled={loginType !== 'user' || isSubmitting}
-                  >
-                    {isSubmitting ? (
-                      <span className="inline-flex items-center gap-2">
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                        {isLogin ? 'Signing In...' : 'Creating Account...'}
-                      </span>
-                    ) : (
-                      isLogin ? 'Sign In' : 'Create Account'
-                    )}
-                  </Button>
+                    <div className="flex gap-2">
+                      <Button onClick={handleVerify} disabled={isSubmitting} className="w-full bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600">
+                        Verify Email
+                      </Button>
+                      <Button onClick={handleResend} variant="outline" disabled={isSubmitting} className="w-full glass-effect">
+                        Resend Code
+                      </Button>
+                    </div>
                   </div>
                 ) : (
                   <form onSubmit={handleSubmit} className="space-y-4">
@@ -469,7 +438,7 @@ const LoginPage = () => {
                   </form>
                 )}
 
-                {forgotStage && !resetStage && !awaitingVerification && (
+                {currentView==='forgot' && (
                   <div className="space-y-4 mt-4">
                     <div className="text-center text-sm text-muted-foreground">
                       Enter your registered email and we'll send a verification code.
@@ -514,14 +483,14 @@ const LoginPage = () => {
                       >
                         Send Code
                       </Button>
-                      <Button onClick={() => { setForgotStage(false); setResetStage(false); setAwaitingVerification(false); }} variant="outline" className="w-full glass-effect" disabled={isSubmitting}>
+                      <Button onClick={() => { setForgotStage(false); setResetStage(false); setAwaitingVerification(false); setCurrentView('form'); }} variant="outline" className="w-full glass-effect" disabled={isSubmitting}>
                         Back
                       </Button>
                     </div>
                   </div>
                 )}
 
-                {resetStage && !awaitingVerification && (
+                {currentView==='reset' && (
                   <div className="space-y-4 mt-4">
                     <div className="space-y-2">
                       <Label htmlFor="reset-code" className="flex items-center gap-2">
@@ -566,7 +535,7 @@ const LoginPage = () => {
                       >
                         Update Password
                       </Button>
-                      <Button onClick={() => { setResetStage(false); setAwaitingVerification(false); }} variant="outline" className="w-full glass-effect" disabled={isSubmitting}>
+                      <Button onClick={() => { setResetStage(false); setAwaitingVerification(false); setCurrentView('form'); }} variant="outline" className="w-full glass-effect" disabled={isSubmitting}>
                         Back
                       </Button>
                     </div>
@@ -604,22 +573,22 @@ const LoginPage = () => {
                         : "Already have an account? Sign in"
                       }
                     </button>
-                    {!isLogin && !awaitingVerification && !forgotStage && !resetStage && (
+                    {!isLogin && currentView==='form' && (
                       <div>
                         <button
                           type="button"
-                          onClick={() => setAwaitingVerification(true)}
+                          onClick={() => { setAwaitingVerification(true); setCurrentView('verify'); }}
                           className="text-sm text-muted-foreground hover:text-foreground underline"
                         >
                           Have a verification code?
                         </button>
                       </div>
                     )}
-                    {isLogin && !awaitingVerification && !forgotStage && !resetStage && (
+                    {isLogin && currentView==='form' && (
                       <div>
                         <button
                           type="button"
-                          onClick={() => { setForgotStage(true); setResetStage(false); setAwaitingVerification(false); }}
+                          onClick={() => { setForgotStage(true); setResetStage(false); setAwaitingVerification(false); setCurrentView('forgot'); }}
                           className="text-sm text-muted-foreground hover:text-foreground underline"
                         >
                           Forgot password?

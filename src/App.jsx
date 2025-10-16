@@ -3,7 +3,10 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Helmet } from 'react-helmet';
 import { Toaster } from './components/ui/toaster';
 import ProtectedRoute from './components/ProtectedRoute';
-import LoginPage from './pages/LoginPage';
+import Login from './pages/Login';
+import Signup from './pages/Signup';
+import ForgotPassword from './pages/ForgotPassword';
+import Verify from './pages/Verify';
 import IntroductionPage from './pages/IntroductionPage';
 import Dashboard from './pages/Dashboard';
 import ARScenarios from './pages/ARScenarios';
@@ -21,7 +24,11 @@ function App() {
       <Router>
         <div className="min-h-screen cyber-grid">
           <Routes>
-            <Route path="/" element={<LoginPage />} />
+            <Route path="/" element={<Login />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<Signup />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/verify" element={<Verify />} />
             <Route 
               path="/introduction" 
               element={
