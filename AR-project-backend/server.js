@@ -20,7 +20,8 @@ const allowedOrigins = (process.env.ALLOWED_ORIGINS || [
   'http://192.168.0.111:5173',
   'https://ar-cybersecurity.netlify.app',
   'https://ar-project-5ojn.onrender.com',
-  'https://ar-project-frontend.onrender.com'
+  'https://ar-project-frontend.onrender.com',
+  'https://ar-project-beta.vercel.app'
 ].join(',')).split(',').map(s => s.trim());
 
 app.use(cors({
