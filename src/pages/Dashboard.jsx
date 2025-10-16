@@ -125,14 +125,16 @@ const Dashboard = () => {
               <Key className="w-4 h-4 mr-2" />
               Change Password
             </Button>
-            <Button
-              variant="outline"
-              onClick={() => navigate('/admin')}
-              className="glass-effect w-full sm:w-auto"
-            >
-              <Settings className="w-4 h-4 mr-2" />
-              Admin Panel
-            </Button>
+            {userData.role === 'admin' && (
+              <Button
+                variant="outline"
+                onClick={() => navigate('/admin')}
+                className="glass-effect w-full sm:w-auto"
+              >
+                <Settings className="w-4 h-4 mr-2" />
+                Admin Panel
+              </Button>
+            )}
             <Button
               variant="outline"
               onClick={handleLogout}

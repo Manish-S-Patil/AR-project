@@ -1,5 +1,5 @@
-import React, { useState } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
+import React, { useState, useMemo } from 'react'
+import { useNavigate, Link, useLocation } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { Users, Eye, EyeOff, Loader2, Shield } from 'lucide-react'
 import { Button } from '../components/ui/button'
@@ -11,6 +11,11 @@ import API_CONFIG from '../lib/api'
 
 export default function Login() {
   const navigate = useNavigate()
+  const location = useLocation()
+  const isAdminMode = useMemo(() => {
+    const params = new URLSearchParams(location.search)
+    return (params.get('type') || '').toLowerCase() === 'admin'
+  }, [location.search])
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
@@ -41,7 +46,11 @@ export default function Login() {
       
       localStorage.setItem('userData', JSON.stringify({ ...data.user, token: data.token, loginTime: new Date().toISOString(), loginType: 'user' }))
       toast({ title: 'Login Successful!', description: 'Welcome to the AR Cybersecurity Platform.' })
-      navigate('/introduction')
+      if ((data.user?.role || '').toLowerCase() === 'admin' || isAdminMode) {
+        navigate('/admin')
+      } else {
+        navigate('/introduction')
+      }
     } catch (e) {
       toast({ title: 'Authentication Failed', description: e.message, variant: 'destructive' })
     } finally {
@@ -113,6 +122,10 @@ export default function Login() {
           <div className="mt-2 text-center text-sm">
             <span className="text-muted-foreground mr-1">Don’t have an account?</span>
             <Link to="/signup" className="underline">Sign up</Link>
+          </div>
+          <div className="mt-4 text-center text-xs text-muted-foreground">
+            <span className="text-muted-foreground mr-1">Authorized access. Click here to login as admin. </span>
+            <Link to="/admin-login" className="underline">Admin login</Link>
           </div>
         </CardContent>
         </Card>

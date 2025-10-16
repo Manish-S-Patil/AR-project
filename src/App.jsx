@@ -4,6 +4,7 @@ import { Helmet } from 'react-helmet';
 import { Toaster } from './components/ui/toaster';
 import ProtectedRoute from './components/ProtectedRoute';
 import Login from './pages/Login';
+import AdminLogin from './pages/AdminLogin';
 import Signup from './pages/Signup';
 import ForgotPassword from './pages/ForgotPassword';
 import Verify from './pages/Verify';
@@ -27,6 +28,7 @@ function App() {
             <Route path="/" element={<Login />} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
+            <Route path="/admin-login" element={<AdminLogin />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/verify" element={<Verify />} />
             <Route 
