@@ -51,6 +51,32 @@ router.patch('/admin/phishing-email/:id', authenticateToken, async (req, res) =>
   }
 });
 
+// Admin: list all phishing emails
+router.get('/admin/phishing-emails', authenticateToken, async (req, res) => {
+  try {
+    if (req.user?.role !== 'admin') return res.status(403).json({ error: 'Admin only' });
+    const emails = await prisma.phishingEmail.findMany({ orderBy: { id: 'asc' } });
+    res.json({ emails });
+  } catch (e) {
+    console.error('Admin list phishing emails error:', e);
+    res.status(500).json({ error: 'Failed to fetch phishing emails' });
+  }
+});
+
+// Admin: delete phishing email
+router.delete('/admin/phishing-email/:id', authenticateToken, async (req, res) => {
+  try {
+    if (req.user?.role !== 'admin') return res.status(403).json({ error: 'Admin only' });
+    const id = parseInt(req.params.id, 10);
+    await prisma.phishingEmail.delete({ where: { id } });
+    res.json({ message: 'Deleted' });
+  } catch (e) {
+    console.error('Delete phishing email error:', e);
+    if (e.code === 'P2025') return res.status(404).json({ error: 'Not found' });
+    res.status(500).json({ error: 'Failed to delete phishing email' });
+  }
+});
+
 export default router;
 
 
