@@ -375,6 +375,63 @@ router.get("/admin/users", async (req, res) => {
   }
 });
 
+// Admin endpoint to delete a non-admin user by ID (admin only)
+router.delete('/admin/user/:id', async (req, res) => {
+  try {
+    // Authenticate and ensure admin
+    const token = req.headers.authorization?.replace('Bearer ', '');
+    if (!token) {
+      return res.status(401).json({ error: 'No token provided' });
+    }
+
+    let decoded;
+    try {
+      decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
+    } catch {
+      return res.status(401).json({ error: 'Invalid token' });
+    }
+
+    const adminUser = await prisma.user.findUnique({ where: { id: decoded.userId } });
+    if (!adminUser || adminUser.role !== 'admin') {
+      return res.status(403).json({ error: 'Admin access required' });
+    }
+
+    const targetUserId = parseInt(req.params.id, 10);
+    if (Number.isNaN(targetUserId)) {
+      return res.status(400).json({ error: 'Invalid user id' });
+    }
+
+    // Prevent deleting admin accounts and optionally self-protection
+    const targetUser = await prisma.user.findUnique({ where: { id: targetUserId } });
+    if (!targetUser) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    if (targetUser.role === 'admin') {
+      return res.status(400).json({ error: 'Cannot delete admin users' });
+    }
+    if (targetUserId === adminUser.id) {
+      return res.status(400).json({ error: 'Admins cannot delete themselves' });
+    }
+
+    // Cleanup related auth records (best-effort)
+    await prisma.refreshToken.deleteMany({ where: { userId: targetUserId } }).catch(() => {});
+    await prisma.emailVerification.deleteMany({ where: { userId: targetUserId } }).catch(() => {});
+    await prisma.passwordReset.deleteMany({ where: { userId: targetUserId } }).catch(() => {});
+
+    await prisma.user.delete({ where: { id: targetUserId } });
+
+    if (redis.isOpen) {
+      await redis.del('users:all').catch(() => {});
+      await redis.del(`user:${targetUserId}`).catch(() => {});
+    }
+
+    return res.json({ message: 'User deleted successfully' });
+  } catch (error) {
+    console.error('Admin delete user error:', error);
+    return res.status(500).json({ error: 'Failed to delete user' });
+  }
+});
+
 export default router;
 
 // Verify email with code
