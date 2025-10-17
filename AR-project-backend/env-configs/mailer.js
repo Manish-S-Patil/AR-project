@@ -1,19 +1,23 @@
 import nodemailer from 'nodemailer'
 
-// Create transporter using Ethereal test account
+// SMTP config from environment
+const smtpHost = process.env.SMTP_HOST || 'smtp.gmail.com'
+const smtpPort = parseInt(process.env.SMTP_PORT || '465', 10)
+const smtpSecure = String(process.env.SMTP_SECURE || 'true') === 'true'
+const smtpUser = process.env.SMTP_USER
+const smtpPass = process.env.SMTP_PASS
+
+// Create transporter
 const transporter = nodemailer.createTransport({
-  host: "smtp.gmail.com",
-  port: 465,
-  secure: true, // true for 465, false for other ports
-  auth: {
-    user: "kns.cyber.project@gmail.com",
-    pass: "cxgswgbywzxomcki",
-  },
+  host: smtpHost,
+  port: smtpPort,
+  secure: smtpSecure,
+  auth: smtpUser && smtpPass ? { user: smtpUser, pass: smtpPass } : undefined,
 })
 
-const fromEmail = "kns.cyber.project@gmail.com"
-const fromName = "AR CyberGuard"
-const subjectPrefix = "AR CyberGuard Verification Code"
+const fromEmail = process.env.MAIL_FROM_EMAIL || smtpUser || 'no-reply@example.com'
+const fromName = process.env.MAIL_FROM_NAME || 'AR CyberGuard'
+const subjectPrefix = process.env.MAIL_SUBJECT_PREFIX || 'AR CyberGuard Verification Code'
 
 export async function sendEmail(toEmail, toName, subject, text) {
   try {

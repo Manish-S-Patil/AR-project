@@ -20,6 +20,13 @@ export default function Signup() {
   const [verificationCode, setVerificationCode] = useState('')
   const [tempPassword, setTempPassword] = useState('')
   const [authToken, setAuthToken] = useState('')
+  const [resendCooldown, setResendCooldown] = useState(0)
+
+  React.useEffect(() => {
+    if (resendCooldown <= 0) return
+    const t = setInterval(() => setResendCooldown(c => c - 1), 1000)
+    return () => clearInterval(t)
+  }, [resendCooldown])
 
   // Step 1: create account with a temporary password and send verification code
   const handleStartSignup = async (e) => {
@@ -157,19 +164,25 @@ export default function Signup() {
             <form onSubmit={handleVerifyCode} className="space-y-4">
               <div className="space-y-2"><Label htmlFor="code">Verification Code</Label><Input id="code" value={verificationCode} onChange={e=>setVerificationCode(e.target.value)} className="glass-effect" placeholder="Enter 6-digit code" /></div>
               <div className="flex gap-2">
-                <Button type="button" variant="secondary" className="w-1/2" disabled={isSubmitting} onClick={async ()=>{
+                <Button type="button" variant="secondary" className="w-1/2" disabled={isSubmitting || resendCooldown>0} onClick={async ()=>{
                   try{
                     setIsSubmitting(true)
                     const res = await fetch(API_CONFIG.getUrl(API_CONFIG.endpoints.auth.resendCode), { method: 'POST', headers: API_CONFIG.getDefaultHeaders(), body: JSON.stringify({ email }) })
                     const data = await res.json()
-                    if(!res.ok) throw new Error(data.error || 'Unable to resend code')
-                    toast({ title: 'Code resent', description: 'Check your inbox again.' })
+                    if(!res.ok) {
+                      const retry = data.retryAfterSeconds
+                      if (retry) setResendCooldown(Math.max(1, retry))
+                      throw new Error(data.error || 'Unable to resend code')
+                    }
+                    const cd = data.cooldownSeconds || 60
+                    setResendCooldown(cd)
+                    toast({ title: 'Code resent', description: `Check your inbox again. You can resend in ${cd}s.` })
                   }catch(e){
                     toast({ title: 'Resend failed', description: e.message, variant: 'destructive' })
                   }finally{
                     setIsSubmitting(false)
                   }
-                }}>Resend Code</Button>
+                }}>{resendCooldown>0?`Resend (${resendCooldown}s)`: 'Resend Code'}</Button>
                 <Button type="submit" className="w-1/2 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700" disabled={isSubmitting}>
                   {isSubmitting ? (<span className="inline-flex items-center gap-2"><Loader2 className="w-4 h-4 animate-spin" />Verifying...</span>) : 'Verify'}
                 </Button>
