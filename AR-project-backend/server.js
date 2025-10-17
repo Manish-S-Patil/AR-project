@@ -18,6 +18,7 @@ const allowedOrigins = (process.env.ALLOWED_ORIGINS || [
   'http://localhost:5173',
   'http://127.0.0.1:5173',
   'http://192.168.0.111:5173',
+  'http://192.168.106.213:5173',
   'https://ar-cybersecurity.netlify.app',
   'https://ar-project-5ojn.onrender.com',
   'https://ar-project-frontend.onrender.com',
