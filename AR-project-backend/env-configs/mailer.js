@@ -2,8 +2,9 @@ import nodemailer from 'nodemailer'
 
 // SMTP config from environment
 const smtpHost = process.env.SMTP_HOST || 'smtp.gmail.com'
-const smtpPort = parseInt(process.env.SMTP_PORT || '465', 10)
-const smtpSecure = String(process.env.SMTP_SECURE || 'true') === 'true'
+// Prefer STARTTLS (587) on many hosts (Render) to avoid blocked SMTPS (465)
+const smtpPort = parseInt(process.env.SMTP_PORT || '587', 10)
+const smtpSecure = String(process.env.SMTP_SECURE || 'false') === 'true'
 const smtpUser = process.env.SMTP_USER
 const smtpPass = process.env.SMTP_PASS
 
@@ -13,6 +14,9 @@ const transporter = nodemailer.createTransport({
   port: smtpPort,
   secure: smtpSecure,
   auth: smtpUser && smtpPass ? { user: smtpUser, pass: smtpPass } : undefined,
+  connectionTimeout: parseInt(process.env.SMTP_TIMEOUT || '10000', 10),
+  greetingTimeout: parseInt(process.env.SMTP_GREETING_TIMEOUT || '10000', 10),
+  socketTimeout: parseInt(process.env.SMTP_SOCKET_TIMEOUT || '15000', 10),
 })
 
 const fromEmail = process.env.MAIL_FROM_EMAIL || smtpUser || 'no-reply@example.com'
