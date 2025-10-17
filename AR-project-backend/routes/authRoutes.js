@@ -77,10 +77,7 @@ router.post("/register", async (req, res) => {
     const code = Math.floor(100000 + Math.random() * 900000).toString();
     const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
     await prisma.emailVerification.create({ data: { userId: user.id, code, expiresAt } });
-    // Fire-and-forget email to avoid blocking response on SMTP timeouts
-    sendVerificationCode(normalizedEmail, code).catch((e)=>{
-      console.error('Async sendVerificationCode error:', e?.message || e)
-    })
+    await sendVerificationCode(normalizedEmail, code);
 
     // Generate tokens
     const token = createAccessToken({ userId: user.id, username: user.username, role: user.role });
@@ -463,32 +460,14 @@ router.post('/resend-code', async (req, res) => {
   try {
     const { email } = req.body;
     if (!email) return res.status(400).json({ error: 'email is required' });
-    const normalizedEmail = email.trim().toLowerCase();
-    const user = await prisma.user.findUnique({ where: { email: normalizedEmail } });
+    const user = await prisma.user.findUnique({ where: { email } });
     if (!user) return res.status(404).json({ error: 'User not found' });
     if (user.isVerified) return res.json({ message: 'Email already verified' });
-
-    // Cooldown via Redis (60s)
-    const cooldownKey = `verify:resend:${normalizedEmail}`;
-    if (redis.isOpen) {
-      const ttl = await redis.ttl(cooldownKey);
-      if (ttl > 0) {
-        return res.status(429).json({ error: 'Please wait before requesting another code', retryAfterSeconds: ttl });
-      }
-    }
-
     const code = Math.floor(100000 + Math.random() * 900000).toString();
     const expiresAt = new Date(Date.now() + 15 * 60 * 1000);
     await prisma.emailVerification.create({ data: { userId: user.id, code, expiresAt } });
-    sendVerificationCode(normalizedEmail, code).catch((e)=>{
-      console.error('Async resend sendVerificationCode error:', e?.message || e)
-    })
-
-    if (redis.isOpen) {
-      await redis.set(cooldownKey, '1', { EX: 60 });
-    }
-
-    res.json({ message: 'Verification code sent', cooldownSeconds: 60 });
+    await sendVerificationCode(email.trim().toLowerCase(), code);
+    res.json({ message: 'Verification code sent' });
   } catch (e) {
     console.error('Resend code error:', e);
     res.status(500).json({ error: 'Failed to resend code' });
