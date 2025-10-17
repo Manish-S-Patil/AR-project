@@ -1,4 +1,4 @@
-const nodemailer = require('nodemailer')
+import nodemailer from 'nodemailer'
 
 // Create transporter using Ethereal test account
 const transporter = nodemailer.createTransport({
