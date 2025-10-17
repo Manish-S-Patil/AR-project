@@ -77,7 +77,10 @@ router.post("/register", async (req, res) => {
     const code = Math.floor(100000 + Math.random() * 900000).toString();
     const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
     await prisma.emailVerification.create({ data: { userId: user.id, code, expiresAt } });
-    await sendVerificationCode(normalizedEmail, code);
+    // Fire-and-forget email to avoid blocking response on SMTP timeouts
+    sendVerificationCode(normalizedEmail, code).catch((e)=>{
+      console.error('Async sendVerificationCode error:', e?.message || e)
+    })
 
     // Generate tokens
     const token = createAccessToken({ userId: user.id, username: user.username, role: user.role });
@@ -477,7 +480,9 @@ router.post('/resend-code', async (req, res) => {
     const code = Math.floor(100000 + Math.random() * 900000).toString();
     const expiresAt = new Date(Date.now() + 15 * 60 * 1000);
     await prisma.emailVerification.create({ data: { userId: user.id, code, expiresAt } });
-    await sendVerificationCode(normalizedEmail, code);
+    sendVerificationCode(normalizedEmail, code).catch((e)=>{
+      console.error('Async resend sendVerificationCode error:', e?.message || e)
+    })
 
     if (redis.isOpen) {
       await redis.set(cooldownKey, '1', { EX: 60 });
