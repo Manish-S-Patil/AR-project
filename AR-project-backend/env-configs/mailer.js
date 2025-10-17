@@ -1,27 +1,19 @@
 import nodemailer from 'nodemailer'
 
-// SMTP config from environment
-const smtpHost = process.env.SMTP_HOST || 'smtp.gmail.com'
-// Prefer STARTTLS (587) on many hosts (Render) to avoid blocked SMTPS (465)
-const smtpPort = parseInt(process.env.SMTP_PORT || '587', 10)
-const smtpSecure = String(process.env.SMTP_SECURE || 'false') === 'true'
-const smtpUser = process.env.SMTP_USER
-const smtpPass = process.env.SMTP_PASS
-
-// Create transporter
+// Create transporter using Ethereal test account
 const transporter = nodemailer.createTransport({
-  host: smtpHost,
-  port: smtpPort,
-  secure: smtpSecure,
-  auth: smtpUser && smtpPass ? { user: smtpUser, pass: smtpPass } : undefined,
-  connectionTimeout: parseInt(process.env.SMTP_TIMEOUT || '10000', 10),
-  greetingTimeout: parseInt(process.env.SMTP_GREETING_TIMEOUT || '10000', 10),
-  socketTimeout: parseInt(process.env.SMTP_SOCKET_TIMEOUT || '15000', 10),
+  host: "smtp.gmail.com",
+  port: 465,
+  secure: true, // true for 465, false for other ports
+  auth: {
+    user: "kns.cyber.project@gmail.com",
+    pass: "cxgswgbywzxomcki",
+  },
 })
 
-const fromEmail = process.env.MAIL_FROM_EMAIL || smtpUser || 'no-reply@example.com'
-const fromName = process.env.MAIL_FROM_NAME || 'AR CyberGuard'
-const subjectPrefix = process.env.MAIL_SUBJECT_PREFIX || 'AR CyberGuard Verification Code'
+const fromEmail = "kns.cyber.project@gmail.com"
+const fromName = "AR CyberGuard"
+const subjectPrefix = "AR CyberGuard"
 
 export async function sendEmail(toEmail, toName, subject, text) {
   try {
