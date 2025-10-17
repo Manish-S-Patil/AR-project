@@ -7,7 +7,7 @@ import authRoutes from "./routes/authRoutes.js";
 import quizRoutes from "./routes/quizRoutes.js";
 import gameRoutes from "./routes/gameRoutes.js";
 import prisma from "./prisma/client.js";
-// import redis, { ensureRedisConnection } from "./redis/client.js";
+import redis, { ensureRedisConnection } from "./redis/client.js";
 
 dotenv.config();
 const app = express();
@@ -107,8 +107,14 @@ async function start() {
     process.exit(1);
   }
 
-  // Redis temporarily disabled
-  console.log("⚠️ Redis disabled for testing");
+  // Connect to Redis
+  try {
+    await ensureRedisConnection();
+    console.log("✅ Redis connected");
+  } catch (err) {
+    console.warn("⚠️ Redis connection failed:", err.message);
+    console.log("⚠️ Continuing without Redis (caching disabled)");
+  }
 
   app.listen(PORT, () => {
     console.log(`🚀 Server running on http://localhost:${PORT}`);
