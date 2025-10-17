@@ -1,34 +1,35 @@
-import { MailerSend, EmailParams, Sender, Recipient } from 'mailersend'
+const nodemailer = require('nodemailer')
 
-const apiToken = process.env.MAILERSEND_API_TOKEN
-const fromEmail = process.env.MAILERSEND_FROM_EMAIL
-const fromName = process.env.MAILERSEND_FROM_NAME || 'AR CyberGuard'
-const subjectPrefix = process.env.MAILERSEND_SUBJECT_PREFIX || '[AR CyberGuard]'
+// Create transporter using Ethereal test account
+const transporter = nodemailer.createTransport({
+  host: "smtp.ethereal.email",
+  port: 587,
+  secure: false, // true for 465, false for other ports
+  auth: {
+    user: "x5iku2entcjnkqdp@ethereal.email",
+    pass: "S3j2yXqK8F2kJ44bSS",
+  },
+})
 
-let client = null
-if (apiToken) {
-  client = new MailerSend({ apiKey: apiToken })
-}
+const fromEmail = "x5iku2entcjnkqdp@ethereal.email"
+const fromName = "AR CyberGuard"
+const subjectPrefix = "[AR CyberGuard]"
 
 export async function sendEmail(toEmail, toName, subject, text) {
-  if (!client || !fromEmail) {
-    // Fallback to console when not configured
-    console.log('📧 (dev) email to', toEmail, subject, text)
-    return { queued: false }
-  }
   try {
-    const sentFrom = new Sender(fromEmail, fromName)
-    const recipients = [new Recipient(toEmail, toName || toEmail)]
-    const emailParams = new EmailParams()
-      .setFrom(sentFrom)
-      .setTo(recipients)
-      .setSubject(`${subjectPrefix} ${subject}`)
-      .setText(text)
-
-    await client.email.send(emailParams)
-    return { queued: true }
+    const info = await transporter.sendMail({
+      from: `"${fromName}" <${fromEmail}>`,
+      to: toEmail,
+      subject: `${subjectPrefix} ${subject}`,
+      text: text,
+      html: `<p>${text.replace(/\n/g, '<br>')}</p>`
+    })
+    
+    console.log('📧 Email sent:', info.messageId)
+    console.log('📧 Preview URL:', nodemailer.getTestMessageUrl(info))
+    return { queued: true, messageId: info.messageId }
   } catch (e) {
-    console.error('MailerSend error:', e)
+    console.error('Nodemailer error:', e)
     return { queued: false, error: e?.message }
   }
 }
