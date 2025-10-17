@@ -460,14 +460,30 @@ router.post('/resend-code', async (req, res) => {
   try {
     const { email } = req.body;
     if (!email) return res.status(400).json({ error: 'email is required' });
-    const user = await prisma.user.findUnique({ where: { email } });
+    const normalizedEmail = email.trim().toLowerCase();
+    const user = await prisma.user.findUnique({ where: { email: normalizedEmail } });
     if (!user) return res.status(404).json({ error: 'User not found' });
     if (user.isVerified) return res.json({ message: 'Email already verified' });
+
+    // Cooldown via Redis (60s)
+    const cooldownKey = `verify:resend:${normalizedEmail}`;
+    if (redis.isOpen) {
+      const ttl = await redis.ttl(cooldownKey);
+      if (ttl > 0) {
+        return res.status(429).json({ error: 'Please wait before requesting another code', retryAfterSeconds: ttl });
+      }
+    }
+
     const code = Math.floor(100000 + Math.random() * 900000).toString();
     const expiresAt = new Date(Date.now() + 15 * 60 * 1000);
     await prisma.emailVerification.create({ data: { userId: user.id, code, expiresAt } });
-    await sendVerificationCode(email.trim().toLowerCase(), code);
-    res.json({ message: 'Verification code sent' });
+    await sendVerificationCode(normalizedEmail, code);
+
+    if (redis.isOpen) {
+      await redis.set(cooldownKey, '1', { EX: 60 });
+    }
+
+    res.json({ message: 'Verification code sent', cooldownSeconds: 60 });
   } catch (e) {
     console.error('Resend code error:', e);
     res.status(500).json({ error: 'Failed to resend code' });
