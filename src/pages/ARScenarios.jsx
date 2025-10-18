@@ -13,6 +13,8 @@ import {
 import { Button } from '../components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import { toast } from '../components/ui/use-toast';
+import { progressTracker } from '../lib/progressTracker';
+import API_CONFIG from '../lib/api';
 
 const ARScenarios = () => {
   const navigate = useNavigate();
@@ -23,6 +25,50 @@ const ARScenarios = () => {
   // Threat overlays removed per requirements
   const modelViewerRef = useRef(null);
   const [isARSupported, setIsARSupported] = useState(null); // null=unknown, true/false after check
+  const [startTime, setStartTime] = useState(null);
+  
+  const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+
+  // Record scenario completion
+  const recordScenarioCompletion = async (scenarioKey, score = 85) => {
+    const timeSpent = startTime ? Math.round((Date.now() - startTime) / 1000) : 0;
+    
+    // Record locally first
+    const completed = progressTracker.recordScenarioCompletion(scenarioKey, score, timeSpent);
+    
+    // Try to record on server if user is logged in
+    if (userData.token && !userData.isGuest) {
+      try {
+        const response = await fetch(API_CONFIG.getUrl(API_CONFIG.endpoints.progress.recordScenarioCompletion), {
+          method: 'POST',
+          headers: API_CONFIG.getAuthHeaders(userData.token),
+          body: JSON.stringify({
+            scenarioKey,
+            score,
+            timeSpent
+          })
+        });
+        
+        if (response.ok) {
+          console.log('Scenario completion recorded on server');
+        } else {
+          console.log('Server recording failed, using local storage');
+        }
+      } catch (error) {
+        console.log('Server recording failed, using local storage:', error);
+      }
+    }
+    
+    if (completed) {
+      toast({
+        title: "Scenario Completed! 🎉",
+        description: `You've successfully completed the ${scenarioKey.replace('-', ' ')} scenario`,
+        duration: 3000
+      });
+    }
+    
+    return completed;
+  };
 
   const scenarios = {
     'phishing': {
@@ -135,6 +181,7 @@ const ARScenarios = () => {
   const startSimulation = () => {
     setIsSimulating(true);
     setSimulationStep(0);
+    setStartTime(Date.now()); // Record start time
     // no threat overlays
     
     // Attempt to launch AR session via model-viewer when available
@@ -162,6 +209,10 @@ const ARScenarios = () => {
       setSimulationStep(prev => {
         if (prev >= 3) {
           clearInterval(interval);
+          // Record scenario completion when all steps are done
+          if (selectedScenario) {
+            recordScenarioCompletion(selectedScenario);
+          }
           return prev;
         }
         return prev + 1;
