@@ -637,13 +637,13 @@ const AdminPanel = () => {
         {/* Legacy Overview Content - Remove this section */}
         {false && (
           <>
-            {/* Stats Cards */}
-            <motion.div
-              variants={containerVariants}
-              initial="hidden"
-              animate="visible"
-              className="grid md:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8"
-            >
+        {/* Stats Cards */}
+        <motion.div
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+          className="grid md:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8"
+        >
           <motion.div variants={itemVariants}>
             <Card className="glass-effect cyber-border">
               <CardContent className="p-6">
@@ -880,10 +880,10 @@ const AdminPanel = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
           >
-            <Card className="glass-effect cyber-border">
-              <CardHeader>
+          <Card className="glass-effect cyber-border">
+            <CardHeader>
                 <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
-                  <div>
+                <div>
                     <CardTitle className="text-xl sm:text-2xl">User Management</CardTitle>
                     <CardDescription>
                       View and manage all registered users
@@ -906,10 +906,10 @@ const AdminPanel = () => {
                       <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
                       Refresh
                     </Button>
-                  </div>
                 </div>
-              </CardHeader>
-              <CardContent>
+              </div>
+            </CardHeader>
+            <CardContent>
                 {loading ? (
                   <div className="flex items-center justify-center py-12">
                     <RefreshCw className="w-8 h-8 animate-spin text-purple-400" />
@@ -1020,9 +1020,9 @@ const AdminPanel = () => {
                     </table>
                   </div>
                 )}
-              </CardContent>
-            </Card>
-          </motion.div>
+            </CardContent>
+          </Card>
+        </motion.div>
         )}
 
         {/* Game Content Management Section */}
@@ -1032,8 +1032,8 @@ const AdminPanel = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
           >
-            <Card className="glass-effect cyber-border">
-              <CardHeader>
+          <Card className="glass-effect cyber-border">
+            <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Gamepad2 className="w-5 h-5" />
                   Game Content Management
@@ -1045,14 +1045,14 @@ const AdminPanel = () => {
               <CardContent>
                 <div className="space-y-6">
                   {/* Phishing Email Manager */}
-                  <div>
+                <div>
                     <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
                       <Mail className="w-5 h-5" />
                       Phishing Email Manager
                     </h3>
                     <PhishingEmailManager />
-                  </div>
                 </div>
+              </div>
               </CardContent>
             </Card>
           </motion.div>
@@ -1074,12 +1074,12 @@ const AdminPanel = () => {
                 <CardDescription>
                   Create and manage quiz questions and categories
                 </CardDescription>
-              </CardHeader>
-              <CardContent>
+            </CardHeader>
+            <CardContent>
                 <QuizManager />
-              </CardContent>
-            </Card>
-          </motion.div>
+            </CardContent>
+          </Card>
+        </motion.div>
         )}
 
         {/* Reports Section */}

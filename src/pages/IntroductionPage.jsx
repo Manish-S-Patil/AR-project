@@ -72,17 +72,20 @@ const IntroductionPage = () => {
   };
 
   const renderAnimation = (animationType) => {
+    // Standardized container size for all animations - fixed dimensions
+    const containerClass = "relative w-60 h-40 mx-auto";
+    
     switch (animationType) {
       case 'shield':
         return (
-          <div className="relative w-64 h-64 mx-auto">
+          <div className={containerClass}>
             <motion.div
               className="absolute inset-0 flex items-center justify-center"
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
               transition={{ duration: 0.8, type: "spring" }}
             >
-              <Shield className="w-32 h-32 text-blue-400" />
+              <Shield className="w-16 h-16 text-blue-400" />
             </motion.div>
             <motion.div
               className="absolute inset-0 border-4 border-blue-400 rounded-full"
@@ -101,7 +104,7 @@ const IntroductionPage = () => {
       
       case 'ar':
         return (
-          <div className="relative w-64 h-64 mx-auto">
+          <div className={containerClass}>
             <motion.div
               className="absolute inset-0 flex items-center justify-center"
               initial={{ y: 20, opacity: 0 }}
@@ -111,19 +114,19 @@ const IntroductionPage = () => {
               <Smartphone className="w-24 h-24 text-cyan-400" />
             </motion.div>
             <motion.div
-              className="absolute top-8 left-8 w-8 h-8 bg-purple-500 rounded-full"
+              className="absolute top-16 left-16 w-6 h-6 bg-purple-500 rounded-full"
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
               transition={{ delay: 1, duration: 0.5 }}
             />
             <motion.div
-              className="absolute top-16 right-12 w-6 h-6 bg-blue-500 rounded-full"
+              className="absolute top-20 right-20 w-4 h-4 bg-blue-500 rounded-full"
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
               transition={{ delay: 1.2, duration: 0.5 }}
             />
             <motion.div
-              className="absolute bottom-12 left-16 w-10 h-10 bg-cyan-500 rounded-full"
+              className="absolute bottom-20 left-20 w-8 h-8 bg-cyan-500 rounded-full"
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
               transition={{ delay: 1.4, duration: 0.5 }}
@@ -133,16 +136,16 @@ const IntroductionPage = () => {
       
       case 'connection':
         return (
-          <div className="relative w-64 h-64 mx-auto">
-            <div className="flex justify-between items-center h-full">
+          <div className={containerClass}>
+            <div className="absolute inset-0 flex justify-between items-center px-12">
               <motion.div
-                className="flex flex-col items-center space-y-4"
+                className="flex flex-col items-center space-y-2"
                 initial={{ x: -50, opacity: 0 }}
                 animate={{ x: 0, opacity: 1 }}
                 transition={{ duration: 0.8 }}
               >
                 <Shield className="w-16 h-16 text-blue-400" />
-                <span className="text-sm text-blue-400">Cybersecurity</span>
+                <span className="text-xs text-blue-400">Cybersecurity</span>
               </motion.div>
               
               <motion.div
@@ -151,17 +154,17 @@ const IntroductionPage = () => {
                 animate={{ scale: 1 }}
                 transition={{ delay: 0.5, duration: 0.8 }}
               >
-                <ArrowRight className="w-8 h-8 text-purple-400" />
+                <ArrowRight className="w-6 h-6 text-purple-400" />
               </motion.div>
               
               <motion.div
-                className="flex flex-col items-center space-y-4"
+                className="flex flex-col items-center space-y-2"
                 initial={{ x: 50, opacity: 0 }}
                 animate={{ x: 0, opacity: 1 }}
                 transition={{ duration: 0.8 }}
               >
                 <Eye className="w-16 h-16 text-cyan-400" />
-                <span className="text-sm text-cyan-400">AR Visualization</span>
+                <span className="text-xs text-cyan-400">AR Visualization</span>
               </motion.div>
             </div>
           </div>
@@ -169,7 +172,7 @@ const IntroductionPage = () => {
       
       case 'demo':
         return (
-          <div className="relative w-64 h-64 mx-auto">
+          <div className={containerClass}>
             <motion.div
               className="absolute inset-0 flex items-center justify-center"
               initial={{ scale: 0 }}
@@ -179,21 +182,21 @@ const IntroductionPage = () => {
               <Smartphone className="w-24 h-24 text-cyan-400" />
             </motion.div>
             <motion.div
-              className="absolute top-4 right-4 flex items-center space-x-2 bg-red-500/20 px-3 py-1 rounded-full border border-red-500"
+              className="absolute top-12 right-12 flex items-center space-x-1 bg-red-500/20 px-2 py-1 rounded-full border border-red-500"
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 1, duration: 0.5 }}
             >
-              <AlertTriangle className="w-4 h-4 text-red-400" />
+              <AlertTriangle className="w-3 h-3 text-red-400" />
               <span className="text-xs text-red-400">Phishing</span>
             </motion.div>
             <motion.div
-              className="absolute bottom-4 left-4 flex items-center space-x-2 bg-yellow-500/20 px-3 py-1 rounded-full border border-yellow-500"
+              className="absolute bottom-12 left-12 flex items-center space-x-1 bg-yellow-500/20 px-2 py-1 rounded-full border border-yellow-500"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 1.2, duration: 0.5 }}
             >
-              <Lock className="w-4 h-4 text-yellow-400" />
+              <Lock className="w-3 h-3 text-yellow-400" />
               <span className="text-xs text-yellow-400">Malware</span>
             </motion.div>
           </div>
@@ -201,29 +204,29 @@ const IntroductionPage = () => {
       
       case 'safety':
         return (
-          <div className="relative w-64 h-64 mx-auto">
+          <div className={containerClass}>
             <motion.div
               className="absolute inset-0 flex items-center justify-center"
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
               transition={{ duration: 0.8 }}
             >
-              <CheckCircle className="w-32 h-32 text-green-400" />
+              <CheckCircle className="w-24 h-24 text-green-400" />
             </motion.div>
             <motion.div
-              className="absolute top-8 left-8 w-4 h-4 bg-green-500 rounded-full"
+              className="absolute top-16 left-16 w-3 h-3 bg-green-500 rounded-full"
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
               transition={{ delay: 0.5, duration: 0.3 }}
             />
             <motion.div
-              className="absolute top-12 right-12 w-4 h-4 bg-green-500 rounded-full"
+              className="absolute top-20 right-20 w-3 h-3 bg-green-500 rounded-full"
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
               transition={{ delay: 0.7, duration: 0.3 }}
             />
             <motion.div
-              className="absolute bottom-16 left-16 w-4 h-4 bg-green-500 rounded-full"
+              className="absolute bottom-20 left-20 w-3 h-3 bg-green-500 rounded-full"
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
               transition={{ delay: 0.9, duration: 0.3 }}
