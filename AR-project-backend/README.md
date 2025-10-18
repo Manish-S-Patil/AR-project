@@ -1,46 +1,54 @@
 # AR Cybersecurity Awareness Platform - Backend
 
-A robust Node.js backend API for the AR Cybersecurity Awareness Platform, providing user authentication, user management, and admin functionality.
+A robust Node.js backend API for the AR Cybersecurity Awareness Platform, featuring email verification, user management, admin controls, and comprehensive security features.
 
 ## 🚀 Features
 
-- **Dual Authentication System**: Separate user and admin authentication endpoints
-- **Role-based Access Control**: User roles (user/admin) with different permissions
-- **User Authentication**: JWT-based authentication with bcrypt password hashing
-- **Admin Authentication**: Dedicated admin login with role verification
-- **User Management**: Complete CRUD operations for user accounts
-- **Admin Panel**: Secure admin endpoints for user management
-- **Database Integration**: PostgreSQL with Prisma ORM
-- **Caching**: Redis integration for improved performance
-- **Security**: CORS enabled, input validation, and secure password handling
- - **Quizzes & Game Content**: DB-backed quiz categories/questions and phishing game entries
- - **Refresh Tokens**: HttpOnly cookie-based refresh flow for access token renewal
- - **Request Logging**: Lightweight request/response logger with redaction
+### 🔐 Authentication & Security
+- **📧 Email Verification**: Staged signup with Gmail SMTP integration
+- **🔑 JWT Authentication**: Access tokens with refresh token support
+- **👑 Admin Management**: Role-based access control and user management
+- **🛡️ Security**: CORS protection, input validation, password hashing
+- **🔒 User Protection**: Admin accounts cannot be deleted
+
+### 📊 Data Management
+- **🗄️ PostgreSQL**: Robust database with Prisma ORM
+- **⚡ Redis Caching**: Optional performance optimization
+- **📈 User Analytics**: Statistics and progress tracking
+- **🎯 Content Management**: Dynamic quiz and game content
+- **🔄 Database Migrations**: Automated schema management
+
+### 🌐 API Features
+- **📡 RESTful API**: Clean, well-documented endpoints
+- **🔍 Request Logging**: Comprehensive request/response logging
+- **⚡ Performance**: Connection pooling and caching
+- **🛠️ Error Handling**: Graceful error responses
+- **📝 Input Validation**: Server-side validation for all inputs
 
 ## 🛠️ Tech Stack
 
-- **Runtime**: Node.js
-- **Framework**: Express.js
-- **Database**: PostgreSQL
-- **ORM**: Prisma
-- **Authentication**: JWT + bcryptjs
-- **Caching**: Redis
-- **Environment**: dotenv
- - **Cookies**: cookie-parser (for refresh tokens)
+- **Runtime**: Node.js with Express.js
+- **Database**: PostgreSQL with Prisma ORM
+- **Caching**: Redis (optional, graceful fallback)
+- **Authentication**: JWT with refresh tokens
+- **Email**: Nodemailer with Gmail SMTP
+- **Security**: bcrypt, CORS, input validation
+- **Logging**: Custom request/response logger
 
 ## 📋 Prerequisites
 
-- Node.js (v18 or higher)
-- PostgreSQL database
-- Redis server (optional, for caching)
-- npm or yarn
+- **Node.js** (v18 or higher)
+- **PostgreSQL** database
+- **Redis** (optional, for caching)
+- **Gmail Account** with App Password
+- **npm** or yarn
 
 ## 🔧 Installation
 
-1. **Clone the repository**
+1. **Clone and navigate to backend**
    ```bash
    git clone <repository-url>
-   cd AR-project-backend
+   cd file-integrated/AR-project-backend
    ```
 
 2. **Install dependencies**
@@ -49,21 +57,29 @@ A robust Node.js backend API for the AR Cybersecurity Awareness Platform, provid
    ```
 
 3. **Environment Setup**
-   Create a `.env` file in the root directory:
+   Create `.env` file:
    ```env
-   # Database
-   DATABASE_URL="postgresql://username:password@localhost:5432/ar_cybersecurity_db"
+   # Database Configuration
+   DATABASE_URL="postgresql://user:password@localhost:5432/ar_project_db"
    
-   # JWT Secret
-   JWT_SECRET="your-super-secret-jwt-key-here"
+   # JWT Configuration
+   JWT_SECRET="your-super-secret-jwt-key-minimum-32-characters"
    JWT_EXPIRES_IN="7d"
-   REFRESH_TTL_DAYS="30"
+   REFRESH_TTL_DAYS=30
    
-   # Server
+   # Server Configuration
    PORT=5001
+   NODE_ENV=development
    
-   # Redis (optional)
-   REDIS_URL="redis://localhost:6379"
+   # CORS Configuration
+   ALLOWED_ORIGINS=http://localhost:5173,http://127.0.0.1:5173,https://ar-project-beta.vercel.app
+   
+   # Gmail SMTP Configuration
+   GMAIL_USER=your-email@gmail.com
+   GMAIL_APP_PASSWORD=your-gmail-app-password
+   
+   # Optional Redis Configuration
+   REDIS_URL=redis://localhost:6379
    ```
 
 4. **Database Setup**
@@ -74,377 +90,403 @@ A robust Node.js backend API for the AR Cybersecurity Awareness Platform, provid
    # Run database migrations
    npx prisma migrate dev
    
-   # Create default admin user
+   # Create admin user
    node scripts/create-admin.js
    ```
 
-5. **Default Admin Credentials**
-   The setup script creates a default admin user:
-   - **Username**: `admin`
-   - **Password**: `AdminSecure123!`
-   - **Email**: `admin@arcyberguard.com`
-   - **Role**: `admin`
+5. **Start the server**
+   ```bash
+   npm start
+   ```
 
-## 🚀 Running the Application
+   **Server will be available at:** `http://localhost:5001`
 
-### Development Mode
-```bash
-npm run dev
+## 📧 Gmail SMTP Setup
+
+### Step 1: Enable 2-Factor Authentication
+1. Go to [Google Account Settings](https://myaccount.google.com/)
+2. Security → 2-Step Verification
+3. Enable 2FA if not already enabled
+
+### Step 2: Generate App Password
+1. Go to Security → 2-Step Verification → App passwords
+2. Select "Mail" as the app
+3. Generate password (16 characters)
+4. Use this password in `GMAIL_APP_PASSWORD` (not your regular password)
+
+### Step 3: Configure Environment
+```env
+GMAIL_USER=your-email@gmail.com
+GMAIL_APP_PASSWORD=your-16-character-app-password
 ```
-The server will start with nodemon for auto-restart on file changes.
-
-### Production Mode
-```bash
-npm start
-```
-
-The server will be available at `http://localhost:5001`
-
-## 📚 API Endpoints
-
-### Authentication Routes (`/api/auth`)
-
-| Method | Endpoint | Description | Auth Required |
-|--------|----------|-------------|---------------|
-| POST | `/register` | Register a new user | No |
-| POST | `/login` | User login | No |
-| POST | `/admin/login` | Admin login | No |
-| GET | `/profile` | Get current user profile | Yes |
-| POST | `/refresh` | Issue new access token from refresh cookie | No (cookie) |
-| POST | `/logout` | Revoke refresh token and clear cookie | No (cookie) |
-| POST | `/verify-email` | Verify signup OTP `{ email, code }` | No |
-| POST | `/resend-code` | Resend signup OTP `{ email }` | No |
-| POST | `/forgot-password` | Request reset OTP `{ email }` | No |
-| POST | `/reset-password` | Reset password `{ email, code, newPassword }` | No |
-
-### User Routes (`/api/users`)
-
-| Method | Endpoint | Description | Auth Required |
-|--------|----------|-------------|---------------|
-| GET | `/` | Get all users (basic) | No |
-| POST | `/` | Create a new user | No |
-| GET | `/admin/all` | Get all users (admin) | Yes |
-
-### Quiz Routes (`/api/quiz`)
-
-| Method | Endpoint | Description | Auth Required |
-|--------|----------|-------------|---------------|
-| GET | `/categories` | List quiz categories | No |
-| GET | `/category/:key` | Get questions for a category | No |
-| POST | `/admin/category` | Upsert category | Yes (admin) |
-| POST | `/admin/question` | Create question with options | Yes (admin) |
-
-### Game Routes (`/api/game`)
-
-| Method | Endpoint | Description | Auth Required |
-|--------|----------|-------------|---------------|
-| GET | `/phishing-emails` | List active phishing email entries | No |
-| POST | `/admin/phishing-email` | Create phishing email entry | Yes (admin) |
-| PATCH | `/admin/phishing-email/:id` | Update/toggle phishing email | Yes (admin) |
 
 ## 🔐 Authentication System
 
-The API uses short‑lived access JWTs with role-based access control and long‑lived refresh tokens (HttpOnly cookie). Include the access token in the Authorization header:
+### 📧 Staged Email Verification Signup
 
-```
-Authorization: Bearer <your-jwt-token>
-```
+**Flow:**
+1. **POST** `/api/auth/register`
+   - Creates user with temporary password
+   - Sends verification code via email
+   - Returns JWT token for verification step
 
-### User Roles
-- **user**: Default role for regular users
-- **admin**: Administrative role with elevated permissions
+2. **POST** `/api/auth/verify-email`
+   - Verifies 6-digit code
+   - Marks email as verified
+   - Proceeds to password setting
 
-### Authentication & Session Flow
-1. **User Registration / Login / Admin Login**: Issues an access JWT (default 7d) and sets a `refresh_token` cookie (default 30d).
-2. **Accessing Protected Routes**: Send the access token via `Authorization: Bearer <token>`.
-3. **Refresh**: When the access token expires, call `POST /api/auth/refresh` (cookie is sent automatically) to receive a new access token.
-4. **Logout**: `POST /api/auth/logout` revokes the current refresh token and clears the cookie.
-5. **Role Verification**: Server validates user role for protected endpoints.
+3. **POST** `/api/auth/change-password`
+   - Uses temporary password as current password
+   - Sets user's real password
+   - Account ready for login
 
-### Registration Request
-```json
-POST /api/auth/register
-{
-  "username": "johndoe",
-  "email": "john@example.com",
-  "password": "securepassword123",
-  "name": "John Doe"
-}
-```
+### 🔑 Password Management
 
-### User Login Request
-```json
-POST /api/auth/login
-{
-  "username": "johndoe",
-  "password": "securepassword123"
-}
-```
+- **Temporary Passwords**: Generated during signup (`Tmp-{random}-{timestamp}`)
+- **Password Hashing**: bcrypt with salt rounds 10
+- **Password Reset**: Forgot password with email verification
+- **Password Change**: Authenticated users can change passwords
 
-### Admin Login Request
-```json
-POST /api/auth/admin/login
-{
-  "username": "admin",
-  "password": "AdminSecure123!"
-}
-```
+### 👑 Admin Features
 
-### Response Format
-```json
-{
-  "message": "Login successful",
-  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-  "user": {
-    "id": 1,
-    "username": "johndoe",
-    "email": "john@example.com",
-    "name": "John Doe",
-    "role": "user"
-  }
-}
-```
+- **User Management**: View all users with complete information
+- **Delete Users**: Remove non-admin users (admin protection)
+- **Content Management**: Create quizzes and game content
+- **Statistics**: User metrics and analytics
+- **Role Protection**: Cannot delete admin accounts or self
 
-### Admin Login Response
-```json
-{
-  "message": "Admin login successful",
-  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-  "user": {
-    "id": 1,
-    "username": "admin",
-    "email": "admin@arcyberguard.com",
-    "name": "System Administrator",
-    "role": "admin"
-  }
-}
-```
+## 📡 API Endpoints
+
+### 🔐 Authentication Endpoints
+
+| Method | Endpoint | Description | Auth Required |
+|--------|----------|-------------|---------------|
+| POST | `/api/auth/register` | Create new user account | No |
+| POST | `/api/auth/login` | User login | No |
+| POST | `/api/auth/admin/login` | Admin login | No |
+| POST | `/api/auth/verify-email` | Verify email with code | No |
+| POST | `/api/auth/resend-code` | Resend verification code | No |
+| POST | `/api/auth/forgot-password` | Request password reset | No |
+| POST | `/api/auth/reset-password` | Reset password with code | No |
+| POST | `/api/auth/change-password` | Change password | Yes |
+| POST | `/api/auth/refresh` | Refresh access token | No |
+| POST | `/api/auth/logout` | Logout user | No |
+| GET | `/api/auth/profile` | Get user profile | Yes |
+
+### 👑 Admin Endpoints
+
+| Method | Endpoint | Description | Auth Required |
+|--------|----------|-------------|---------------|
+| GET | `/api/auth/admin/users` | Get all users | Admin |
+| DELETE | `/api/auth/admin/user/:id` | Delete user | Admin |
+
+### 🎯 Quiz Endpoints
+
+| Method | Endpoint | Description | Auth Required |
+|--------|----------|-------------|---------------|
+| GET | `/api/quiz/categories` | Get quiz categories | No |
+| GET | `/api/quiz/category/:key` | Get quiz by category | No |
+| POST | `/api/quiz/admin/category` | Create/update category | Admin |
+| POST | `/api/quiz/admin/question` | Create question | Admin |
+| GET | `/api/quiz/admin/questions` | Get all questions | Admin |
+| PUT | `/api/quiz/admin/question/:id` | Update question | Admin |
+| DELETE | `/api/quiz/admin/question/:id` | Delete question | Admin |
+
+### 🎮 Game Endpoints
+
+| Method | Endpoint | Description | Auth Required |
+|--------|----------|-------------|---------------|
+| GET | `/api/game/phishing-emails` | Get phishing emails | No |
+| POST | `/api/game/admin/phishing-email` | Create phishing email | Admin |
+| GET | `/api/game/admin/phishing-emails` | Get all phishing emails | Admin |
+| PATCH | `/api/game/admin/phishing-email/:id` | Update phishing email | Admin |
+| DELETE | `/api/game/admin/phishing-email/:id` | Delete phishing email | Admin |
 
 ## 🗄️ Database Schema
 
-### User Model
-```prisma
+### Users Table
+```sql
 model User {
-  id       Int     @id @default(autoincrement())
-  username String  @unique
-  email    String  @unique
-  password String
-  name     String?
-  role     String  @default("user") // "user" or "admin"
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id          Int      @id @default(autoincrement())
+  username    String   @unique
+  email       String   @unique
+  password    String
+  name        String?
+  role        String   @default("user")
+  isVerified  Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  refreshTokens      RefreshToken[]
+  emailVerifications EmailVerification[]
+  passwordResets     PasswordReset[]
 }
+```
 
-### Quiz & Game Models (Prisma)
-
-```prisma
-model QuizCategory {
-  id          Int            @id @default(autoincrement())
-  key         String         @unique
-  title       String
-  description String?
-  questions   QuizQuestion[]
-  createdAt   DateTime       @default(now())
-  updatedAt   DateTime       @updatedAt
-}
-
-model QuizQuestion {
-  id          Int           @id @default(autoincrement())
-  question    String
-  explanation String?
-  categoryId  Int
-  category    QuizCategory  @relation(fields: [categoryId], references: [id])
-  options     QuizOption[]
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
-}
-
-model QuizOption {
-  id          Int          @id @default(autoincrement())
-  text        String
-  isCorrect   Boolean      @default(false)
-  questionId  Int
-  question    QuizQuestion @relation(fields: [questionId], references: [id])
-}
-
-model PhishingEmail {
-  id         Int      @id @default(autoincrement())
-  sender     String
-  subject    String
-  content    String
-  isPhishing Boolean  @default(true)
-  indicators String[]
-  active     Boolean  @default(true)
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-}
-
+### Authentication Tables
+```sql
 model RefreshToken {
   id        Int      @id @default(autoincrement())
   token     String   @unique
   userId    Int
-  user      User     @relation(fields: [userId], references: [id])
   expiresAt DateTime
   revokedAt DateTime?
   createdAt DateTime @default(now())
+  
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model EmailVerification {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  code      String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model PasswordReset {
   id        Int      @id @default(autoincrement())
   userId    Int
-  user      User     @relation(fields: [userId], references: [id])
   code      String
   expiresAt DateTime
   createdAt DateTime @default(now())
+  
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
-```
-```
-
-## 🔒 Security Features
-
-- **Password Hashing**: Uses bcryptjs with salt rounds
-- **JWT Tokens**: Secure token-based authentication with role information
-- **Role-based Access**: Separate authentication for users and admins
-- **Admin Verification**: Server-side admin role validation
-- **CORS**: Configurable cross-origin resource sharing
-- **Input Validation**: Request body validation
-- **SQL Injection Protection**: Prisma ORM prevents SQL injection
-- **Rate Limiting**: Can be easily added with express-rate-limit
-
-## 👑 Admin Management
-
-### Creating Admin Users
-Admin users can be created using the provided script:
-
-```bash
-node scripts/create-admin.js
-```
-
-### Admin User Properties
-- **Username**: Must be unique
-- **Email**: Must be unique
-- **Password**: Hashed with bcrypt
-- **Role**: Set to "admin"
-- **Name**: Display name for the admin
-
-### Admin Authentication
-- **Separate Endpoint**: `/api/auth/admin/login`
-- **Role Validation**: Only users with `role: "admin"` can authenticate
-- **JWT Token**: Includes role information for frontend authorization
-- **Security**: Same security measures as user authentication
-
-### Admin Script Features
-- **Duplicate Check**: Prevents creating multiple admin users
-- **Secure Password**: Generates strong default password
-- **Database Integration**: Uses Prisma for database operations
-- **Error Handling**: Comprehensive error handling and logging
-
-## 🧪 Testing
-
-Test the API endpoints using tools like Postman, curl, or the included test script:
-
-```bash
-# Test basic connectivity
-curl http://localhost:5001/
-
-# Test user registration
-curl -X POST http://localhost:5001/api/auth/register \
-  -H "Content-Type: application/json" \
-  -d '{"username":"testuser","email":"test@example.com","password":"testpass123","name":"Test User"}'
-
-# Test admin login
-curl -X POST http://localhost:5001/api/auth/admin/login \
-  -H "Content-Type: application/json" \
-  -d '{"username":"admin","password":"AdminSecure123!"}'
-```
-
-## 📁 Project Structure
-
-```
-AR-project-backend/
-├── models/                 # Database models (if using separate model files)
-├── prisma/
-│   ├── client.js          # Prisma client configuration
-│   ├── schema.prisma      # Database schema
-│   └── migrations/        # Database migrations
-├── redis/
-│   └── client.js          # Redis client configuration
-├── routes/
-│   ├── authRoutes.js      # Authentication routes (user & admin)
-│   └── userRoutes.js      # User management routes
-├── scripts/
-│   └── create-admin.js    # Admin user creation script
-├── server.js              # Main server file
-├── package.json           # Dependencies and scripts
-└── .env                   # Environment variables
 ```
 
 ## 🚀 Deployment
 
-### Environment Variables for Production
-```env
-NODE_ENV=production
-DATABASE_URL="postgresql://user:pass@host:port/db"
-JWT_SECRET="your-production-secret-key"
-PORT=5001
-REDIS_URL="redis://your-redis-host:6379"
-```
+### 🌐 Render Deployment
 
-### Docker Deployment (Optional)
-```dockerfile
-FROM node:18-alpine
-WORKDIR /app
-COPY package*.json ./
-RUN npm ci --only=production
-COPY . .
-RUN npm run prisma:generate
-EXPOSE 5001
-CMD ["npm", "start"]
-```
+1. **Connect Repository**
+   - Connect your GitHub repository to Render
+   - Select the `AR-project-backend` directory
 
-## 🔧 Configuration
+2. **Environment Variables**
+   ```env
+   # Database
+   DATABASE_URL=postgresql://user:password@host:port/database
+   
+   # JWT
+   JWT_SECRET=your-super-secret-jwt-key-minimum-32-characters
+   JWT_EXPIRES_IN=7d
+   REFRESH_TTL_DAYS=30
+   
+   # CORS
+   ALLOWED_ORIGINS=https://your-frontend.vercel.app,https://your-domain.com
+   
+   # Gmail SMTP
+   GMAIL_USER=your-email@gmail.com
+   GMAIL_APP_PASSWORD=your-gmail-app-password
+   
+   # Optional Redis
+   REDIS_URL=redis://user:password@host:port
+   
+   # Server
+   NODE_ENV=production
+   ```
 
-### CORS & Cookies
-The server is configured to allow all origins in development with `credentials: true` for cookie support. For production, set explicit origins and keep `credentials: true` so refresh cookies work:
+3. **Build Settings**
+   - **Build Command**: `npm install && npx prisma generate && npx prisma db push`
+   - **Start Command**: `npm start`
+   - **Node Version**: 18.x
 
-```javascript
-app.use(cors({
-  origin: ['https://yourdomain.com', 'https://www.yourdomain.com'],
-  credentials: true
-}));
-app.use(cookieParser());
-```
+4. **Database Setup**
+   - Create PostgreSQL database on Render
+   - Use the connection string in `DATABASE_URL`
+   - Run migrations automatically during build
 
-### Redis Configuration
-Redis is optional but recommended for caching. If Redis is not available, the application will continue to work without caching.
+### 🔧 Local Development
+
+1. **Start PostgreSQL**
+   ```bash
+   # macOS with Homebrew
+   brew services start postgresql
+   
+   # Ubuntu/Debian
+   sudo systemctl start postgresql
+   ```
+
+2. **Start Redis** (optional)
+   ```bash
+   # macOS with Homebrew
+   brew services start redis
+   
+   # Ubuntu/Debian
+   sudo systemctl start redis
+   ```
+
+3. **Run Development Server**
+   ```bash
+   npm start
+   ```
+
+## 🔒 Security Features
+
+### 🛡️ Authentication Security
+- **JWT Tokens**: Secure token-based authentication
+- **Password Hashing**: bcrypt with salt rounds 10
+- **Role-based Access**: Separate user and admin authentication
+- **Input Validation**: Server-side validation for all inputs
+- **CORS Protection**: Configured for specific origins
+
+### 🔐 Admin Security
+- **Separate Endpoints**: Dedicated admin authentication routes
+- **Role Verification**: Server-side admin role validation
+- **Protected Routes**: Admin endpoints require admin role
+- **User Protection**: Cannot delete admin accounts or self
+- **Secure Headers**: Proper security headers configuration
+
+### 📧 Email Security
+- **SMTP Authentication**: Gmail App Password authentication
+- **Code Expiration**: Verification codes expire in 15 minutes
+- **Rate Limiting**: Built-in email sending rate limits
+- **Secure Headers**: Email security headers
+
+## 📊 Performance Features
+
+### ⚡ Caching (Redis)
+- **User Data**: Cached user information
+- **Quiz Content**: Cached quiz questions and categories
+- **Game Content**: Cached phishing email data
+- **Graceful Fallback**: Works without Redis
+
+### 🔄 Connection Management
+- **Database Pooling**: Prisma connection pooling
+- **SMTP Pooling**: Nodemailer connection pooling
+- **Rate Limiting**: Built-in rate limiting for email sending
 
 ## 🐛 Troubleshooting
 
 ### Common Issues
 
-1. **Database Connection Error**
-   - Verify DATABASE_URL in .env file
-   - Ensure PostgreSQL is running
-   - Check database credentials
+1. **Email Verification Not Working**
+   - Check Gmail App Password is correct (no spaces)
+   - Verify 2FA is enabled on Gmail account
+   - Check logs for SMTP errors
+   - Ensure `GMAIL_USER` and `GMAIL_APP_PASSWORD` are set
 
-2. **JWT Token Issues**
-   - Verify JWT_SECRET is set in .env
-   - Check token expiration (default: 7 days). If using refresh flow, ensure `cookie-parser` is enabled and cookies are allowed by CORS.
+2. **Database Connection Issues**
+   - Verify `DATABASE_URL` format: `postgresql://user:password@host:port/database`
+   - Run `npx prisma migrate dev` to sync schema
+   - Check if PostgreSQL is running
+   - Verify database exists
 
-3. **Redis Connection Issues**
+3. **CORS Errors**
+   - Verify `ALLOWED_ORIGINS` includes your frontend domain
+   - Check logs for CORS debugging messages
+   - Ensure frontend URL matches exactly (including https/http)
+
+4. **Redis Connection Issues**
    - Redis is optional - app works without it
-   - Check REDIS_URL if using Redis
+   - Check `REDIS_URL` format if using external Redis
+   - Backend will log "Redis disabled" if not available
 
-4. **Admin Authentication Issues**
+5. **JWT Token Issues**
+   - Verify `JWT_SECRET` is set and secure
+   - Check token expiration settings
+   - Ensure refresh token cookies are working
+
+6. **Admin Access Issues**
    - Verify admin user exists in database
-   - Check if user has `role: "admin"`
-   - Verify admin credentials are correct
-   - Run `node scripts/create-admin.js` to create admin user
-   - Check JWT token includes role information
- - If access token expired, call `/api/auth/refresh` to obtain a new token
+   - Check user has `role: "admin"`
+   - Ensure admin account is verified
+   - Use correct admin credentials
 
-### Logs
-The server logs important events to the console. Check the terminal output for error messages.
+## 📝 Scripts
+
+### Available Scripts
+
+| Script | Description |
+|--------|-------------|
+| `npm start` | Start production server |
+| `npm run dev` | Start development server |
+| `npm run build` | Build for production |
+| `npx prisma migrate dev` | Run database migrations |
+| `npx prisma generate` | Generate Prisma client |
+| `npx prisma db push` | Push schema to database |
+| `node scripts/create-admin.js` | Create admin user |
+
+### Custom Scripts
+
+**Create Admin User**
+```bash
+node scripts/create-admin.js
+```
+
+**Database Reset**
+```bash
+npx prisma migrate reset
+npx prisma migrate dev
+node scripts/create-admin.js
+```
+
+## 🔍 Logging
+
+### Request/Response Logging
+- **Incoming Requests**: Method, URL, body (sensitive data redacted)
+- **Outgoing Responses**: Status code, response time, response data
+- **Error Logging**: Detailed error information
+- **CORS Logging**: Origin checks and decisions
+
+### Log Format
+```
+➡️  POST /api/auth/register body: [redacted]
+⬅️  201 POST /api/auth/register 125716ms resp: [redacted]
+🔍 CORS Origin check: https://ar-project-beta.vercel.app
+✅ CORS allowed for: https://ar-project-beta.vercel.app
+📧 Email sent: <message-id@gmail.com>
+```
+
+## 📄 Environment Variables Reference
+
+### Required Variables
+```env
+DATABASE_URL=postgresql://user:password@host:port/database
+JWT_SECRET=your-super-secret-jwt-key-minimum-32-characters
+GMAIL_USER=your-email@gmail.com
+GMAIL_APP_PASSWORD=your-gmail-app-password
+```
+
+### Optional Variables
+```env
+PORT=5001
+NODE_ENV=development
+JWT_EXPIRES_IN=7d
+REFRESH_TTL_DAYS=30
+ALLOWED_ORIGINS=http://localhost:5173,https://your-domain.com
+REDIS_URL=redis://localhost:6379
+```
+
+## 🧪 Testing
+
+### Manual Testing
+
+1. **Authentication Flow**
+   - Test user registration with email verification
+   - Test admin login and access
+   - Test password reset flow
+   - Test JWT token refresh
+
+2. **Admin Functions**
+   - Test user management
+   - Test user deletion (non-admin only)
+   - Test content management
+   - Test role-based access
+
+3. **Email System**
+   - Test verification code sending
+   - Test password reset emails
+   - Test email delivery to different providers
+
+4. **API Endpoints**
+   - Test all CRUD operations
+   - Test error handling
+   - Test input validation
+   - Test CORS configuration
 
 ## 📝 Contributing
 
@@ -454,6 +496,20 @@ The server logs important events to the console. Check the terminal output for e
 4. Test thoroughly
 5. Submit a pull request
 
+### Development Guidelines
+- Follow Node.js best practices
+- Use proper error handling
+- Add input validation
+- Test all endpoints
+- Document new features
+- Maintain security standards
+
+## 🔗 Related Documentation
+
+- [Frontend README](../README.md)
+- [Deployment Guide](../DEPLOYMENT_GUIDE.md)
+- [Email Verification Guide](../EMAIL_VERIFICATION.md)
+
 ## 📄 License
 
 This project is licensed under the MIT License.
@@ -462,8 +518,9 @@ This project is licensed under the MIT License.
 
 For support and questions:
 - Create an issue in the repository
-- Check the troubleshooting section above
+- Check the troubleshooting section
 - Review the API documentation
+- Test with the provided examples
 
 ---
 

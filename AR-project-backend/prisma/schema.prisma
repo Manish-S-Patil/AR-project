@@ -22,6 +22,9 @@ model User {
   refreshTokens RefreshToken[]
   emailVerifications EmailVerification[]
   passwordResets PasswordReset[]
+  progress UserProgress[]
+  quizAttempts QuizAttempt[]
+  scenarioCompletions ScenarioCompletion[]
 }
 
 
@@ -96,6 +99,50 @@ model PasswordReset {
   code      String
   expiresAt DateTime
   createdAt DateTime @default(now())
+}
+
+// Progress tracking models
+model UserProgress {
+  id                Int      @id @default(autoincrement())
+  userId            Int
+  user              User     @relation(fields: [userId], references: [id])
+  scenariosCompleted Int     @default(0)
+  quizzesPassed     Int     @default(0)
+  totalScore        Int     @default(0)
+  lastUpdated       DateTime @default(now())
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  
+  @@unique([userId])
+}
+
+model QuizAttempt {
+  id          Int      @id @default(autoincrement())
+  userId      Int
+  user        User     @relation(fields: [userId], references: [id])
+  categoryKey String   // e.g., "phishing", "general", etc.
+  score       Int      // number of correct answers
+  totalQuestions Int   // total questions in quiz
+  passed      Boolean  // true if score >= 80%
+  timeSpent   Int?     // time in seconds
+  answers     Json?    // store user answers for review
+  createdAt   DateTime @default(now())
+  
+  @@index([userId, categoryKey])
+}
+
+model ScenarioCompletion {
+  id          Int      @id @default(autoincrement())
+  userId      Int
+  user        User     @relation(fields: [userId], references: [id])
+  scenarioKey String   // e.g., "phishing", "fake-login", etc.
+  completed   Boolean  @default(false)
+  score       Int?     // optional score for scenario
+  timeSpent   Int?     // time in seconds
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@unique([userId, scenarioKey])
 }
 
 
