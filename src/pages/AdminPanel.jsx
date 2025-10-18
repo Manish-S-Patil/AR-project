@@ -184,53 +184,53 @@ const AdminPanel = () => {
     const avgScore = totalUsers > 0 ? progressData.reduce((sum, user) => sum + user.totalScore, 0) / totalUsers : 0;
 
     return (
-      <div className="space-y-6">
+      <div className="space-y-4 sm:space-y-6">
         {/* Summary Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4">
           <Card className="glass-effect cyber-border">
-            <CardContent className="p-6">
+            <CardContent className="p-3 sm:p-4 lg:p-6">
               <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Total Users</p>
-                  <p className="text-2xl font-bold">{totalUsers}</p>
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs sm:text-sm font-medium text-muted-foreground truncate">Total Users</p>
+                  <p className="text-lg sm:text-xl lg:text-2xl font-bold">{totalUsers}</p>
                 </div>
-                <Users className="w-8 h-8 text-blue-400" />
+                <Users className="w-5 h-5 sm:w-6 sm:h-6 lg:w-8 lg:h-8 text-blue-400 flex-shrink-0" />
               </div>
             </CardContent>
           </Card>
 
           <Card className="glass-effect cyber-border">
-            <CardContent className="p-6">
+            <CardContent className="p-3 sm:p-4 lg:p-6">
               <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Avg Scenarios</p>
-                  <p className="text-2xl font-bold">{totalUsers > 0 ? avgScenarios.toFixed(1) : '0.0'}</p>
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs sm:text-sm font-medium text-muted-foreground truncate">Avg Scenarios</p>
+                  <p className="text-lg sm:text-xl lg:text-2xl font-bold">{totalUsers > 0 ? avgScenarios.toFixed(1) : '0.0'}</p>
                 </div>
-                <Target className="w-8 h-8 text-green-400" />
+                <Target className="w-5 h-5 sm:w-6 sm:h-6 lg:w-8 lg:h-8 text-green-400 flex-shrink-0" />
               </div>
             </CardContent>
           </Card>
 
           <Card className="glass-effect cyber-border">
-            <CardContent className="p-6">
+            <CardContent className="p-3 sm:p-4 lg:p-6">
               <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Avg Quizzes</p>
-                  <p className="text-2xl font-bold">{totalUsers > 0 ? avgQuizzes.toFixed(1) : '0.0'}</p>
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs sm:text-sm font-medium text-muted-foreground truncate">Avg Quizzes</p>
+                  <p className="text-lg sm:text-xl lg:text-2xl font-bold">{totalUsers > 0 ? avgQuizzes.toFixed(1) : '0.0'}</p>
                 </div>
-                <Trophy className="w-8 h-8 text-yellow-400" />
+                <Trophy className="w-5 h-5 sm:w-6 sm:h-6 lg:w-8 lg:h-8 text-yellow-400 flex-shrink-0" />
               </div>
             </CardContent>
           </Card>
 
           <Card className="glass-effect cyber-border">
-            <CardContent className="p-6">
+            <CardContent className="p-3 sm:p-4 lg:p-6">
               <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Avg Score</p>
-                  <p className="text-2xl font-bold">{totalUsers > 0 ? avgScore.toFixed(0) : '0'}</p>
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs sm:text-sm font-medium text-muted-foreground truncate">Avg Score</p>
+                  <p className="text-lg sm:text-xl lg:text-2xl font-bold">{totalUsers > 0 ? avgScore.toFixed(0) : '0'}</p>
                 </div>
-                <TrendingUp className="w-8 h-8 text-purple-400" />
+                <TrendingUp className="w-5 h-5 sm:w-6 sm:h-6 lg:w-8 lg:h-8 text-purple-400 flex-shrink-0" />
               </div>
             </CardContent>
           </Card>
@@ -238,27 +238,27 @@ const AdminPanel = () => {
 
         {/* User Progress Table */}
         <Card className="glass-effect cyber-border">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <BarChart3 className="w-5 h-5" />
+          <CardHeader className="p-4 sm:p-6">
+            <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+              <BarChart3 className="w-5 h-5 sm:w-6 sm:h-6" />
               User Progress Details
             </CardTitle>
-            <CardDescription>
+            <CardDescription className="text-xs sm:text-sm">
               Detailed progress tracking for all users
             </CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-0 sm:p-6 pt-0">
             {progressLoading ? (
               <div className="flex items-center justify-center py-8">
                 <RefreshCw className="w-6 h-6 animate-spin mr-2" />
-                Loading progress data...
+                <span className="text-sm">Loading progress data...</span>
               </div>
             ) : progressData.length === 0 ? (
-              <div className="flex items-center justify-center py-12 text-muted-foreground">
+              <div className="flex items-center justify-center py-12 text-muted-foreground px-4">
                 <div className="text-center">
-                  <BarChart3 className="w-16 h-16 mx-auto mb-4 opacity-50" />
-                  <h3 className="text-lg font-medium mb-2">No Progress Data</h3>
-                  <p>No user progress data available yet. Progress will appear here as users complete scenarios and quizzes.</p>
+                  <BarChart3 className="w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-4 opacity-50" />
+                  <h3 className="text-base sm:text-lg font-medium mb-2">No Progress Data</h3>
+                  <p className="text-xs sm:text-sm">No user progress data available yet. Progress will appear here as users complete scenarios and quizzes.</p>
                 </div>
               </div>
             ) : (
@@ -266,27 +266,27 @@ const AdminPanel = () => {
                 <table className="w-full">
                   <thead>
                     <tr className="border-b border-muted">
-                      <th className="text-left p-4 font-medium">User</th>
-                      <th className="text-left p-4 font-medium">Scenarios</th>
-                      <th className="text-left p-4 font-medium">Quizzes</th>
-                      <th className="text-left p-4 font-medium">Score</th>
-                      <th className="text-left p-4 font-medium">Last Activity</th>
-                      <th className="text-left p-4 font-medium">Progress</th>
+                      <th className="text-left p-2 sm:p-4 font-medium text-xs sm:text-sm">User</th>
+                      <th className="text-left p-2 sm:p-4 font-medium text-xs sm:text-sm hidden sm:table-cell">Scenarios</th>
+                      <th className="text-left p-2 sm:p-4 font-medium text-xs sm:text-sm hidden sm:table-cell">Quizzes</th>
+                      <th className="text-left p-2 sm:p-4 font-medium text-xs sm:text-sm">Score</th>
+                      <th className="text-left p-2 sm:p-4 font-medium text-xs sm:text-sm hidden lg:table-cell">Last Activity</th>
+                      <th className="text-left p-2 sm:p-4 font-medium text-xs sm:text-sm hidden md:table-cell">Progress</th>
                     </tr>
                   </thead>
                   <tbody>
                     {progressData.map((user) => (
                       <tr key={user.userId} className="border-b border-muted/50 hover:bg-muted/20">
-                        <td className="p-4">
-                          <div>
-                            <p className="font-medium">{user.username}</p>
-                            <p className="text-sm text-muted-foreground">{user.email}</p>
+                        <td className="p-2 sm:p-4">
+                          <div className="min-w-0">
+                            <p className="font-medium text-sm sm:text-base truncate">{user.username}</p>
+                            <p className="text-xs sm:text-sm text-muted-foreground truncate">{user.email}</p>
                           </div>
                         </td>
-                        <td className="p-4">
+                        <td className="p-2 sm:p-4 hidden sm:table-cell">
                           <div className="flex items-center gap-2">
-                            <span className="font-medium">{user.scenariosCompleted}/5</span>
-                            <div className="w-16 bg-muted rounded-full h-2">
+                            <span className="font-medium text-xs sm:text-sm">{user.scenariosCompleted}/5</span>
+                            <div className="w-12 sm:w-16 bg-muted rounded-full h-2">
                               <div 
                                 className="bg-gradient-to-r from-blue-500 to-purple-600 h-2 rounded-full transition-all duration-300"
                                 style={{ width: `${(user.scenariosCompleted / 5) * 100}%` }}
@@ -294,10 +294,10 @@ const AdminPanel = () => {
                             </div>
                           </div>
                         </td>
-                        <td className="p-4">
+                        <td className="p-2 sm:p-4 hidden sm:table-cell">
                           <div className="flex items-center gap-2">
-                            <span className="font-medium">{user.quizzesPassed}/5</span>
-                            <div className="w-16 bg-muted rounded-full h-2">
+                            <span className="font-medium text-xs sm:text-sm">{user.quizzesPassed}/5</span>
+                            <div className="w-12 sm:w-16 bg-muted rounded-full h-2">
                               <div 
                                 className="bg-gradient-to-r from-green-500 to-blue-500 h-2 rounded-full transition-all duration-300"
                                 style={{ width: `${(user.quizzesPassed / 5) * 100}%` }}
@@ -305,15 +305,15 @@ const AdminPanel = () => {
                             </div>
                           </div>
                         </td>
-                        <td className="p-4">
-                          <span className="font-medium text-green-400">{user.totalScore}</span>
+                        <td className="p-2 sm:p-4">
+                          <span className="font-medium text-green-400 text-sm sm:text-base">{user.totalScore}</span>
                         </td>
-                        <td className="p-4">
-                          <span className="text-sm text-muted-foreground">
+                        <td className="p-2 sm:p-4 hidden lg:table-cell">
+                          <span className="text-xs sm:text-sm text-muted-foreground">
                             {formatDate(user.lastActivity)}
                           </span>
                         </td>
-                        <td className="p-4">
+                        <td className="p-2 sm:p-4 hidden md:table-cell">
                           <div className="flex items-center gap-1">
                             {user.completedScenarios.map((scenario, index) => (
                               <div
@@ -378,39 +378,40 @@ const AdminPanel = () => {
   }
 
   return (
-    <div className="min-h-screen p-4 sm:p-6 bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+    <div className="min-h-screen p-2 sm:p-4 lg:p-6 bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6 sm:mb-8"
+          className="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-3 lg:gap-4 mb-4 sm:mb-6 lg:mb-8"
         >
-          <div className="min-w-0">
-            <h1 className="text-3xl sm:text-4xl font-bold cyber-text mb-1 sm:mb-2 break-words">
+          <div className="min-w-0 flex-1">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold cyber-text mb-1 sm:mb-2 break-words">
               Admin Panel
             </h1>
-            <p className="text-sm sm:text-base text-muted-foreground">
+            <p className="text-xs sm:text-sm lg:text-base text-muted-foreground">
               Manage users and monitor system activity
             </p>
           </div>
           
-          <div className="flex items-center sm:space-x-4 gap-2 sm:gap-0 flex-wrap">
-            <div className="flex items-center space-x-2 glass-effect px-3 sm:px-4 py-2 rounded-lg">
+          <div className="flex flex-col xs:flex-row items-stretch xs:items-center gap-2 sm:gap-3 lg:gap-4 w-full lg:w-auto">
+            <div className="flex items-center justify-center space-x-2 glass-effect px-3 py-2 rounded-lg">
               <Shield className="w-4 h-4 text-green-400" />
-              <span className="text-sm text-green-400">Admin Access</span>
+              <span className="text-xs sm:text-sm text-green-400">Admin Access</span>
             </div>
-            <div className="flex items-center space-x-2 glass-effect px-3 sm:px-4 py-2 rounded-lg">
+            <div className="flex items-center justify-center space-x-2 glass-effect px-3 py-2 rounded-lg">
               <User className="w-4 h-4" />
-              <span className="text-xs sm:text-sm truncate max-w-[120px] sm:max-w-none">{userData.username || 'Admin'}</span>
+              <span className="text-xs sm:text-sm truncate max-w-[100px] sm:max-w-none">{userData.username || 'Admin'}</span>
             </div>
             <Button
               variant="outline"
               onClick={handleLogout}
-              className="glass-effect w-full sm:w-auto"
+              className="glass-effect w-full xs:w-auto"
             >
               <LogOut className="w-4 h-4 mr-2" />
-              Logout
+              <span className="hidden xs:inline">Logout</span>
+              <span className="xs:hidden">Logout</span>
             </Button>
           </div>
         </motion.div>
@@ -420,11 +421,11 @@ const AdminPanel = () => {
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="mb-6"
+          className="mb-4 sm:mb-6"
         >
-          <nav className="flex items-center space-x-2 text-sm">
-            <Home className="w-4 h-4 text-muted-foreground" />
-            <ChevronRight className="w-4 h-4 text-muted-foreground" />
+          <nav className="flex items-center space-x-2 text-xs sm:text-sm overflow-x-auto">
+            <Home className="w-3 h-3 sm:w-4 sm:h-4 text-muted-foreground flex-shrink-0" />
+            <ChevronRight className="w-3 h-3 sm:w-4 sm:h-4 text-muted-foreground flex-shrink-0" />
             <Breadcrumb 
               section={currentSection} 
               title={sections.find(s => s.id === currentSection)?.title || 'Overview'}
@@ -438,22 +439,23 @@ const AdminPanel = () => {
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="mb-8"
+          className="mb-6 sm:mb-8"
         >
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-1 sm:gap-2 overflow-x-auto pb-2">
             {sections.map((section) => (
               <Button
                 key={section.id}
                 variant={currentSection === section.id ? "default" : "outline"}
                 onClick={() => setCurrentSection(section.id)}
-                className={`glass-effect transition-all duration-200 ${
+                className={`glass-effect transition-all duration-200 text-xs sm:text-sm px-2 sm:px-3 py-1.5 sm:py-2 whitespace-nowrap ${
                   currentSection === section.id 
                     ? 'bg-gradient-to-r from-purple-500 to-blue-600 text-white' 
                     : 'hover:bg-muted/50'
                 }`}
               >
-                <section.icon className="w-4 h-4 mr-2" />
-                {section.title}
+                <section.icon className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                <span className="hidden xs:inline">{section.title}</span>
+                <span className="xs:hidden">{section.title.split(' ')[0]}</span>
               </Button>
             ))}
           </div>
@@ -465,26 +467,26 @@ const AdminPanel = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="space-y-6"
+            className="space-y-4 sm:space-y-6"
           >
             {/* Welcome Card */}
             <Card className="glass-effect cyber-border">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Shield className="w-6 h-6 text-purple-400" />
+              <CardHeader className="p-4 sm:p-6">
+                <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+                  <Shield className="w-5 h-5 sm:w-6 sm:h-6 text-purple-400" />
                   Admin Panel Overview
                 </CardTitle>
-                <CardDescription>
+                <CardDescription className="text-xs sm:text-sm">
                   Welcome to the AR Cybersecurity Platform administration panel
                 </CardDescription>
               </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <CardContent className="p-4 sm:p-6 pt-0">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                   <div className="space-y-2">
-                    <h3 className="font-semibold text-blue-400">System Status</h3>
+                    <h3 className="font-semibold text-blue-400 text-sm sm:text-base">System Status</h3>
                     <div className="flex items-center gap-2">
-                      <div className="w-2 h-2 bg-green-400 rounded-full"></div>
-                      <span className="text-sm">All systems operational</span>
+                      <div className="w-2 h-2 bg-green-400 rounded-full flex-shrink-0"></div>
+                      <span className="text-xs sm:text-sm">All systems operational</span>
                     </div>
                     <p className="text-xs text-muted-foreground">
                       Database, Redis, and email services are running normally
@@ -492,17 +494,17 @@ const AdminPanel = () => {
                   </div>
                   
                   <div className="space-y-2">
-                    <h3 className="font-semibold text-green-400">Quick Stats</h3>
+                    <h3 className="font-semibold text-green-400 text-sm sm:text-base">Quick Stats</h3>
                     <div className="space-y-1">
-                      <div className="flex justify-between text-sm">
+                      <div className="flex justify-between text-xs sm:text-sm">
                         <span>Total Users:</span>
                         <span className="font-medium">{users.length}</span>
                       </div>
-                      <div className="flex justify-between text-sm">
+                      <div className="flex justify-between text-xs sm:text-sm">
                         <span>Verified Users:</span>
                         <span className="font-medium">{users.filter(u => u.isVerified).length}</span>
                       </div>
-                      <div className="flex justify-between text-sm">
+                      <div className="flex justify-between text-xs sm:text-sm">
                         <span>New This Week:</span>
                         <span className="font-medium">
                           {users.filter(user => {
@@ -517,13 +519,13 @@ const AdminPanel = () => {
                     </div>
                   </div>
                   
-                  <div className="space-y-2">
-                    <h3 className="font-semibold text-purple-400">Last Activity</h3>
-                    <div className="text-sm text-muted-foreground">
+                  <div className="space-y-2 sm:col-span-2 lg:col-span-1">
+                    <h3 className="font-semibold text-purple-400 text-sm sm:text-base">Last Activity</h3>
+                    <div className="text-xs sm:text-sm text-muted-foreground">
                       {users.length > 0 ? (
                         <div>
-                          <p>Latest user: {users[0]?.username}</p>
-                          <p>Joined: {formatDate(users[0]?.createdAt)}</p>
+                          <p className="truncate">Latest user: {users[0]?.username}</p>
+                          <p className="truncate">Joined: {formatDate(users[0]?.createdAt)}</p>
                         </div>
                       ) : (
                         <p>No users yet</p>
@@ -537,44 +539,44 @@ const AdminPanel = () => {
 
             {/* System Information */}
             <Card className="glass-effect cyber-border">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Clock className="w-5 h-5 text-blue-400" />
+              <CardHeader className="p-4 sm:p-6">
+                <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+                  <Clock className="w-5 h-5 sm:w-6 sm:h-6 text-blue-400" />
                   System Information
                 </CardTitle>
-                <CardDescription>
+                <CardDescription className="text-xs sm:text-sm">
                   Platform details and configuration
                 </CardDescription>
               </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-3">
+              <CardContent className="p-4 sm:p-6 pt-0">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+                  <div className="space-y-2 sm:space-y-3">
                     <div className="flex justify-between items-center">
-                      <span className="text-sm text-muted-foreground">Platform Version</span>
-                      <span className="text-sm font-medium">v1.0.0</span>
+                      <span className="text-xs sm:text-sm text-muted-foreground">Platform Version</span>
+                      <span className="text-xs sm:text-sm font-medium">v1.0.0</span>
                     </div>
                     <div className="flex justify-between items-center">
-                      <span className="text-sm text-muted-foreground">Environment</span>
-                      <span className="text-sm font-medium">Production</span>
+                      <span className="text-xs sm:text-sm text-muted-foreground">Environment</span>
+                      <span className="text-xs sm:text-sm font-medium">Production</span>
                     </div>
                     <div className="flex justify-between items-center">
-                      <span className="text-sm text-muted-foreground">Database</span>
-                      <span className="text-sm font-medium">PostgreSQL</span>
+                      <span className="text-xs sm:text-sm text-muted-foreground">Database</span>
+                      <span className="text-xs sm:text-sm font-medium">PostgreSQL</span>
                     </div>
                   </div>
                   
-                  <div className="space-y-3">
+                  <div className="space-y-2 sm:space-y-3">
                     <div className="flex justify-between items-center">
-                      <span className="text-sm text-muted-foreground">Cache</span>
-                      <span className="text-sm font-medium">Redis</span>
+                      <span className="text-xs sm:text-sm text-muted-foreground">Cache</span>
+                      <span className="text-xs sm:text-sm font-medium">Redis</span>
                     </div>
                     <div className="flex justify-between items-center">
-                      <span className="text-sm text-muted-foreground">Email Service</span>
-                      <span className="text-sm font-medium">Gmail SMTP</span>
+                      <span className="text-xs sm:text-sm text-muted-foreground">Email Service</span>
+                      <span className="text-xs sm:text-sm font-medium">Gmail SMTP</span>
                     </div>
                     <div className="flex justify-between items-center">
-                      <span className="text-sm text-muted-foreground">Last Updated</span>
-                      <span className="text-sm font-medium">{new Date().toLocaleDateString()}</span>
+                      <span className="text-xs sm:text-sm text-muted-foreground">Last Updated</span>
+                      <span className="text-xs sm:text-sm font-medium">{new Date().toLocaleDateString()}</span>
                     </div>
                   </div>
                 </div>
@@ -830,35 +832,36 @@ const AdminPanel = () => {
             transition={{ delay: 0.1 }}
           >
           <Card className="glass-effect cyber-border">
-            <CardHeader>
-                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
-                <div>
-                    <CardTitle className="text-xl sm:text-2xl">User Management</CardTitle>
-                    <CardDescription>
+            <CardHeader className="p-4 sm:p-6">
+                <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-3">
+                <div className="min-w-0 flex-1">
+                    <CardTitle className="text-lg sm:text-xl lg:text-2xl">User Management</CardTitle>
+                    <CardDescription className="text-xs sm:text-sm">
                       View and manage all registered users
                     </CardDescription>
                   </div>
-                  <div className="flex flex-col sm:flex-row gap-2">
+                  <div className="flex flex-col xs:flex-row gap-2 w-full lg:w-auto">
                     <Button
                       variant="outline"
                       onClick={() => setShowPasswords(!showPasswords)}
-                      className="glass-effect w-full sm:w-auto"
+                      className="glass-effect w-full xs:w-auto text-xs sm:text-sm"
                     >
-                      {showPasswords ? <EyeOff className="w-4 h-4 mr-2" /> : <Eye className="w-4 h-4 mr-2" />}
-                      {showPasswords ? 'Hide' : 'Show'} Passwords
+                      {showPasswords ? <EyeOff className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" /> : <Eye className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />}
+                      <span className="hidden xs:inline">{showPasswords ? 'Hide' : 'Show'} Passwords</span>
+                      <span className="xs:hidden">{showPasswords ? 'Hide' : 'Show'}</span>
                     </Button>
                     <Button
                       onClick={fetchUsers}
                       disabled={loading}
-                      className="glass-effect w-full sm:w-auto"
+                      className="glass-effect w-full xs:w-auto text-xs sm:text-sm"
                     >
-                      <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+                      <RefreshCw className={`w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2 ${loading ? 'animate-spin' : ''}`} />
                       Refresh
                     </Button>
                 </div>
               </div>
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-0 sm:p-6 pt-0">
                 {loading ? (
                   <div className="flex items-center justify-center py-12">
                     <RefreshCw className="w-8 h-8 animate-spin text-purple-400" />
@@ -876,43 +879,43 @@ const AdminPanel = () => {
                   </div>
                 ) : (
                   <div className="overflow-x-auto">
-                    <table className="w-full">
+                    <table className="w-full min-w-[800px]">
                       <thead>
                         <tr className="border-b border-muted">
-                          <th className="text-left p-4 font-medium">User</th>
-                          <th className="text-left p-4 font-medium">Email</th>
-                          <th className="text-left p-4 font-medium">Role</th>
-                          <th className="text-left p-4 font-medium">Status</th>
-                          <th className="text-left p-4 font-medium">Created</th>
-                          <th className="text-left p-4 font-medium">Actions</th>
+                          <th className="text-left p-2 sm:p-4 font-medium text-xs sm:text-sm min-w-[200px]">User</th>
+                          <th className="text-left p-2 sm:p-4 font-medium text-xs sm:text-sm min-w-[200px]">Email</th>
+                          <th className="text-left p-2 sm:p-4 font-medium text-xs sm:text-sm min-w-[100px]">Role</th>
+                          <th className="text-left p-2 sm:p-4 font-medium text-xs sm:text-sm min-w-[120px]">Status</th>
+                          <th className="text-left p-2 sm:p-4 font-medium text-xs sm:text-sm min-w-[150px]">Created</th>
+                          <th className="text-left p-2 sm:p-4 font-medium text-xs sm:text-sm min-w-[100px]">Actions</th>
                         </tr>
                       </thead>
                       <tbody>
                         {users.map((user) => (
                           <tr key={user.id} className="border-b border-muted/50 hover:bg-muted/20">
-                            <td className="p-4">
-                              <div className="flex items-center space-x-3">
-                                <div className="w-8 h-8 rounded-full bg-gradient-to-r from-purple-500 to-blue-600 flex items-center justify-center">
-                                  <User className="w-4 h-4 text-white" />
+                            <td className="p-2 sm:p-4 min-w-[200px]">
+                              <div className="flex items-center space-x-2 sm:space-x-3 min-w-0">
+                                <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-gradient-to-r from-purple-500 to-blue-600 flex items-center justify-center flex-shrink-0">
+                                  <User className="w-3 h-3 sm:w-4 sm:h-4 text-white" />
                                 </div>
-                                <div>
-                                  <p className="font-medium">{user.username}</p>
+                                <div className="min-w-0 flex-1">
+                                  <p className="font-medium text-sm sm:text-base truncate">{user.username}</p>
                                   {showPasswords && (
-                                    <p className="text-xs text-muted-foreground font-mono">
+                                    <p className="text-xs text-muted-foreground font-mono truncate">
                                       {user.password}
                                     </p>
                                   )}
                                 </div>
                               </div>
                             </td>
-                            <td className="p-4">
-                              <div className="flex items-center space-x-2">
-                                <Mail className="w-4 h-4 text-muted-foreground" />
-                                <span className="text-sm">{user.email}</span>
+                            <td className="p-2 sm:p-4 min-w-[200px]">
+                              <div className="flex items-center space-x-2 min-w-0">
+                                <Mail className="w-3 h-3 sm:w-4 sm:h-4 text-muted-foreground flex-shrink-0" />
+                                <span className="text-xs sm:text-sm truncate">{user.email}</span>
                               </div>
                             </td>
-                            <td className="p-4">
-                              <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                            <td className="p-2 sm:p-4 min-w-[100px]">
+                              <span className={`px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full text-xs font-medium ${
                                 user.role === 'admin' 
                                   ? 'bg-purple-500/20 text-purple-400' 
                                   : 'bg-blue-500/20 text-blue-400'
@@ -920,29 +923,29 @@ const AdminPanel = () => {
                                 {user.role}
                               </span>
                             </td>
-                            <td className="p-4">
-                              <div className="flex items-center space-x-2">
+                            <td className="p-2 sm:p-4 min-w-[120px]">
+                              <div className="flex items-center space-x-1 sm:space-x-2">
                                 {user.isVerified ? (
-                                  <CheckCircle className="w-4 h-4 text-green-400" />
+                                  <CheckCircle className="w-3 h-3 sm:w-4 sm:h-4 text-green-400 flex-shrink-0" />
                                 ) : (
-                                  <AlertCircle className="w-4 h-4 text-yellow-400" />
+                                  <AlertCircle className="w-3 h-3 sm:w-4 sm:h-4 text-yellow-400 flex-shrink-0" />
                                 )}
-                                <span className="text-sm">
+                                <span className="text-xs sm:text-sm">
                                   {user.isVerified ? 'Verified' : 'Pending'}
                                 </span>
                               </div>
                             </td>
-                            <td className="p-4">
-                              <div className="flex items-center space-x-2">
-                                <Calendar className="w-4 h-4 text-muted-foreground" />
-                                <span className="text-sm">{formatDate(user.createdAt)}</span>
+                            <td className="p-2 sm:p-4 min-w-[150px]">
+                              <div className="flex items-center space-x-1 sm:space-x-2">
+                                <Calendar className="w-3 h-3 sm:w-4 sm:h-4 text-muted-foreground flex-shrink-0" />
+                                <span className="text-xs sm:text-sm truncate">{formatDate(user.createdAt)}</span>
                               </div>
                             </td>
-                            <td className="p-4">
+                            <td className="p-2 sm:p-4 min-w-[100px]">
                               <Button
                                 variant="outline"
                                 size="sm"
-                                className="text-red-400 border-red-400 hover:bg-red-400/10"
+                                className="text-red-400 border-red-400 hover:bg-red-400/10 text-xs sm:text-sm px-2 sm:px-3"
                                 disabled={user.role === 'admin' || user.id === userData.userId}
                                 onClick={async () => {
                                   if (!confirm(`Delete user ${user.username}?`)) return;
@@ -982,21 +985,21 @@ const AdminPanel = () => {
             transition={{ delay: 0.1 }}
           >
           <Card className="glass-effect cyber-border">
-            <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Gamepad2 className="w-5 h-5" />
+            <CardHeader className="p-4 sm:p-6">
+                <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+                  <Gamepad2 className="w-5 h-5 sm:w-6 sm:h-6" />
                   Game Content Management
                 </CardTitle>
-                <CardDescription>
+                <CardDescription className="text-xs sm:text-sm">
                   Manage interactive games and phishing email content
                 </CardDescription>
               </CardHeader>
-              <CardContent>
-                <div className="space-y-6">
+              <CardContent className="p-4 sm:p-6 pt-0">
+                <div className="space-y-4 sm:space-y-6">
                   {/* Phishing Email Manager */}
                 <div>
-                    <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                      <Mail className="w-5 h-5" />
+                    <h3 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4 flex items-center gap-2">
+                      <Mail className="w-4 h-4 sm:w-5 sm:h-5" />
                       Phishing Email Manager
                     </h3>
                     <PhishingEmailManager />
@@ -1015,16 +1018,16 @@ const AdminPanel = () => {
             transition={{ delay: 0.1 }}
           >
             <Card className="glass-effect cyber-border">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Brain className="w-5 h-5" />
+              <CardHeader className="p-4 sm:p-6">
+                <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+                  <Brain className="w-5 h-5 sm:w-6 sm:h-6" />
                   Quiz Management
                 </CardTitle>
-                <CardDescription>
+                <CardDescription className="text-xs sm:text-sm">
                   Create and manage quiz questions and categories
                 </CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-4 sm:p-6 pt-0">
                 <QuizManager />
             </CardContent>
           </Card>
@@ -1039,20 +1042,20 @@ const AdminPanel = () => {
             transition={{ delay: 0.1 }}
           >
             <Card className="glass-effect cyber-border">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <TrendingUp className="w-5 h-5" />
+              <CardHeader className="p-4 sm:p-6">
+                <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+                  <TrendingUp className="w-5 h-5 sm:w-6 sm:h-6" />
                   Reports & Analytics
                 </CardTitle>
-                <CardDescription>
+                <CardDescription className="text-xs sm:text-sm">
                   Comprehensive reports and system analytics
                 </CardDescription>
               </CardHeader>
-              <CardContent>
-                <div className="text-center py-12 text-muted-foreground">
-                  <TrendingUp className="w-16 h-16 mx-auto mb-4 opacity-50" />
-                  <h3 className="text-lg font-medium mb-2">Reports Coming Soon</h3>
-                  <p>Advanced reporting and analytics features will be available in a future update.</p>
+              <CardContent className="p-4 sm:p-6 pt-0">
+                <div className="text-center py-8 sm:py-12 text-muted-foreground">
+                  <TrendingUp className="w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-4 opacity-50" />
+                  <h3 className="text-base sm:text-lg font-medium mb-2">Reports Coming Soon</h3>
+                  <p className="text-xs sm:text-sm">Advanced reporting and analytics features will be available in a future update.</p>
                 </div>
               </CardContent>
             </Card>
@@ -1175,39 +1178,41 @@ const QuizManager = () => {
   }, [userData.token]);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Tab Navigation */}
-      <div className="flex space-x-2 border-b border-muted">
+      <div className="flex space-x-1 sm:space-x-2 border-b border-muted overflow-x-auto">
         <button
           onClick={() => setActiveTab('create')}
-          className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+          className={`px-2 sm:px-4 py-2 text-xs sm:text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
             activeTab === 'create'
               ? 'border-purple-500 text-purple-400'
               : 'border-transparent text-muted-foreground hover:text-foreground'
           }`}
         >
-          Create Question
+          <span className="hidden xs:inline">Create Question</span>
+          <span className="xs:hidden">Create</span>
         </button>
         <button
           onClick={() => setActiveTab('manage')}
-          className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+          className={`px-2 sm:px-4 py-2 text-xs sm:text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
             activeTab === 'manage'
               ? 'border-purple-500 text-purple-400'
               : 'border-transparent text-muted-foreground hover:text-foreground'
           }`}
         >
-          Manage Questions ({questions.length})
+          <span className="hidden xs:inline">Manage Questions ({questions.length})</span>
+          <span className="xs:hidden">Manage ({questions.length})</span>
         </button>
       </div>
 
       {/* Create Question Tab */}
       {activeTab === 'create' && (
-        <div className="space-y-6">
-          <div className="grid md:grid-cols-3 gap-4">
-        <div className="md:col-span-1">
-          <label className="block text-sm mb-1">Category</label>
+        <div className="space-y-4 sm:space-y-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+        <div className="sm:col-span-1">
+          <label className="block text-xs sm:text-sm mb-1">Category</label>
           <select
-            className="w-full bg-transparent border rounded p-2"
+            className="w-full bg-transparent border rounded p-2 text-xs sm:text-sm"
             value={categoryKey}
             onChange={(e) => {
               const key = e.target.value;
@@ -1221,28 +1226,28 @@ const QuizManager = () => {
             ))}
           </select>
         </div>
-        <div className="md:col-span-1">
-          <label className="block text-sm mb-1">Title</label>
-          <input className="w-full bg-transparent border rounded p-2" value={categoryTitle} onChange={e => setCategoryTitle(e.target.value)} />
+        <div className="sm:col-span-1">
+          <label className="block text-xs sm:text-sm mb-1">Title</label>
+          <input className="w-full bg-transparent border rounded p-2 text-xs sm:text-sm" value={categoryTitle} onChange={e => setCategoryTitle(e.target.value)} />
         </div>
-        <div className="md:col-span-1">
-          <label className="block text-sm mb-1">Description</label>
-          <input className="w-full bg-transparent border rounded p-2" value={categoryDescription} onChange={e => setCategoryDescription(e.target.value)} />
+        <div className="sm:col-span-2 lg:col-span-1">
+          <label className="block text-xs sm:text-sm mb-1">Description</label>
+          <input className="w-full bg-transparent border rounded p-2 text-xs sm:text-sm" value={categoryDescription} onChange={e => setCategoryDescription(e.target.value)} />
         </div>
       </div>
-      <div className="flex gap-3">
-        <Button onClick={upsertCategory} disabled={saving} className="glass-effect">Save Category</Button>
+      <div className="flex gap-2 sm:gap-3">
+        <Button onClick={upsertCategory} disabled={saving} className="glass-effect text-xs sm:text-sm">Save Category</Button>
       </div>
 
-      <div className="grid md:grid-cols-2 gap-4 mt-6">
-        <div className="md:col-span-2">
-          <label className="block text-sm mb-1">Question</label>
-          <input className="w-full bg-transparent border rounded p-2" value={question} onChange={e => setQuestion(e.target.value)} />
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mt-4 sm:mt-6">
+        <div className="sm:col-span-2">
+          <label className="block text-xs sm:text-sm mb-1">Question</label>
+          <input className="w-full bg-transparent border rounded p-2 text-xs sm:text-sm" value={question} onChange={e => setQuestion(e.target.value)} />
         </div>
         {options.map((opt, idx) => (
-          <div key={idx} className="flex items-center gap-2">
+          <div key={idx} className="flex items-center gap-2 sm:col-span-2">
             <input
-              className="flex-1 bg-transparent border rounded p-2"
+              className="flex-1 bg-transparent border rounded p-2 text-xs sm:text-sm"
               value={opt}
               placeholder={`Option ${idx + 1}`}
               onChange={e => {
@@ -1251,18 +1256,18 @@ const QuizManager = () => {
                 setOptions(copy);
               }}
             />
-            <label className="flex items-center gap-1 text-sm">
+            <label className="flex items-center gap-1 text-xs sm:text-sm whitespace-nowrap">
               <input type="radio" name="correct" checked={correctIndex === idx} onChange={() => setCorrectIndex(idx)} /> Correct
             </label>
           </div>
         ))}
-        <div className="md:col-span-2">
-          <label className="block text-sm mb-1">Explanation (optional)</label>
-          <input className="w-full bg-transparent border rounded p-2" value={explanation} onChange={e => setExplanation(e.target.value)} />
+        <div className="sm:col-span-2">
+          <label className="block text-xs sm:text-sm mb-1">Explanation (optional)</label>
+          <input className="w-full bg-transparent border rounded p-2 text-xs sm:text-sm" value={explanation} onChange={e => setExplanation(e.target.value)} />
         </div>
       </div>
-          <div className="flex gap-3">
-            <Button onClick={createQuestion} disabled={saving} className="glass-effect">Create Question</Button>
+          <div className="flex gap-2 sm:gap-3">
+            <Button onClick={createQuestion} disabled={saving} className="glass-effect text-xs sm:text-sm">Create Question</Button>
           </div>
         </div>
       )}
