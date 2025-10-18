@@ -534,57 +534,6 @@ const AdminPanel = () => {
               </CardContent>
             </Card>
 
-            {/* Quick Actions */}
-            <Card className="glass-effect cyber-border">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Target className="w-5 h-5 text-yellow-400" />
-                  Quick Actions
-                </CardTitle>
-                <CardDescription>
-                  Common administrative tasks and shortcuts
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                  <Button
-                    variant="outline"
-                    onClick={() => setCurrentSection('users')}
-                    className="glass-effect h-auto p-4 flex flex-col items-center gap-2"
-                  >
-                    <Users className="w-6 h-6" />
-                    <span className="text-sm">Manage Users</span>
-                  </Button>
-                  
-                  <Button
-                    variant="outline"
-                    onClick={() => setCurrentSection('progress')}
-                    className="glass-effect h-auto p-4 flex flex-col items-center gap-2"
-                  >
-                    <BarChart3 className="w-6 h-6" />
-                    <span className="text-sm">View Progress</span>
-                  </Button>
-                  
-                  <Button
-                    variant="outline"
-                    onClick={() => setCurrentSection('games')}
-                    className="glass-effect h-auto p-4 flex flex-col items-center gap-2"
-                  >
-                    <Gamepad2 className="w-6 h-6" />
-                    <span className="text-sm">Game Content</span>
-                  </Button>
-                  
-                  <Button
-                    variant="outline"
-                    onClick={() => setCurrentSection('quizzes')}
-                    className="glass-effect h-auto p-4 flex flex-col items-center gap-2"
-                  >
-                    <Brain className="w-6 h-6" />
-                    <span className="text-sm">Quiz Management</span>
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
 
             {/* System Information */}
             <Card className="glass-effect cyber-border">

@@ -14,7 +14,6 @@ import ARScenarios from './pages/ARScenarios';
 import Quiz from './pages/Quiz';
 import Game from './pages/Game';
 import AdminPanel from './pages/AdminPanel';
-import ProgressDemo from './pages/ProgressDemo';
 
 function App() {
   return (
@@ -80,7 +79,6 @@ function App() {
                 </ProtectedRoute>
               } 
             />
-            <Route path="/progress-demo" element={<ProgressDemo />} />
           </Routes>
           <Toaster />
         </div>

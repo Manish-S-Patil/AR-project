@@ -164,7 +164,7 @@ const IntroductionPage = () => {
                 transition={{ duration: 0.8 }}
               >
                 <Eye className="w-16 h-16 text-cyan-400" />
-                <span className="text-xs text-cyan-400">AR Visualization</span>
+                <span className="text-xs text-cyan-400 flex justify-center items-center w-full text-center">AR Visualization</span>
               </motion.div>
             </div>
           </div>
