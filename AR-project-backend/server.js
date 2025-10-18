@@ -27,8 +27,14 @@ const allowedOrigins = (process.env.ALLOWED_ORIGINS || [
 
 app.use(cors({
   origin: (origin, callback) => {
+    console.log('🔍 CORS Origin check:', origin);
+    console.log('🔍 Allowed origins:', allowedOrigins);
     if (!origin) return callback(null, true); // allow server-to-server, curl, etc.
-    if (allowedOrigins.includes(origin)) return callback(null, true);
+    if (allowedOrigins.includes(origin)) {
+      console.log('✅ CORS allowed for:', origin);
+      return callback(null, true);
+    }
+    console.log('❌ CORS blocked for:', origin);
     return callback(null, false);
   },
   credentials: true
@@ -37,8 +43,13 @@ app.use(cors({
 // Optional: handle preflight for any route
 app.options('*', cors({
   origin: (origin, callback) => {
+    console.log('🔍 CORS Preflight check:', origin);
     if (!origin) return callback(null, true);
-    if (allowedOrigins.includes(origin)) return callback(null, true);
+    if (allowedOrigins.includes(origin)) {
+      console.log('✅ CORS preflight allowed for:', origin);
+      return callback(null, true);
+    }
+    console.log('❌ CORS preflight blocked for:', origin);
     return callback(null, false);
   },
   credentials: true
