@@ -368,16 +368,6 @@ const Dashboard = () => {
                       <span className="font-semibold text-green-400">{progress.totalScore}</span>
                     </div>
                   </div>
-                  <div className="pt-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => navigate('/progress-demo')}
-                      className="w-full"
-                    >
-                      View Progress Demo
-                    </Button>
-                  </div>
                 </div>
               </CardContent>
             </Card>
