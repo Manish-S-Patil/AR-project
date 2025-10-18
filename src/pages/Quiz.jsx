@@ -14,6 +14,7 @@ import { Button } from '../components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import { toast } from '../components/ui/use-toast';
 import API_CONFIG from '../lib/api';
+import { progressTracker } from '../lib/progressTracker';
 import '../styles/pages.css';
 
 const Quiz = () => {
@@ -28,7 +29,55 @@ const Quiz = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [fetchedQuiz, setFetchedQuiz] = useState(null);
+  const [startTime, setStartTime] = useState(null);
+  
+  const userData = JSON.parse(localStorage.getItem('userData') || '{}');
   const [noQuestions, setNoQuestions] = useState(false);
+
+  // Record quiz attempt to progress tracking
+  const recordQuizAttempt = async (score, totalQuestions, timeSpent) => {
+    const passed = (score / totalQuestions) >= 0.8; // 80% threshold
+    
+    // Record locally first
+    const attempt = progressTracker.recordQuizAttempt(
+      scenario || 'general',
+      score,
+      totalQuestions,
+      passed,
+      timeSpent
+    );
+    
+    // Try to record on server if user is logged in
+    if (userData.token && !userData.isGuest) {
+      try {
+        const response = await fetch(API_CONFIG.getUrl(API_CONFIG.endpoints.progress.recordQuizAttempt), {
+          method: 'POST',
+          headers: API_CONFIG.getAuthHeaders(userData.token),
+          body: JSON.stringify({
+            categoryKey: scenario || 'general',
+            score,
+            totalQuestions,
+            timeSpent,
+            answers: answers.map((answer, index) => ({
+              questionIndex: index,
+              selectedAnswer: answer,
+              correctAnswer: fetchedQuiz?.questions[index]?.correct
+            }))
+          })
+        });
+        
+        if (response.ok) {
+          console.log('Quiz attempt recorded on server');
+        } else {
+          console.log('Server recording failed, using local storage');
+        }
+      } catch (error) {
+        console.log('Server recording failed, using local storage:', error);
+      }
+    }
+    
+    return attempt;
+  };
 
   // const quizData = {
   //   general: {
@@ -296,7 +345,10 @@ const Quiz = () => {
         setError(e.message);
         setNoQuestions(true);
       } finally {
-        if (!cancelled) setLoading(false);
+        if (!cancelled) {
+          setLoading(false);
+          setStartTime(Date.now()); // Record start time when quiz loads
+        }
       }
     }
     load();
@@ -327,6 +379,10 @@ const Quiz = () => {
         setTimeLeft(30);
       } else {
         setQuizCompleted(true);
+        // Record quiz attempt when completed
+        const timeSpent = startTime ? Math.round((Date.now() - startTime) / 1000) : 0;
+        const score = calculateScore();
+        recordQuizAttempt(score, fetchedQuiz?.questions?.length || 0, timeSpent);
       }
     }, 2000);
   };

@@ -40,6 +40,13 @@ const API_CONFIG = {
         listPhishingEmails: '/api/game/admin/phishing-emails',
         deletePhishingEmail: (id) => `/api/game/admin/phishing-email/${id}`
       }
+    },
+    progress: {
+      getProgress: '/api/progress/progress',
+      recordQuizAttempt: '/api/progress/quiz-attempt',
+      recordScenarioCompletion: '/api/progress/scenario-completion',
+      getQuizAttempts: '/api/progress/quiz-attempts',
+      getScenarioCompletions: '/api/progress/scenario-completions'
     }
   },
   
