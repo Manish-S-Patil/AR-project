@@ -145,8 +145,8 @@ export default function Signup() {
         <CardContent>
           {step === 'email' && (
             <form onSubmit={handleStartSignup} className="space-y-4">
-              <div className="space-y-2"><Label htmlFor="username">Username</Label><Input id="username" value={username} onChange={e=>setUsername(e.target.value)} className="glass-effect" /></div>
-              <div className="space-y-2"><Label htmlFor="email">Email</Label><Input id="email" type="email" value={email} onChange={e=>setEmail(e.target.value)} className="glass-effect" /></div>
+            <div className="space-y-2"><Label htmlFor="username">Username</Label><Input id="username" value={username} onChange={e=>setUsername(e.target.value)} className="glass-effect" /></div>
+            <div className="space-y-2"><Label htmlFor="email">Email</Label><Input id="email" type="email" value={email} onChange={e=>setEmail(e.target.value)} className="glass-effect" /></div>
               <Button type="submit" className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700" disabled={isSubmitting}>
                 {isSubmitting ? (<span className="inline-flex items-center gap-2"><Loader2 className="w-4 h-4 animate-spin" />Sending...</span>) : 'Verify Email'}
               </Button>
@@ -179,19 +179,19 @@ export default function Signup() {
 
           {step === 'password' && (
             <form onSubmit={handleSetPassword} className="space-y-4">
-              <div className="space-y-2">
+            <div className="space-y-2">
                 <Label htmlFor="password">Create Password</Label>
-                <div className="relative">
-                  <Input id="password" type={showPassword ? 'text' : 'password'} value={password} onChange={e=>setPassword(e.target.value)} className="glass-effect pr-10" />
-                  <button type="button" onClick={()=>setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">
-                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                  </button>
-                </div>
+              <div className="relative">
+                <Input id="password" type={showPassword ? 'text' : 'password'} value={password} onChange={e=>setPassword(e.target.value)} className="glass-effect pr-10" />
+                <button type="button" onClick={()=>setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
               </div>
-              <Button type="submit" className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700" disabled={isSubmitting}>
+            </div>
+            <Button type="submit" className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700" disabled={isSubmitting}>
                 {isSubmitting ? (<span className="inline-flex items-center gap-2"><Loader2 className="w-4 h-4 animate-spin" />Saving...</span>) : 'Set Password'}
-              </Button>
-            </form>
+            </Button>
+          </form>
           )}
           <div className="mt-2 text-center text-sm">
             <span className="text-muted-foreground mr-1">Already have an account?</span>
