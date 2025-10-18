@@ -12,7 +12,16 @@ import {
   AlertCircle,
   CheckCircle,
   Eye,
-  EyeOff
+  EyeOff,
+  Home,
+  ChevronRight,
+  BarChart3,
+  Trophy,
+  Target,
+  Clock,
+  TrendingUp,
+  Gamepad2,
+  Brain
 } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
@@ -24,9 +33,35 @@ const AdminPanel = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showPasswords, setShowPasswords] = useState(false);
+  const [currentSection, setCurrentSection] = useState('overview');
+  const [progressData, setProgressData] = useState([]);
+  const [progressLoading, setProgressLoading] = useState(false);
   const navigate = useNavigate();
   
   const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+
+  // Fetch user progress data
+  const fetchProgressData = async () => {
+    setProgressLoading(true);
+    try {
+      const response = await fetch(API_CONFIG.getUrl('/api/progress/admin/all-progress'), {
+        method: 'GET',
+        headers: API_CONFIG.getAuthHeaders(userData.token)
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        setProgressData(data);
+      } else {
+        console.error('Failed to fetch progress data');
+        setProgressData([]);
+      }
+    } catch (error) {
+      console.error('Error fetching progress data:', error);
+    } finally {
+      setProgressLoading(false);
+    }
+  };
 
   // Check if user is authenticated
   useEffect(() => {
@@ -100,6 +135,7 @@ const AdminPanel = () => {
   useEffect(() => {
     if (userData.token) {
       fetchUsers();
+      fetchProgressData();
     }
   }, [userData.token]);
 
@@ -112,6 +148,24 @@ const AdminPanel = () => {
     navigate('/');
   };
 
+  // Breadcrumb component
+  const Breadcrumb = ({ section, title, icon: Icon }) => (
+    <div className="flex items-center space-x-2 text-sm">
+      <Icon className="w-4 h-4" />
+      <span>{title}</span>
+    </div>
+  );
+
+  // Navigation sections
+  const sections = [
+    { id: 'overview', title: 'Overview', icon: Home },
+    { id: 'users', title: 'User Management', icon: Users },
+    { id: 'progress', title: 'Progress Analytics', icon: BarChart3 },
+    { id: 'games', title: 'Game Content Management', icon: Gamepad2 },
+    { id: 'quizzes', title: 'Quiz Management', icon: Brain },
+    { id: 'reports', title: 'Reports', icon: TrendingUp }
+  ];
+
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
@@ -120,6 +174,172 @@ const AdminPanel = () => {
       hour: '2-digit',
       minute: '2-digit'
     });
+  };
+
+  // Progress Analytics Component
+  const ProgressAnalytics = () => {
+    const totalUsers = progressData.length;
+    const avgScenarios = totalUsers > 0 ? progressData.reduce((sum, user) => sum + user.scenariosCompleted, 0) / totalUsers : 0;
+    const avgQuizzes = totalUsers > 0 ? progressData.reduce((sum, user) => sum + user.quizzesPassed, 0) / totalUsers : 0;
+    const avgScore = totalUsers > 0 ? progressData.reduce((sum, user) => sum + user.totalScore, 0) / totalUsers : 0;
+
+    return (
+      <div className="space-y-6">
+        {/* Summary Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <Card className="glass-effect cyber-border">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Total Users</p>
+                  <p className="text-2xl font-bold">{totalUsers}</p>
+                </div>
+                <Users className="w-8 h-8 text-blue-400" />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="glass-effect cyber-border">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Avg Scenarios</p>
+                  <p className="text-2xl font-bold">{totalUsers > 0 ? avgScenarios.toFixed(1) : '0.0'}</p>
+                </div>
+                <Target className="w-8 h-8 text-green-400" />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="glass-effect cyber-border">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Avg Quizzes</p>
+                  <p className="text-2xl font-bold">{totalUsers > 0 ? avgQuizzes.toFixed(1) : '0.0'}</p>
+                </div>
+                <Trophy className="w-8 h-8 text-yellow-400" />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="glass-effect cyber-border">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Avg Score</p>
+                  <p className="text-2xl font-bold">{totalUsers > 0 ? avgScore.toFixed(0) : '0'}</p>
+                </div>
+                <TrendingUp className="w-8 h-8 text-purple-400" />
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* User Progress Table */}
+        <Card className="glass-effect cyber-border">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <BarChart3 className="w-5 h-5" />
+              User Progress Details
+            </CardTitle>
+            <CardDescription>
+              Detailed progress tracking for all users
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {progressLoading ? (
+              <div className="flex items-center justify-center py-8">
+                <RefreshCw className="w-6 h-6 animate-spin mr-2" />
+                Loading progress data...
+              </div>
+            ) : progressData.length === 0 ? (
+              <div className="flex items-center justify-center py-12 text-muted-foreground">
+                <div className="text-center">
+                  <BarChart3 className="w-16 h-16 mx-auto mb-4 opacity-50" />
+                  <h3 className="text-lg font-medium mb-2">No Progress Data</h3>
+                  <p>No user progress data available yet. Progress will appear here as users complete scenarios and quizzes.</p>
+                </div>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b border-muted">
+                      <th className="text-left p-4 font-medium">User</th>
+                      <th className="text-left p-4 font-medium">Scenarios</th>
+                      <th className="text-left p-4 font-medium">Quizzes</th>
+                      <th className="text-left p-4 font-medium">Score</th>
+                      <th className="text-left p-4 font-medium">Last Activity</th>
+                      <th className="text-left p-4 font-medium">Progress</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {progressData.map((user) => (
+                      <tr key={user.userId} className="border-b border-muted/50 hover:bg-muted/20">
+                        <td className="p-4">
+                          <div>
+                            <p className="font-medium">{user.username}</p>
+                            <p className="text-sm text-muted-foreground">{user.email}</p>
+                          </div>
+                        </td>
+                        <td className="p-4">
+                          <div className="flex items-center gap-2">
+                            <span className="font-medium">{user.scenariosCompleted}/5</span>
+                            <div className="w-16 bg-muted rounded-full h-2">
+                              <div 
+                                className="bg-gradient-to-r from-blue-500 to-purple-600 h-2 rounded-full transition-all duration-300"
+                                style={{ width: `${(user.scenariosCompleted / 5) * 100}%` }}
+                              />
+                            </div>
+                          </div>
+                        </td>
+                        <td className="p-4">
+                          <div className="flex items-center gap-2">
+                            <span className="font-medium">{user.quizzesPassed}/5</span>
+                            <div className="w-16 bg-muted rounded-full h-2">
+                              <div 
+                                className="bg-gradient-to-r from-green-500 to-blue-500 h-2 rounded-full transition-all duration-300"
+                                style={{ width: `${(user.quizzesPassed / 5) * 100}%` }}
+                              />
+                            </div>
+                          </div>
+                        </td>
+                        <td className="p-4">
+                          <span className="font-medium text-green-400">{user.totalScore}</span>
+                        </td>
+                        <td className="p-4">
+                          <span className="text-sm text-muted-foreground">
+                            {formatDate(user.lastActivity)}
+                          </span>
+                        </td>
+                        <td className="p-4">
+                          <div className="flex items-center gap-1">
+                            {user.completedScenarios.map((scenario, index) => (
+                              <div
+                                key={index}
+                                className="w-2 h-2 bg-green-400 rounded-full"
+                                title={scenario}
+                              />
+                            ))}
+                            {Array.from({ length: 5 - user.completedScenarios.length }).map((_, index) => (
+                              <div
+                                key={index}
+                                className="w-2 h-2 bg-muted rounded-full"
+                              />
+                            ))}
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+    );
   };
 
   const containerVariants = {
@@ -195,13 +415,235 @@ const AdminPanel = () => {
           </div>
         </motion.div>
 
-        {/* Stats Cards */}
+        {/* Breadcrumb Navigation */}
         <motion.div
-          variants={containerVariants}
-          initial="hidden"
-          animate="visible"
-          className="grid md:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8"
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="mb-6"
         >
+          <nav className="flex items-center space-x-2 text-sm">
+            <Home className="w-4 h-4 text-muted-foreground" />
+            <ChevronRight className="w-4 h-4 text-muted-foreground" />
+            <Breadcrumb 
+              section={currentSection} 
+              title={sections.find(s => s.id === currentSection)?.title || 'Overview'}
+              icon={sections.find(s => s.id === currentSection)?.icon || Home}
+            />
+          </nav>
+        </motion.div>
+
+        {/* Navigation Tabs */}
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="mb-8"
+        >
+          <div className="flex flex-wrap gap-2">
+            {sections.map((section) => (
+              <Button
+                key={section.id}
+                variant={currentSection === section.id ? "default" : "outline"}
+                onClick={() => setCurrentSection(section.id)}
+                className={`glass-effect transition-all duration-200 ${
+                  currentSection === section.id 
+                    ? 'bg-gradient-to-r from-purple-500 to-blue-600 text-white' 
+                    : 'hover:bg-muted/50'
+                }`}
+              >
+                <section.icon className="w-4 h-4 mr-2" />
+                {section.title}
+              </Button>
+            ))}
+          </div>
+        </motion.div>
+
+        {/* Main Content */}
+        {currentSection === 'overview' && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="space-y-6"
+          >
+            {/* Welcome Card */}
+            <Card className="glass-effect cyber-border">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Shield className="w-6 h-6 text-purple-400" />
+                  Admin Panel Overview
+                </CardTitle>
+                <CardDescription>
+                  Welcome to the AR Cybersecurity Platform administration panel
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  <div className="space-y-2">
+                    <h3 className="font-semibold text-blue-400">System Status</h3>
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 bg-green-400 rounded-full"></div>
+                      <span className="text-sm">All systems operational</span>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      Database, Redis, and email services are running normally
+                    </p>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <h3 className="font-semibold text-green-400">Quick Stats</h3>
+                    <div className="space-y-1">
+                      <div className="flex justify-between text-sm">
+                        <span>Total Users:</span>
+                        <span className="font-medium">{users.length}</span>
+                      </div>
+                      <div className="flex justify-between text-sm">
+                        <span>Verified Users:</span>
+                        <span className="font-medium">{users.filter(u => u.isVerified).length}</span>
+                      </div>
+                      <div className="flex justify-between text-sm">
+                        <span>New This Week:</span>
+                        <span className="font-medium">
+                          {users.filter(user => {
+                            const userDate = new Date(user.createdAt);
+                            const today = new Date();
+                            const diffTime = Math.abs(today - userDate);
+                            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                            return diffDays <= 7;
+                          }).length}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <h3 className="font-semibold text-purple-400">Last Activity</h3>
+                    <div className="text-sm text-muted-foreground">
+                      {users.length > 0 ? (
+                        <div>
+                          <p>Latest user: {users[0]?.username}</p>
+                          <p>Joined: {formatDate(users[0]?.createdAt)}</p>
+                        </div>
+                      ) : (
+                        <p>No users yet</p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Quick Actions */}
+            <Card className="glass-effect cyber-border">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Target className="w-5 h-5 text-yellow-400" />
+                  Quick Actions
+                </CardTitle>
+                <CardDescription>
+                  Common administrative tasks and shortcuts
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <Button
+                    variant="outline"
+                    onClick={() => setCurrentSection('users')}
+                    className="glass-effect h-auto p-4 flex flex-col items-center gap-2"
+                  >
+                    <Users className="w-6 h-6" />
+                    <span className="text-sm">Manage Users</span>
+                  </Button>
+                  
+                  <Button
+                    variant="outline"
+                    onClick={() => setCurrentSection('progress')}
+                    className="glass-effect h-auto p-4 flex flex-col items-center gap-2"
+                  >
+                    <BarChart3 className="w-6 h-6" />
+                    <span className="text-sm">View Progress</span>
+                  </Button>
+                  
+                  <Button
+                    variant="outline"
+                    onClick={() => setCurrentSection('games')}
+                    className="glass-effect h-auto p-4 flex flex-col items-center gap-2"
+                  >
+                    <Gamepad2 className="w-6 h-6" />
+                    <span className="text-sm">Game Content</span>
+                  </Button>
+                  
+                  <Button
+                    variant="outline"
+                    onClick={() => setCurrentSection('quizzes')}
+                    className="glass-effect h-auto p-4 flex flex-col items-center gap-2"
+                  >
+                    <Brain className="w-6 h-6" />
+                    <span className="text-sm">Quiz Management</span>
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* System Information */}
+            <Card className="glass-effect cyber-border">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Clock className="w-5 h-5 text-blue-400" />
+                  System Information
+                </CardTitle>
+                <CardDescription>
+                  Platform details and configuration
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-3">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-muted-foreground">Platform Version</span>
+                      <span className="text-sm font-medium">v1.0.0</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-muted-foreground">Environment</span>
+                      <span className="text-sm font-medium">Production</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-muted-foreground">Database</span>
+                      <span className="text-sm font-medium">PostgreSQL</span>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-3">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-muted-foreground">Cache</span>
+                      <span className="text-sm font-medium">Redis</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-muted-foreground">Email Service</span>
+                      <span className="text-sm font-medium">Gmail SMTP</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-muted-foreground">Last Updated</span>
+                      <span className="text-sm font-medium">{new Date().toLocaleDateString()}</span>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        )}
+
+        {/* Legacy Overview Content - Remove this section */}
+        {false && (
+          <>
+            {/* Stats Cards */}
+            <motion.div
+              variants={containerVariants}
+              initial="hidden"
+              animate="visible"
+              className="grid md:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8"
+            >
           <motion.div variants={itemVariants}>
             <Card className="glass-effect cyber-border">
               <CardContent className="p-6">
@@ -416,39 +858,257 @@ const AdminPanel = () => {
           </Card>
         </motion.div>
 
-        {/* Quiz Management */}
-        <motion.div variants={itemVariants} className="mt-8">
-          <Card className="glass-effect cyber-border">
-            <CardHeader>
-              <div className="flex justify-between items-center">
-                <div>
-                  <CardTitle className="text-2xl">Quiz Management</CardTitle>
-                  <CardDescription>Create quiz categories and questions</CardDescription>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <QuizManager />
-            </CardContent>
-          </Card>
-        </motion.div>
 
-        {/* Game Content Management */}
-        <motion.div variants={itemVariants} className="mt-8">
-          <Card className="glass-effect cyber-border">
-            <CardHeader>
-              <div className="flex justify-between items-center">
-                <div>
-                  <CardTitle className="text-2xl">Game Content Management</CardTitle>
-                  <CardDescription>Create phishing email entries for the game</CardDescription>
+          </>
+        )}
+
+        {/* Progress Analytics Section */}
+        {currentSection === 'progress' && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+          >
+            <ProgressAnalytics />
+          </motion.div>
+        )}
+
+        {/* User Management Section */}
+        {currentSection === 'users' && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+          >
+            <Card className="glass-effect cyber-border">
+              <CardHeader>
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
+                  <div>
+                    <CardTitle className="text-xl sm:text-2xl">User Management</CardTitle>
+                    <CardDescription>
+                      View and manage all registered users
+                    </CardDescription>
+                  </div>
+                  <div className="flex flex-col sm:flex-row gap-2">
+                    <Button
+                      variant="outline"
+                      onClick={() => setShowPasswords(!showPasswords)}
+                      className="glass-effect w-full sm:w-auto"
+                    >
+                      {showPasswords ? <EyeOff className="w-4 h-4 mr-2" /> : <Eye className="w-4 h-4 mr-2" />}
+                      {showPasswords ? 'Hide' : 'Show'} Passwords
+                    </Button>
+                    <Button
+                      onClick={fetchUsers}
+                      disabled={loading}
+                      className="glass-effect w-full sm:w-auto"
+                    >
+                      <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+                      Refresh
+                    </Button>
+                  </div>
                 </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <PhishingEmailManager />
-            </CardContent>
-          </Card>
-        </motion.div>
+              </CardHeader>
+              <CardContent>
+                {loading ? (
+                  <div className="flex items-center justify-center py-12">
+                    <RefreshCw className="w-8 h-8 animate-spin text-purple-400" />
+                    <span className="ml-2">Loading users...</span>
+                  </div>
+                ) : error ? (
+                  <div className="flex items-center justify-center py-12 text-red-400">
+                    <AlertCircle className="w-8 h-8 mr-2" />
+                    <span>{error}</span>
+                  </div>
+                ) : users.length === 0 ? (
+                  <div className="flex items-center justify-center py-12 text-muted-foreground">
+                    <Users className="w-8 h-8 mr-2" />
+                    <span>No users found</span>
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="w-full">
+                      <thead>
+                        <tr className="border-b border-muted">
+                          <th className="text-left p-4 font-medium">User</th>
+                          <th className="text-left p-4 font-medium">Email</th>
+                          <th className="text-left p-4 font-medium">Role</th>
+                          <th className="text-left p-4 font-medium">Status</th>
+                          <th className="text-left p-4 font-medium">Created</th>
+                          <th className="text-left p-4 font-medium">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {users.map((user) => (
+                          <tr key={user.id} className="border-b border-muted/50 hover:bg-muted/20">
+                            <td className="p-4">
+                              <div className="flex items-center space-x-3">
+                                <div className="w-8 h-8 rounded-full bg-gradient-to-r from-purple-500 to-blue-600 flex items-center justify-center">
+                                  <User className="w-4 h-4 text-white" />
+                                </div>
+                                <div>
+                                  <p className="font-medium">{user.username}</p>
+                                  {showPasswords && (
+                                    <p className="text-xs text-muted-foreground font-mono">
+                                      {user.password}
+                                    </p>
+                                  )}
+                                </div>
+                              </div>
+                            </td>
+                            <td className="p-4">
+                              <div className="flex items-center space-x-2">
+                                <Mail className="w-4 h-4 text-muted-foreground" />
+                                <span className="text-sm">{user.email}</span>
+                              </div>
+                            </td>
+                            <td className="p-4">
+                              <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                user.role === 'admin' 
+                                  ? 'bg-purple-500/20 text-purple-400' 
+                                  : 'bg-blue-500/20 text-blue-400'
+                              }`}>
+                                {user.role}
+                              </span>
+                            </td>
+                            <td className="p-4">
+                              <div className="flex items-center space-x-2">
+                                {user.isVerified ? (
+                                  <CheckCircle className="w-4 h-4 text-green-400" />
+                                ) : (
+                                  <AlertCircle className="w-4 h-4 text-yellow-400" />
+                                )}
+                                <span className="text-sm">
+                                  {user.isVerified ? 'Verified' : 'Pending'}
+                                </span>
+                              </div>
+                            </td>
+                            <td className="p-4">
+                              <div className="flex items-center space-x-2">
+                                <Calendar className="w-4 h-4 text-muted-foreground" />
+                                <span className="text-sm">{formatDate(user.createdAt)}</span>
+                              </div>
+                            </td>
+                            <td className="p-4">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="text-red-400 border-red-400 hover:bg-red-400/10"
+                                disabled={user.role === 'admin' || user.id === userData.userId}
+                                onClick={async () => {
+                                  if (!confirm(`Delete user ${user.username}?`)) return;
+                                  try {
+                                    const res = await fetch(API_CONFIG.getUrl(API_CONFIG.endpoints.auth.adminDeleteUser(user.id)), {
+                                      method: 'DELETE',
+                                      headers: API_CONFIG.getAuthHeaders(userData.token)
+                                    });
+                                    const data = await res.json();
+                                    if (!res.ok) throw new Error(data.error || 'Failed to delete user');
+                                    toast({ title: 'User deleted', description: `Removed #${user.id}` });
+                                    fetchUsers();
+                                  } catch (e) {
+                                    toast({ title: 'Delete failed', description: e.message, variant: 'destructive' });
+                                  }
+                                }}
+                              >
+                                Delete
+                              </Button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </motion.div>
+        )}
+
+        {/* Game Content Management Section */}
+        {currentSection === 'games' && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+          >
+            <Card className="glass-effect cyber-border">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Gamepad2 className="w-5 h-5" />
+                  Game Content Management
+                </CardTitle>
+                <CardDescription>
+                  Manage interactive games and phishing email content
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-6">
+                  {/* Phishing Email Manager */}
+                  <div>
+                    <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                      <Mail className="w-5 h-5" />
+                      Phishing Email Manager
+                    </h3>
+                    <PhishingEmailManager />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        )}
+
+        {/* Quiz Management Section */}
+        {currentSection === 'quizzes' && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+          >
+            <Card className="glass-effect cyber-border">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Brain className="w-5 h-5" />
+                  Quiz Management
+                </CardTitle>
+                <CardDescription>
+                  Create and manage quiz questions and categories
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <QuizManager />
+              </CardContent>
+            </Card>
+          </motion.div>
+        )}
+
+        {/* Reports Section */}
+        {currentSection === 'reports' && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+          >
+            <Card className="glass-effect cyber-border">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <TrendingUp className="w-5 h-5" />
+                  Reports & Analytics
+                </CardTitle>
+                <CardDescription>
+                  Comprehensive reports and system analytics
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="text-center py-12 text-muted-foreground">
+                  <TrendingUp className="w-16 h-16 mx-auto mb-4 opacity-50" />
+                  <h3 className="text-lg font-medium mb-2">Reports Coming Soon</h3>
+                  <p>Advanced reporting and analytics features will be available in a future update.</p>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        )}
       </div>
     </div>
   );
