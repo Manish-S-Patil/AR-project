@@ -1,19 +1,27 @@
 import nodemailer from 'nodemailer'
 
-// Create transporter using Ethereal test account
+// Create transporter using Gmail SMTP with timeout settings
 const transporter = nodemailer.createTransport({
   host: "smtp.gmail.com",
   port: 465,
   secure: true, // true for 465, false for other ports
   auth: {
-    user: "kns.cyber.project@gmail.com",
-    pass: "cxgswgbywzxomcki",
+    user: process.env.GMAIL_USER || "kns.cyber.project@gmail.com",
+    pass: process.env.GMAIL_APP_PASSWORD || "cxgswgbywzxomcki",
   },
+  connectionTimeout: 60000, // 60 seconds
+  greetingTimeout: 30000,   // 30 seconds
+  socketTimeout: 60000,     // 60 seconds
+  pool: true,
+  maxConnections: 5,
+  maxMessages: 100,
+  rateDelta: 20000, // 20 seconds between messages
+  rateLimit: 5,      // max 5 messages per rateDelta
 })
 
-const fromEmail = "kns.cyber.project@gmail.com"
+const fromEmail = process.env.GMAIL_USER || "kns.cyber.project@gmail.com"
 const fromName = "AR CyberGuard"
-const subjectPrefix = "AR CyberGuard"
+const subjectPrefix = "AR CyberGuard Verification Code"
 
 export async function sendEmail(toEmail, toName, subject, text) {
   try {
