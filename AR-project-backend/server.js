@@ -6,6 +6,7 @@ import userRoutes from "./routes/userRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
 import quizRoutes from "./routes/quizRoutes.js";
 import gameRoutes from "./routes/gameRoutes.js";
+import progressRoutes from "./routes/progressRoutes.js";
 import prisma from "./prisma/client.js";
 import redis, { ensureRedisConnection } from "./redis/client.js";
 
@@ -108,6 +109,7 @@ app.use("/api/users", userRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/quiz", quizRoutes);
 app.use("/api/game", gameRoutes);
+app.use("/api/progress", progressRoutes);
 
 // Startup
 async function start() {

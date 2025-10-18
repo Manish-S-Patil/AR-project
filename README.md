@@ -1,111 +1,147 @@
-# AR Cybersecurity Awareness Platform - Frontend
+# AR Cybersecurity Awareness Platform
 
-A modern React-based frontend application for the AR Cybersecurity Awareness Platform, featuring interactive cybersecurity education through augmented reality scenarios, quizzes, and games.
+A comprehensive cybersecurity education platform featuring interactive AR scenarios, quizzes, and games. Built with React frontend and Node.js backend, featuring email verification, admin management, and modern UI/UX.
 
 ## 🚀 Features
 
-- **🔐 Dual Authentication System**: Separate user and admin login interfaces
-- **📧 Email Verification (OTP)**: New users verify email with a 6‑digit code
- - **🔑 Forgot Password (OTP)**: Request a reset code and set a new password
-- **👑 Admin Panel Access**: Secure admin-only dashboard with role-based access
-- **📱 Responsive Design**: Mobile-first, modern UI with glass effects
+### 🔐 Authentication & Security
+- **📧 Email Verification**: Staged signup with email verification codes
+- **🔑 Password Management**: Secure password setting with temporary passwords
+- **👑 Admin Panel**: Complete user management with delete capabilities
+- **🔒 Role-based Access**: JWT authentication with user/admin roles
+- **🛡️ CORS Protection**: Configured for multiple deployment origins
+
+### 📱 User Experience
+- **📱 Responsive Design**: Mobile-first with glass effects and animations
 - **🎮 Interactive Learning**: AR scenarios, quizzes, and educational games
-- **🗂️ DB‑Driven Content**: Quizzes and phishing game content are loaded from the database (no built‑ins)
-- **👥 User Management**: Complete user management dashboard for admins
-- **🎨 Modern UI/UX**: Beautiful animations and smooth transitions
-- **📊 Progress Tracking**: User progress and statistics
+- **🗂️ Dynamic Content**: Database-driven quizzes and game content
+- **📊 Progress Tracking**: User statistics and completion tracking
 - **🌐 PWA Ready**: Progressive Web App capabilities
-- **🔒 Role-based Security**: JWT-based authentication with user roles + refresh tokens
+
+### 🎯 Educational Content
+- **📧 Phishing Detection**: Learn to identify suspicious emails
+- **🔐 Password Security**: Visualize password strength and vulnerabilities
+- **🌐 Safe Browsing**: Website security indicators and warnings
+- **💾 USB Security**: AR warnings for potentially dangerous devices
+- **🎯 Quiz System**: Category-based knowledge testing
 
 ## 🛠️ Tech Stack
 
-- **Framework**: React 18
-- **Build Tool**: Vite
-- **Styling**: Tailwind CSS
+### Frontend
+- **Framework**: React 18 with Vite
+- **Styling**: Tailwind CSS with custom glass effects
 - **UI Components**: Radix UI + Custom Components
 - **Animations**: Framer Motion
 - **Routing**: React Router DOM
 - **Icons**: Lucide React
+
+### Backend
+- **Runtime**: Node.js with Express
+- **Database**: PostgreSQL with Prisma ORM
+- **Caching**: Redis (optional, graceful fallback)
+- **Authentication**: JWT with refresh tokens
+- **Email**: Nodemailer with Gmail SMTP
+- **Security**: CORS, bcrypt, input validation
 - **State Management**: React Hooks + Local Storage
 
 ## 📋 Prerequisites
 
-- Node.js (v18 or higher)
-- npm or yarn
-- Backend API running (see backend README)
-- PostgreSQL database (for backend)
-- Redis (optional, for caching)
+- **Node.js** (v18 or higher)
+- **npm** or yarn
+- **PostgreSQL** database
+- **Redis** (optional, for caching)
+- **Gmail App Password** (for email verification)
 
 ## 🔧 Installation
 
 1. **Clone the repository**
    ```bash
    git clone <repository-url>
-   cd AR-project
+   cd file-integrated
    ```
 
-2. **Install frontend dependencies**
+2. **Install dependencies**
    ```bash
+   # Frontend dependencies
    npm install
-   ```
-
-3. **Install backend dependencies**
-   ```bash
+   
+   # Backend dependencies
    cd AR-project-backend
    npm install
    cd ..
    ```
 
-4. **Environment Setup**
-   Create a `.env` file in the root directory:
+3. **Environment Setup**
+
+   **Frontend** (`.env` in root):
    ```env
    VITE_API_URL=http://localhost:5001
    VITE_APP_TITLE=AR Cybersecurity Awareness Platform
    ```
 
-5. **Backend Environment Setup**
-   Create a `.env` file in the `AR-project-backend` directory:
+   **Backend** (`AR-project-backend/.env`):
    ```env
-   DATABASE_URL="your-postgresql-connection-string"
-   JWT_SECRET="your-jwt-secret-key"
+   # Database
+   DATABASE_URL="postgresql://user:password@localhost:5432/ar_project_db"
+   
+   # JWT Configuration
+   JWT_SECRET="your-super-secret-jwt-key"
+   JWT_EXPIRES_IN="7d"
+   REFRESH_TTL_DAYS=30
+   
+   # Server
    PORT=5001
+   
+   # CORS Configuration
+   ALLOWED_ORIGINS=http://localhost:5173,http://127.0.0.1:5173,https://ar-project-beta.vercel.app
+   
+   # Gmail SMTP Configuration
+   GMAIL_USER=your-email@gmail.com
+   GMAIL_APP_PASSWORD=your-gmail-app-password
    ```
 
-6. **Database Setup**
+4. **Database Setup**
    ```bash
    cd AR-project-backend
    npx prisma migrate dev
+   npx prisma generate
    node scripts/create-admin.js
    cd ..
    ```
 
-7. **Start the development servers**
+5. **Start Development Servers**
    ```bash
    # Terminal 1 - Backend
    cd AR-project-backend
    npm start
-
+   
    # Terminal 2 - Frontend
    npm run dev
    ```
 
-The application will be available at `http://localhost:5173`
+   **Access the application:**
+   - Frontend: `http://localhost:5173`
+   - Backend API: `http://localhost:5001`
 
 ## 🚀 Quick Start
 
-### For Regular Users
-1. Open `http://localhost:5173`
-2. Select "User Login" tab
-3. Click "Don't have an account? Sign up" to register
-4. Or click "Continue as Guest" for limited access
+### 📧 Email Verification Signup Flow
+1. **Start Registration**: Enter username and email
+2. **Receive Code**: Check email for 6-digit verification code
+3. **Verify Email**: Enter the code to verify your email
+4. **Set Password**: Create your secure password
+5. **Complete**: Account ready for login
 
-### For Administrators
-1. Open `http://localhost:5173`
-2. Select "Admin Login" tab
-3. Use default credentials:
-   - **Username**: `admin`
-   - **Password**: `AdminSecure123!`
-4. Access admin panel at `/admin`
+### 👑 Admin Access
+- **Default Admin**: `admin` / `AdminSecure123!`
+- **Admin Panel**: Access at `/admin` after login
+- **User Management**: View, manage, and delete users
+- **Content Management**: Create quizzes and game content
+
+### 🎮 Guest Mode
+- **Limited Access**: Explore without registration
+- **No Progress Saving**: Guest sessions don't persist
+- **Full Content Access**: All educational content available
 
 ## 🚀 Available Scripts
 
@@ -226,23 +262,32 @@ The project uses Tailwind CSS with custom configuration:
 
 ## 🔐 Authentication System
 
-### User Authentication
-1. **Registration**: Users create accounts with username, email, and password
-2. **Email Verification (OTP)**: Signup sends a 6‑digit code; users verify before login
-3. **Login**: Secure authentication with JWT tokens
-4. **Access Token**: 7‑day JWT stored client‑side
-5. **Refresh Token**: HttpOnly cookie; `/api/auth/refresh` issues new access tokens
-6. **Forgot Password (OTP)**: Request code, then reset password with `{ email, code, newPassword }`
-7. **Logout**: Secure session termination
+### 📧 Staged Email Verification Signup
+1. **Step 1**: Enter username and email → Backend creates account with temporary password
+2. **Step 2**: Receive 6-digit verification code via email
+3. **Step 3**: Enter verification code → Email gets verified
+4. **Step 4**: Set your real password using the temporary password
+5. **Complete**: Account ready for login
 
-### Admin Authentication
-1. **Separate Login**: Dedicated admin login interface
-2. **Role-based Access**: Only users with `role: "admin"` can access admin panel
-3. **Secure Endpoints**: Separate API endpoints for admin authentication
-4. **JWT with Roles**: Tokens include role information for authorization
-5. **Protected Routes**: Admin panel requires admin role authentication
+### 🔑 Password Management
+- **Temporary Passwords**: Generated during signup for security
+- **Password Change**: Users can change passwords after verification
+- **Forgot Password**: Request reset code → Set new password
+- **Secure Storage**: All passwords hashed with bcrypt
 
-> Create an admin using the backend script or endpoint and set a strong password.
+### 👑 Admin Features
+- **User Management**: View all users with complete information
+- **Delete Users**: Remove non-admin users (admin protection)
+- **Content Management**: Create quizzes and game content
+- **Statistics**: User metrics and analytics
+- **Role Protection**: Cannot delete admin accounts or self
+
+### 🔒 Security Features
+- **JWT Tokens**: 7-day access tokens with refresh tokens
+- **Role-based Access**: Separate user/admin authentication
+- **CORS Protection**: Configured for multiple deployment origins
+- **Input Validation**: Server-side validation for all inputs
+- **Email Verification**: Required for all new accounts
 
 ## 📊 Admin Panel Features
 
@@ -256,52 +301,83 @@ The project uses Tailwind CSS with custom configuration:
 
 ## 🚀 Deployment
 
-### Build for Production
-```bash
-npm run build
-```
+### 🌐 Frontend Deployment (Vercel)
 
-### Environment Variables for Production
-```env
-VITE_API_URL=https://your-backend-api.com
-VITE_APP_TITLE=AR Cybersecurity Awareness Platform
-```
+1. **Build the project**
+   ```bash
+   npm run build
+   ```
 
-Backend env (examples):
-```env
-DATABASE_URL=postgresql://...
-JWT_SECRET=your-secret
-JWT_EXPIRES_IN=7d
-REFRESH_TTL_DAYS=30
-PORT=5001
-```
+2. **Deploy to Vercel**
+   ```bash
+   vercel --prod
+   ```
 
-### Static Hosting
-The built files in `/dist` can be deployed to any static hosting service:
-- **Vercel**: `vercel --prod`
-- **Netlify**: Drag and drop `/dist` folder
-- **GitHub Pages**: Use GitHub Actions
-- **AWS S3**: Upload `/dist` contents
+3. **Environment Variables** (Vercel Dashboard)
+   ```env
+   VITE_API_URL=https://your-backend-url.onrender.com
+   ```
 
-For single‑page app routing on static hosts:
-- Render: `static.json` with `{ "routes": [{ "src": "/.*", "dest": "/index.html" }] }`
-- Netlify: `_redirects` → `/* /index.html 200`
-- Nginx: `try_files $uri /index.html;`
+4. **SPA Routing** (`vercel.json` - already configured)
+   ```json
+   {
+     "rewrites": [
+       {
+         "source": "/((?!api).*)",
+         "destination": "/index.html"
+       }
+     ]
+   }
+   ```
 
-### Docker Deployment
-```dockerfile
-FROM node:18-alpine as builder
-WORKDIR /app
-COPY package*.json ./
-RUN npm ci
-COPY . .
-RUN npm run build
+### 🔧 Backend Deployment (Render)
 
-FROM nginx:alpine
-COPY --from=builder /app/dist /usr/share/nginx/html
-EXPOSE 80
-CMD ["nginx", "-g", "daemon off;"]
-```
+1. **Environment Variables** (Render Dashboard)
+   ```env
+   # Database
+   DATABASE_URL=postgresql://user:password@host:port/database
+   
+   # JWT
+   JWT_SECRET=your-super-secret-jwt-key
+   JWT_EXPIRES_IN=7d
+   REFRESH_TTL_DAYS=30
+   
+   # CORS
+   ALLOWED_ORIGINS=https://your-frontend.vercel.app,https://your-domain.com
+   
+   # Gmail SMTP
+   GMAIL_USER=your-email@gmail.com
+   GMAIL_APP_PASSWORD=your-gmail-app-password
+   
+   # Optional Redis
+   REDIS_URL=redis://user:password@host:port
+   ```
+
+2. **Build Command**
+   ```bash
+   npm install && npx prisma generate && npx prisma db push
+   ```
+
+3. **Start Command**
+   ```bash
+   npm start
+   ```
+
+### 📧 Gmail SMTP Setup
+
+1. **Enable 2-Factor Authentication** on your Gmail account
+2. **Generate App Password**:
+   - Go to Google Account Settings
+   - Security → 2-Step Verification → App passwords
+   - Generate password for "Mail"
+3. **Use App Password** in `GMAIL_APP_PASSWORD` (not your regular password)
+
+### 🔒 Security Configuration
+
+- **CORS**: Configure `ALLOWED_ORIGINS` with your frontend domains
+- **JWT Secret**: Use a strong, random secret key
+- **Database**: Use connection pooling and SSL in production
+- **Redis**: Optional but recommended for caching
 
 ## 🔐 Login Interface
 
@@ -408,27 +484,38 @@ AR-project/
 
 ### Common Issues
 
-1. **Build Errors**
+1. **Email Verification Not Working**
+   - Check Gmail App Password is correct (no spaces)
+   - Verify 2FA is enabled on Gmail account
+   - Check backend logs for SMTP errors
+   - Ensure `GMAIL_USER` and `GMAIL_APP_PASSWORD` are set
+
+2. **CORS Errors**
+   - Verify `ALLOWED_ORIGINS` includes your frontend domain
+   - Check backend logs for CORS debugging messages
+   - Ensure frontend URL matches exactly (including https/http)
+
+3. **Database Connection Issues**
+   - Verify `DATABASE_URL` format: `postgresql://user:password@host:port/database`
+   - Run `npx prisma migrate dev` to sync schema
+   - Check if PostgreSQL is running
+
+4. **Redis Connection Issues**
+   - Redis is optional - app works without it
+   - Check `REDIS_URL` format if using external Redis
+   - Backend will log "Redis disabled" if not available
+
+5. **Build Errors**
    - Check Node.js version (v18+)
    - Clear node_modules and reinstall
    - Verify all dependencies are installed
 
-2. **API Connection Issues**
-   - Verify backend is running
-   - Check VITE_API_URL in .env
-   - Ensure CORS is configured correctly
-
-3. **Authentication Issues**
+6. **Authentication Issues**
    - Check JWT token validity
    - Verify localStorage permissions
    - Clear browser cache and cookies
    - Verify admin credentials are correct
    - Check if user has admin role in database
-
-4. **Styling Issues**
-   - Verify Tailwind CSS is properly configured
-   - Check for CSS conflicts
-   - Ensure all custom styles are imported
 
 ## 📝 Contributing
 
