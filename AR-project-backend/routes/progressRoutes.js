@@ -192,6 +192,77 @@ router.get("/scenario-completions", authenticateToken, async (req, res) => {
   }
 });
 
+// Admin endpoint to get all user progress
+router.get("/admin/all-progress", authenticateToken, async (req, res) => {
+  try {
+    // Check if user is admin
+    const user = await prisma.user.findUnique({
+      where: { id: req.user.userId },
+      select: { role: true }
+    });
+    
+    if (!user || user.role !== 'admin') {
+      return res.status(403).json({ error: 'Admin access required' });
+    }
+    
+    // Get all users with their progress
+    const users = await prisma.user.findMany({
+      select: {
+        id: true,
+        username: true,
+        email: true,
+        createdAt: true,
+        progress: {
+          select: {
+            scenariosCompleted: true,
+            quizzesPassed: true,
+            totalScore: true,
+            lastUpdated: true
+          }
+        },
+        scenarioCompletions: {
+          select: {
+            scenarioKey: true,
+            completed: true,
+            updatedAt: true
+          }
+        },
+        quizAttempts: {
+          select: {
+            categoryKey: true,
+            score: true,
+            totalQuestions: true,
+            passed: true,
+            createdAt: true
+          },
+          orderBy: { createdAt: 'desc' },
+          take: 5 // Last 5 attempts
+        }
+      }
+    });
+    
+    // Format the data
+    const progressData = users.map(user => ({
+      userId: user.id,
+      username: user.username,
+      email: user.email,
+      scenariosCompleted: user.progress?.[0]?.scenariosCompleted || 0,
+      quizzesPassed: user.progress?.[0]?.quizzesPassed || 0,
+      totalScore: user.progress?.[0]?.totalScore || 0,
+      lastActivity: user.progress?.[0]?.lastUpdated || user.createdAt,
+      completedScenarios: user.scenarioCompletions
+        .filter(sc => sc.completed)
+        .map(sc => sc.scenarioKey),
+      recentQuizAttempts: user.quizAttempts
+    }));
+    
+    res.json(progressData);
+  } catch (error) {
+    console.error("Get all progress error:", error);
+    res.status(500).json({ error: "Failed to fetch progress data" });
+  }
+});
+
 // Helper function to update user progress
 async function updateUserProgress(userId) {
   try {
