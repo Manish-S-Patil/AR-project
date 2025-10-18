@@ -16,6 +16,7 @@ import { Button } from '../components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import { toast } from '../components/ui/use-toast';
 import API_CONFIG from '../lib/api';
+import { progressTracker } from '../lib/progressTracker';
 import '../styles/pages.css';
 
 const Game = () => {
@@ -34,6 +35,46 @@ const Game = () => {
   const [hackers, setHackers] = useState([]);
   const [clickedHackers, setClickedHackers] = useState([]);
   const [noGameContent, setNoGameContent] = useState(false);
+  const [gameStartTime, setGameStartTime] = useState(null);
+  
+  const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+
+  // Record game completion
+  const recordGameCompletion = async (gameId, finalScore) => {
+    const timeSpent = gameStartTime ? Math.round((Date.now() - gameStartTime) / 1000) : 0;
+    
+    // Record locally first
+    progressTracker.recordScenarioCompletion(gameId, finalScore, timeSpent);
+    
+    // Try to record on server if user is logged in
+    if (userData.token && !userData.isGuest) {
+      try {
+        const response = await fetch(API_CONFIG.getUrl(API_CONFIG.endpoints.progress.recordScenarioCompletion), {
+          method: 'POST',
+          headers: API_CONFIG.getAuthHeaders(userData.token),
+          body: JSON.stringify({
+            scenarioKey: gameId,
+            score: finalScore,
+            timeSpent
+          })
+        });
+        
+        if (response.ok) {
+          console.log('Game completion recorded on server');
+        } else {
+          console.log('Server recording failed, using local storage');
+        }
+      } catch (error) {
+        console.log('Server recording failed, using local storage:', error);
+      }
+    }
+    
+    toast({
+      title: "Game Completed!",
+      description: `You scored ${finalScore} points in ${selectedGame?.title}!`,
+      duration: 3000
+    });
+  };
 
   const games = [
     {
@@ -131,6 +172,7 @@ const Game = () => {
     setScore(0);
     setTimeLeft(60);
     setLevel(1);
+    setGameStartTime(Date.now()); // Record start time
     setCurrentEmail(0);
     setClickedHackers([]);
   };
@@ -145,6 +187,11 @@ const Game = () => {
 
   const endGame = () => {
     setGameState('completed');
+    
+    // Record game completion
+    if (selectedGame) {
+      recordGameCompletion(selectedGame.id, score);
+    }
     
     // Save score to localStorage
     const gameScores = JSON.parse(localStorage.getItem('gameScores') || '{}');

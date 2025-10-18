@@ -25,16 +25,16 @@ const ARScenarios = () => {
   // Threat overlays removed per requirements
   const modelViewerRef = useRef(null);
   const [isARSupported, setIsARSupported] = useState(null); // null=unknown, true/false after check
-  const [startTime, setStartTime] = useState(null);
+  const [scenarioStartTime, setScenarioStartTime] = useState(null);
   
   const userData = JSON.parse(localStorage.getItem('userData') || '{}');
 
   // Record scenario completion
   const recordScenarioCompletion = async (scenarioKey, score = 85) => {
-    const timeSpent = startTime ? Math.round((Date.now() - startTime) / 1000) : 0;
+    const timeSpent = scenarioStartTime ? Math.round((Date.now() - scenarioStartTime) / 1000) : 0;
     
     // Record locally first
-    const completed = progressTracker.recordScenarioCompletion(scenarioKey, score, timeSpent);
+    progressTracker.recordScenarioCompletion(scenarioKey, score, timeSpent);
     
     // Try to record on server if user is logged in
     if (userData.token && !userData.isGuest) {
@@ -59,15 +59,11 @@ const ARScenarios = () => {
       }
     }
     
-    if (completed) {
-      toast({
-        title: "Scenario Completed! 🎉",
-        description: `You've successfully completed the ${scenarioKey.replace('-', ' ')} scenario`,
-        duration: 3000
-      });
-    }
-    
-    return completed;
+    toast({
+      title: "Scenario Completed!",
+      description: `You've completed the ${scenarioKey} scenario. Great job!`,
+      duration: 3000
+    });
   };
 
   const scenarios = {
@@ -181,7 +177,7 @@ const ARScenarios = () => {
   const startSimulation = () => {
     setIsSimulating(true);
     setSimulationStep(0);
-    setStartTime(Date.now()); // Record start time
+    setScenarioStartTime(Date.now()); // Record start time
     // no threat overlays
     
     // Attempt to launch AR session via model-viewer when available
@@ -209,7 +205,7 @@ const ARScenarios = () => {
       setSimulationStep(prev => {
         if (prev >= 3) {
           clearInterval(interval);
-          // Record scenario completion when all steps are done
+          // Record scenario completion when simulation completes
           if (selectedScenario) {
             recordScenarioCompletion(selectedScenario);
           }
