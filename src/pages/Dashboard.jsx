@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { 
@@ -13,19 +13,65 @@ import {
   User,
   LogOut,
   Settings,
-  Key
+  Key,
+  RefreshCw
 } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import { toast } from '../components/ui/use-toast';
 import '../styles/pages.css';
 import PasswordChangeModal from '../components/PasswordChangeModal';
+import API_CONFIG from '../lib/api';
+import { progressTracker } from '../lib/progressTracker';
 
 const Dashboard = () => {
   const navigate = useNavigate();
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
+  const [progress, setProgress] = useState({
+    scenariosCompleted: 0,
+    quizzesPassed: 0,
+    totalScore: 0
+  });
+  const [loading, setLoading] = useState(true);
   
   const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+
+  // Fetch user progress
+  const fetchProgress = async () => {
+    setLoading(true);
+    
+    try {
+      // Try to fetch from server first (if user is logged in)
+      if (userData.token && !userData.isGuest) {
+        try {
+          const response = await fetch(API_CONFIG.getUrl(API_CONFIG.endpoints.progress.getProgress), {
+            method: 'GET',
+            headers: API_CONFIG.getAuthHeaders(userData.token)
+          });
+          
+          if (response.ok) {
+            const data = await response.json();
+            setProgress(data);
+            return;
+          }
+        } catch (error) {
+          console.log('Server progress fetch failed, using local storage');
+        }
+      }
+      
+      // Fallback to local storage
+      const localProgress = progressTracker.getProgressSummary();
+      setProgress(localProgress);
+    } catch (error) {
+      console.error('Error fetching progress:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchProgress();
+  }, []);
 
   const handleLogout = () => {
     localStorage.removeItem('userData');
@@ -277,27 +323,60 @@ const Dashboard = () => {
             {/* Progress Card */}
             <Card className="glass-effect cyber-border">
               <CardHeader>
-                <CardTitle className="text-lg">Your Progress</CardTitle>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-lg">Your Progress</CardTitle>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={fetchProgress}
+                    disabled={loading}
+                    className="p-2"
+                  >
+                    <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+                  </Button>
+                </div>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
                   <div>
                     <div className="flex justify-between text-sm mb-2">
                       <span>Scenarios Completed</span>
-                      <span>0/5</span>
+                      <span>{progress.scenariosCompleted}/5</span>
                     </div>
                     <div className="w-full bg-muted rounded-full h-2">
-                      <div className="bg-gradient-to-r from-blue-500 to-purple-600 h-2 rounded-full w-0"></div>
+                      <div 
+                        className="bg-gradient-to-r from-blue-500 to-purple-600 h-2 rounded-full transition-all duration-500"
+                        style={{ width: `${(progress.scenariosCompleted / 5) * 100}%` }}
+                      ></div>
                     </div>
                   </div>
                   <div>
                     <div className="flex justify-between text-sm mb-2">
                       <span>Quizzes Passed</span>
-                      <span>0/5</span>
+                      <span>{progress.quizzesPassed}/5</span>
                     </div>
                     <div className="w-full bg-muted rounded-full h-2">
-                      <div className="bg-gradient-to-r from-green-500 to-blue-500 h-2 rounded-full w-0"></div>
+                      <div 
+                        className="bg-gradient-to-r from-green-500 to-blue-500 h-2 rounded-full transition-all duration-500"
+                        style={{ width: `${(progress.quizzesPassed / 5) * 100}%` }}
+                      ></div>
                     </div>
+                  </div>
+                  <div className="pt-2 border-t border-muted">
+                    <div className="flex justify-between text-sm">
+                      <span>Total Score</span>
+                      <span className="font-semibold text-green-400">{progress.totalScore}</span>
+                    </div>
+                  </div>
+                  <div className="pt-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => navigate('/progress-demo')}
+                      className="w-full"
+                    >
+                      View Progress Demo
+                    </Button>
                   </div>
                 </div>
               </CardContent>
