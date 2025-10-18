@@ -64,7 +64,7 @@ A comprehensive cybersecurity education platform featuring interactive AR scenar
    ```bash
    # Frontend dependencies
    npm install
-   
+
    # Backend dependencies
    cd AR-project-backend
    npm install
@@ -114,7 +114,7 @@ A comprehensive cybersecurity education platform featuring interactive AR scenar
    # Terminal 1 - Backend
    cd AR-project-backend
    npm start
-   
+
    # Terminal 2 - Frontend
    npm run dev
    ```
@@ -304,9 +304,9 @@ The project uses Tailwind CSS with custom configuration:
 ### 🌐 Frontend Deployment (Vercel)
 
 1. **Build the project**
-   ```bash
-   npm run build
-   ```
+```bash
+npm run build
+```
 
 2. **Deploy to Vercel**
    ```bash
@@ -314,7 +314,7 @@ The project uses Tailwind CSS with custom configuration:
    ```
 
 3. **Environment Variables** (Vercel Dashboard)
-   ```env
+```env
    VITE_API_URL=https://your-backend-url.onrender.com
    ```
 
@@ -333,14 +333,14 @@ The project uses Tailwind CSS with custom configuration:
 ### 🔧 Backend Deployment (Render)
 
 1. **Environment Variables** (Render Dashboard)
-   ```env
+```env
    # Database
    DATABASE_URL=postgresql://user:password@host:port/database
    
    # JWT
    JWT_SECRET=your-super-secret-jwt-key
-   JWT_EXPIRES_IN=7d
-   REFRESH_TTL_DAYS=30
+JWT_EXPIRES_IN=7d
+REFRESH_TTL_DAYS=30
    
    # CORS
    ALLOWED_ORIGINS=https://your-frontend.vercel.app,https://your-domain.com
