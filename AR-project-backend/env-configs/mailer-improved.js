@@ -90,22 +90,67 @@ class EmailService {
     return this.providers[0] || null
   }
 
-  // Resend API implementation using SDK
+  // Resend API implementation using SDK with fallback to fetch
   async sendViaResend(toEmail, subject, text, html) {
     try {
-      const result = await EMAIL_CONFIG.resend.client.emails.send({
-        from: `${EMAIL_CONFIG.resend.fromName} <${EMAIL_CONFIG.resend.fromEmail}>`,
-        to: [toEmail],
-        subject: subject,
-        text: text,
-        html: html || `<p>${text.replace(/\n/g, '<br>')}</p>`
-      })
-      
-      console.log('📧 Resend: Email sent successfully:', result.data?.id)
-      return { success: true, messageId: result.data?.id, provider: 'resend' }
+      // Try SDK first
+      if (EMAIL_CONFIG.resend.client) {
+        const result = await EMAIL_CONFIG.resend.client.emails.send({
+          from: `${EMAIL_CONFIG.resend.fromName} <${EMAIL_CONFIG.resend.fromEmail}>`,
+          to: [toEmail],
+          subject: subject,
+          text: text,
+          html: html || `<p>${text.replace(/\n/g, '<br>')}</p>`
+        })
+        
+        console.log('📧 Resend SDK: Full response:', JSON.stringify(result, null, 2))
+        
+        // Handle different response structures
+        const messageId = result.data?.id || result.id || result.messageId
+        
+        if (result.error) {
+          console.error('📧 Resend SDK error in response:', result.error)
+          throw new Error(result.error.message || 'Resend SDK error')
+        }
+        
+        console.log('📧 Resend SDK: Email sent successfully, Message ID:', messageId)
+        return { success: true, messageId: messageId, provider: 'resend' }
+      } else {
+        throw new Error('Resend client not initialized')
+      }
     } catch (error) {
-      console.error('📧 Resend error:', error.message)
-      throw error
+      console.error('📧 Resend SDK failed, trying fetch API:', error.message)
+      
+      // Fallback to fetch API
+      try {
+        const response = await fetch('https://api.resend.com/emails', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${EMAIL_CONFIG.resend.apiKey}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            from: `${EMAIL_CONFIG.resend.fromName} <${EMAIL_CONFIG.resend.fromEmail}>`,
+            to: [toEmail],
+            subject: subject,
+            text: text,
+            html: html || `<p>${text.replace(/\n/g, '<br>')}</p>`
+          })
+        })
+
+        const result = await response.json()
+        console.log('📧 Resend Fetch: Full response:', JSON.stringify(result, null, 2))
+        
+        if (response.ok) {
+          console.log('📧 Resend Fetch: Email sent successfully:', result.id)
+          return { success: true, messageId: result.id, provider: 'resend' }
+        } else {
+          throw new Error(result.message || 'Resend API error')
+        }
+      } catch (fetchError) {
+        console.error('📧 Resend Fetch also failed:', fetchError.message)
+        throw new Error(`Both Resend SDK and Fetch failed: ${error.message}, ${fetchError.message}`)
+      }
     }
   }
 
