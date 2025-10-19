@@ -13,7 +13,7 @@ model User {
   id       Int     @id @default(autoincrement())
   username String  @unique
   email    String  @unique
-  phoneNumber String @unique
+  phoneNumber String? @unique
   password String
   name     String?
   role     String  @default("user") // "user" or "admin"
