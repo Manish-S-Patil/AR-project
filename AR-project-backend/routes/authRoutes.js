@@ -39,16 +39,9 @@ router.post("/register", async (req, res) => {
     const { username, email, password, name, phoneNumber } = req.body;
 
     // Validate required fields
-    if (!username || !email || !password) {
+    if (!username || !email || !password || !phoneNumber) {
       return res.status(400).json({ 
-        error: "Username, email, and password are required" 
-      });
-    }
-    
-    // Phone number is optional for backward compatibility
-    if (!phoneNumber) {
-      return res.status(400).json({ 
-        error: "Phone number is required for new accounts" 
+        error: "Username, email, password, and phoneNumber are required" 
       });
     }
 
@@ -84,7 +77,6 @@ router.post("/register", async (req, res) => {
         phoneNumber: normalizedPhone,
         password: hashedPassword,
         name: name || username,
-        isVerified: false, // Keep for backward compatibility
         isPhoneVerified: false
       }
     });
@@ -160,21 +152,12 @@ router.post("/login", async (req, res) => {
       });
     }
 
-    // Enforce phone verification before login (for new users with phone numbers)
-    if (user.phoneNumber && !user.isPhoneVerified) {
+    // Enforce phone verification before login
+    if (!user.isPhoneVerified) {
       return res.status(403).json({ 
         error: "Phone verification required",
         requiresPhoneVerification: true,
         phoneNumber: user.phoneNumber
-      });
-    }
-    
-    // For existing users without phone numbers, check old email verification
-    if (!user.phoneNumber && !user.isVerified) {
-      return res.status(403).json({ 
-        error: "Account verification required",
-        requiresVerification: true,
-        email: user.email
       });
     }
 
@@ -480,8 +463,7 @@ router.post('/verify-phone', async (req, res) => {
     await prisma.user.update({ 
       where: { id: user.id }, 
       data: { 
-        isPhoneVerified: true,
-        isVerified: true // Also mark as verified for backward compatibility
+        isPhoneVerified: true
       } 
     });
     await prisma.smsVerification.delete({ where: { id: record.id } }).catch(() => {});
@@ -609,7 +591,7 @@ router.post('/manual-verify', async (req, res) => {
     
     await prisma.user.update({ 
       where: { id: user.id }, 
-      data: { isVerified: true } 
+      data: { isPhoneVerified: true } 
     });
     
     res.json({ message: 'User manually verified successfully' });
@@ -645,7 +627,7 @@ router.post('/admin/verify-user', async (req, res) => {
     
     await prisma.user.update({ 
       where: { id: user.id }, 
-      data: { isVerified: true } 
+      data: { isPhoneVerified: true } 
     });
     
     res.json({ message: 'User verified successfully', user: { id: user.id, email: user.email, username: user.username } });
