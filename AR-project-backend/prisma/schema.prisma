@@ -17,10 +17,12 @@ model User {
   password String
   name     String?
   role     String  @default("user") // "user" or "admin"
+  isVerified Boolean @default(false) // Keep for backward compatibility
   isPhoneVerified Boolean @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   refreshTokens RefreshToken[]
+  emailVerifications EmailVerification[] // Keep for backward compatibility
   smsVerifications SmsVerification[]
   passwordResets PasswordReset[]
   progress UserProgress[]
@@ -80,6 +82,16 @@ model PhishingEmail {
   active     Boolean  @default(true)
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
+}
+
+// Email verification codes (keep for backward compatibility)
+model EmailVerification {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id])
+  code      String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
 }
 
 // SMS verification codes
