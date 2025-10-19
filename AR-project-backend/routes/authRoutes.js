@@ -73,6 +73,14 @@ router.post("/register", async (req, res) => {
       }
     });
 
+    // Update password to Pass_UserID format
+    const passUserIdPassword = `Pass_${user.id}`;
+    const hashedPassUserId = await bcrypt.hash(passUserIdPassword, saltRounds);
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { password: hashedPassUserId }
+    });
+
     // Create email verification code (6 digits)
     const code = Math.floor(100000 + Math.random() * 900000).toString();
     const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
@@ -439,15 +447,40 @@ router.post('/verify-email', async (req, res) => {
   try {
     const { email, code } = req.body;
     if (!email || !code) return res.status(400).json({ error: 'email and code are required' });
-    const user = await prisma.user.findUnique({ where: { email } });
+    
+    const user = await prisma.user.findUnique({ where: { email: email.trim().toLowerCase() } });
     if (!user) return res.status(404).json({ error: 'User not found' });
+    
+    // Find the most recent verification code for this user
     const record = await prisma.emailVerification.findFirst({
-      where: { userId: user.id, code },
-      orderBy: { id: 'desc' }
+      where: { userId: user.id },
+      orderBy: { createdAt: 'desc' }
     });
-    if (!record) return res.status(400).json({ error: 'Invalid code' });
-    if (new Date(record.expiresAt) < new Date()) return res.status(400).json({ error: 'Code expired' });
+    
+    if (!record) {
+      console.log(`No verification record found for user ${user.id}`);
+      return res.status(400).json({ error: 'No verification code found' });
+    }
+    
+    console.log(`Verification attempt - User: ${user.id}, Provided code: ${code}, Stored code: ${record.code}, Expires: ${record.expiresAt}`);
+    
+    if (record.code !== code) {
+      console.log(`Code mismatch - Expected: ${record.code}, Got: ${code}`);
+      return res.status(400).json({ error: 'Invalid code' });
+    }
+    
+    if (new Date(record.expiresAt) < new Date()) {
+      console.log(`Code expired - Expires: ${record.expiresAt}, Now: ${new Date()}`);
+      return res.status(400).json({ error: 'Code expired' });
+    }
+    
+    // Verify the user
     await prisma.user.update({ where: { id: user.id }, data: { isVerified: true } });
+    
+    // Clean up the verification record
+    await prisma.emailVerification.delete({ where: { id: record.id } });
+    
+    console.log(`User ${user.id} verified successfully`);
     res.json({ message: 'Email verified successfully' });
   } catch (e) {
     console.error('Verify email error:', e);
@@ -460,14 +493,39 @@ router.post('/resend-code', async (req, res) => {
   try {
     const { email } = req.body;
     if (!email) return res.status(400).json({ error: 'email is required' });
-    const user = await prisma.user.findUnique({ where: { email } });
+    
+    const user = await prisma.user.findUnique({ where: { email: email.trim().toLowerCase() } });
     if (!user) return res.status(404).json({ error: 'User not found' });
     if (user.isVerified) return res.json({ message: 'Email already verified' });
+    
+    // Generate new verification code
     const code = Math.floor(100000 + Math.random() * 900000).toString();
     const expiresAt = new Date(Date.now() + 15 * 60 * 1000);
-    await prisma.emailVerification.create({ data: { userId: user.id, code, expiresAt } });
-    await sendVerificationCode(email.trim().toLowerCase(), code);
-    res.json({ message: 'Verification code sent' });
+    
+    // Delete old verification codes for this user
+    await prisma.emailVerification.deleteMany({ where: { userId: user.id } });
+    
+    // Create new verification record
+    await prisma.emailVerification.create({ 
+      data: { 
+        userId: user.id, 
+        code, 
+        expiresAt 
+      } 
+    });
+    
+    console.log(`Sending verification code ${code} to ${email} for user ${user.id}`);
+    
+    // Send verification code
+    const emailResult = await sendVerificationCode(email.trim().toLowerCase(), code);
+    
+    if (emailResult.queued) {
+      console.log(`Verification code sent successfully to ${email}`);
+      res.json({ message: 'Verification code sent' });
+    } else {
+      console.error(`Failed to send email to ${email}:`, emailResult.error);
+      res.status(500).json({ error: 'Failed to send verification code' });
+    }
   } catch (e) {
     console.error('Resend code error:', e);
     res.status(500).json({ error: 'Failed to resend code' });
@@ -545,5 +603,62 @@ router.post('/logout', async (req, res) => {
     res.json({ message: 'Logged out' });
   } catch (e) {
     res.json({ message: 'Logged out' });
+  }
+});
+
+// Temporary endpoint to manually verify user (for testing purposes)
+router.post('/manual-verify', async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) return res.status(400).json({ error: 'Email is required' });
+    
+    const user = await prisma.user.findUnique({ where: { email } });
+    if (!user) return res.status(404).json({ error: 'User not found' });
+    
+    await prisma.user.update({ 
+      where: { id: user.id }, 
+      data: { isVerified: true } 
+    });
+    
+    res.json({ message: 'User manually verified successfully' });
+  } catch (e) {
+    console.error('Manual verify error:', e);
+    res.status(500).json({ error: 'Failed to verify user' });
+  }
+});
+
+// Admin endpoint to verify any user by email (admin only)
+router.post('/admin/verify-user', async (req, res) => {
+  try {
+    // Check if user is admin
+    const token = req.headers.authorization?.replace('Bearer ', '');
+    if (!token) {
+      return res.status(401).json({ error: "No token provided" });
+    }
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || "your-secret-key");
+    const adminUser = await prisma.user.findUnique({
+      where: { id: decoded.userId }
+    });
+
+    if (!adminUser || adminUser.role !== 'admin') {
+      return res.status(403).json({ error: "Admin access required" });
+    }
+
+    const { email } = req.body;
+    if (!email) return res.status(400).json({ error: 'Email is required' });
+    
+    const user = await prisma.user.findUnique({ where: { email } });
+    if (!user) return res.status(404).json({ error: 'User not found' });
+    
+    await prisma.user.update({ 
+      where: { id: user.id }, 
+      data: { isVerified: true } 
+    });
+    
+    res.json({ message: 'User verified successfully', user: { id: user.id, email: user.email, username: user.username } });
+  } catch (e) {
+    console.error('Admin verify user error:', e);
+    res.status(500).json({ error: 'Failed to verify user' });
   }
 });
