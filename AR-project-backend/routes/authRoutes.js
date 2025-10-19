@@ -601,6 +601,89 @@ router.post('/manual-verify', async (req, res) => {
   }
 });
 
+// Create admin user endpoint (for initial setup)
+router.post('/create-admin', async (req, res) => {
+  try {
+    // Check if admin already exists
+    const existingAdmin = await prisma.user.findFirst({
+      where: { role: 'admin' }
+    });
+    
+    if (existingAdmin) {
+      return res.json({ message: 'Admin user already exists', admin: { username: existingAdmin.username, email: existingAdmin.email } });
+    }
+    
+    // Create admin user
+    const hashedPassword = await bcrypt.hash('admin123', 10);
+    
+    const admin = await prisma.user.create({
+      data: {
+        username: 'admin',
+        email: 'admin@arcyberguard.com',
+        phoneNumber: '9999999999',
+        password: hashedPassword,
+        name: 'System Administrator',
+        role: 'admin',
+        isPhoneVerified: true
+      }
+    });
+    
+    res.json({ 
+      message: 'Admin user created successfully',
+      admin: {
+        username: admin.username,
+        email: admin.email,
+        phone: admin.phoneNumber,
+        id: admin.id
+      }
+    });
+  } catch (error) {
+    console.error('Create admin error:', error);
+    res.status(500).json({ error: 'Failed to create admin user' });
+  }
+});
+
+// Manual verify and make admin (for testing)
+router.post('/manual-verify-admin', async (req, res) => {
+  try {
+    const { username } = req.body;
+    if (!username) return res.status(400).json({ error: 'Username is required' });
+    
+    const user = await prisma.user.findFirst({
+      where: {
+        OR: [
+          { username: username },
+          { email: username }
+        ]
+      }
+    });
+    
+    if (!user) return res.status(404).json({ error: 'User not found' });
+    
+    // Make user admin and verify
+    await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        role: 'admin',
+        isPhoneVerified: true
+      }
+    });
+    
+    res.json({ 
+      message: 'User made admin and verified successfully',
+      user: {
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        role: 'admin'
+      }
+    });
+  } catch (error) {
+    console.error('Manual verify admin error:', error);
+    res.status(500).json({ error: 'Failed to make user admin' });
+  }
+});
+
 // Admin endpoint to verify any user by email (admin only)
 router.post('/admin/verify-user', async (req, res) => {
   try {
