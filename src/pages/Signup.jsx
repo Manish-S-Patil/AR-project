@@ -30,15 +30,21 @@ export default function Signup() {
     }
     try {
       setIsSubmitting(true)
-      const generatedTemp = `Tmp-${Math.random().toString(36).slice(2)}-${Date.now()}`
+      // Use a temporary password that will be updated after user creation
+      const tempPassword = 'TempPassword123'
       const res = await fetch(API_CONFIG.getUrl(API_CONFIG.endpoints.auth.register), {
         method: 'POST',
         headers: API_CONFIG.getDefaultHeaders(),
-        body: JSON.stringify({ username, email, password: generatedTemp, name: username })
+        body: JSON.stringify({ username, email, password: tempPassword, name: username })
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || 'Registration failed')
-      setTempPassword(generatedTemp)
+      
+      // Generate the Pass_UserID format password
+      const userId = data.user?.id
+      const passUserIdPassword = `Pass_${userId}`
+      
+      setTempPassword(passUserIdPassword)
       setAuthToken(data.token || '')
       toast({ title: 'Verification code sent', description: 'We emailed you a 6-digit code.' })
       setStep('code')

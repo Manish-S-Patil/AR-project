@@ -4,7 +4,7 @@ import jwt from "jsonwebtoken";
 import crypto from "crypto";
 import prisma from "../prisma/client.js";
 import redis from "../redis/client.js";
-import { sendVerificationCode, sendPasswordResetCode } from "../env-configs/mailer.js";
+import { sendVerificationCode, sendPasswordResetCode } from "../env-configs/mailer-improved.js";
 
 const router = express.Router();
 
@@ -85,7 +85,15 @@ router.post("/register", async (req, res) => {
     const code = Math.floor(100000 + Math.random() * 900000).toString();
     const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
     await prisma.emailVerification.create({ data: { userId: user.id, code, expiresAt } });
-    await sendVerificationCode(normalizedEmail, code);
+    
+    console.log(`📧 Sending verification code ${code} to ${normalizedEmail} for user ${user.id}`);
+    const emailResult = await sendVerificationCode(normalizedEmail, code);
+    
+    if (emailResult.success) {
+      console.log(`📧 Verification code sent successfully via ${emailResult.provider} (ID: ${emailResult.messageId})`);
+    } else {
+      console.error(`📧 Failed to send verification code:`, emailResult.error);
+    }
 
     // Generate tokens
     const token = createAccessToken({ userId: user.id, username: user.username, role: user.role });
@@ -514,16 +522,16 @@ router.post('/resend-code', async (req, res) => {
       } 
     });
     
-    console.log(`Sending verification code ${code} to ${email} for user ${user.id}`);
+    console.log(`📧 Resending verification code ${code} to ${email} for user ${user.id}`);
     
     // Send verification code
     const emailResult = await sendVerificationCode(email.trim().toLowerCase(), code);
     
-    if (emailResult.queued) {
-      console.log(`Verification code sent successfully to ${email}`);
+    if (emailResult.success) {
+      console.log(`📧 Verification code resent successfully via ${emailResult.provider} (ID: ${emailResult.messageId}) to ${email}`);
       res.json({ message: 'Verification code sent' });
     } else {
-      console.error(`Failed to send email to ${email}:`, emailResult.error);
+      console.error(`📧 Failed to resend email to ${email}:`, emailResult.error);
       res.status(500).json({ error: 'Failed to send verification code' });
     }
   } catch (e) {
