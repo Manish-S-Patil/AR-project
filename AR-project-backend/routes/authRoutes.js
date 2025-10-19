@@ -604,17 +604,13 @@ router.post('/manual-verify', async (req, res) => {
 // Create admin user endpoint (for initial setup)
 router.post('/create-admin', async (req, res) => {
   try {
-    // Check if admin already exists
-    const existingAdmin = await prisma.user.findFirst({
+    // Delete existing admin if exists
+    await prisma.user.deleteMany({
       where: { role: 'admin' }
     });
     
-    if (existingAdmin) {
-      return res.json({ message: 'Admin user already exists', admin: { username: existingAdmin.username, email: existingAdmin.email } });
-    }
-    
     // Create admin user
-    const hashedPassword = await bcrypt.hash('admin123', 10);
+    const hashedPassword = await bcrypt.hash('AdminSecure@123', 10);
     
     const admin = await prisma.user.create({
       data: {

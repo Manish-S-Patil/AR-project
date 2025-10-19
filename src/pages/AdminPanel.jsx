@@ -501,8 +501,8 @@ const AdminPanel = () => {
                         <span className="font-medium">{users.length}</span>
                       </div>
                       <div className="flex justify-between text-xs sm:text-sm">
-                        <span>Verified Users:</span>
-                        <span className="font-medium">{users.filter(u => u.isVerified).length}</span>
+                        <span>Phone Verified Users:</span>
+                        <span className="font-medium">{users.filter(u => u.isPhoneVerified).length}</span>
                       </div>
                       <div className="flex justify-between text-xs sm:text-sm">
                         <span>New This Week:</span>
@@ -707,9 +707,10 @@ const AdminPanel = () => {
                         <th className="text-left py-2 sm:py-3 px-2 sm:px-4 font-semibold">ID</th>
                         <th className="text-left py-2 sm:py-3 px-2 sm:px-4 font-semibold">Username</th>
                         <th className="text-left py-2 sm:py-3 px-2 sm:px-4 font-semibold">Email</th>
+                        <th className="text-left py-2 sm:py-3 px-2 sm:px-4 font-semibold">Phone</th>
                         <th className="text-left py-2 sm:py-3 px-2 sm:px-4 font-semibold">Password</th>
                         <th className="text-left py-2 sm:py-3 px-2 sm:px-4 font-semibold">Role</th>
-                        <th className="text-left py-2 sm:py-3 px-2 sm:px-4 font-semibold">Verified</th>
+                        <th className="text-left py-2 sm:py-3 px-2 sm:px-4 font-semibold">Phone Verified</th>
                         <th className="text-left py-2 sm:py-3 px-2 sm:px-4 font-semibold">Name</th>
                         <th className="text-left py-2 sm:py-3 px-2 sm:px-4 font-semibold">Created</th>
                         <th className="text-left py-2 sm:py-3 px-2 sm:px-4 font-semibold">Updated</th>
@@ -739,6 +740,11 @@ const AdminPanel = () => {
                             </div>
                           </td>
                           <td className="py-3 px-4">
+                            <div className="flex items-center space-x-2">
+                              <span className="text-sm">{user.phoneNumber || 'N/A'}</span>
+                            </div>
+                          </td>
+                          <td className="py-3 px-4">
                             <div className="font-mono text-sm">
                               {showPasswords ? (
                                 <span className="text-green-400">{user.password}</span>
@@ -758,11 +764,11 @@ const AdminPanel = () => {
                           </td>
                           <td className="py-3 px-4">
                             <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                              user.isVerified 
+                              user.isPhoneVerified 
                                 ? 'bg-green-500/20 text-green-400' 
                                 : 'bg-red-500/20 text-red-400'
                             }`}>
-                              {user.isVerified ? 'Verified' : 'Unverified'}
+                              {user.isPhoneVerified ? 'Phone Verified' : 'Pending Verification'}
                             </span>
                           </td>
                           <td className="py-3 px-4">{user.name || 'N/A'}</td>
@@ -884,8 +890,9 @@ const AdminPanel = () => {
                         <tr className="border-b border-muted">
                           <th className="text-left p-2 sm:p-4 font-medium text-xs sm:text-sm min-w-[200px]">User</th>
                           <th className="text-left p-2 sm:p-4 font-medium text-xs sm:text-sm min-w-[200px]">Email</th>
+                          <th className="text-left p-2 sm:p-4 font-medium text-xs sm:text-sm min-w-[120px]">Phone</th>
                           <th className="text-left p-2 sm:p-4 font-medium text-xs sm:text-sm min-w-[100px]">Role</th>
-                          <th className="text-left p-2 sm:p-4 font-medium text-xs sm:text-sm min-w-[120px]">Status</th>
+                          <th className="text-left p-2 sm:p-4 font-medium text-xs sm:text-sm min-w-[120px]">Phone Status</th>
                           <th className="text-left p-2 sm:p-4 font-medium text-xs sm:text-sm min-w-[150px]">Created</th>
                           <th className="text-left p-2 sm:p-4 font-medium text-xs sm:text-sm min-w-[100px]">Actions</th>
                         </tr>
@@ -914,6 +921,11 @@ const AdminPanel = () => {
                                 <span className="text-xs sm:text-sm truncate">{user.email}</span>
                               </div>
                             </td>
+                            <td className="p-2 sm:p-4 min-w-[120px]">
+                              <div className="flex items-center space-x-2 min-w-0">
+                                <span className="text-xs sm:text-sm truncate">{user.phoneNumber || 'N/A'}</span>
+                              </div>
+                            </td>
                             <td className="p-2 sm:p-4 min-w-[100px]">
                               <span className={`px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full text-xs font-medium ${
                                 user.role === 'admin' 
@@ -925,13 +937,13 @@ const AdminPanel = () => {
                             </td>
                             <td className="p-2 sm:p-4 min-w-[120px]">
                               <div className="flex items-center space-x-1 sm:space-x-2">
-                                {user.isVerified ? (
+                                {user.isPhoneVerified ? (
                                   <CheckCircle className="w-3 h-3 sm:w-4 sm:h-4 text-green-400 flex-shrink-0" />
                                 ) : (
                                   <AlertCircle className="w-3 h-3 sm:w-4 sm:h-4 text-yellow-400 flex-shrink-0" />
                                 )}
                                 <span className="text-xs sm:text-sm">
-                                  {user.isVerified ? 'Verified' : 'Pending'}
+                                  {user.isPhoneVerified ? 'Phone Verified' : 'Pending Verification'}
                                 </span>
                               </div>
                             </td>

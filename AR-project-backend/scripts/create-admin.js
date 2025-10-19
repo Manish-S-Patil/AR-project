@@ -16,7 +16,8 @@ const createAdmin = async () => {
     // Create admin user
     const adminUsername = "admin";
     const adminEmail = "admin@arcyberguard.com";
-    const adminPassword = "AdminSecure123!";
+    const adminPassword = "AdminSecure@123";
+    const adminPhone = "9999999999";
     
     // Hash password
     const saltRounds = 10;
@@ -27,17 +28,21 @@ const createAdmin = async () => {
       data: {
         username: adminUsername,
         email: adminEmail,
+        phoneNumber: adminPhone,
         password: hashedPassword,
         name: "System Administrator",
-        role: "admin"
+        role: "admin",
+        isPhoneVerified: true // Admin doesn't need phone verification
       }
     });
 
     console.log("Admin user created successfully!");
     console.log("Username:", adminUsername);
     console.log("Email:", adminEmail);
+    console.log("Phone:", adminPhone);
     console.log("Password:", adminPassword);
     console.log("Role:", admin.role);
+    console.log("Phone Verified:", admin.isPhoneVerified);
     console.log("\nPlease change the default password after first login!");
 
   } catch (error) {
