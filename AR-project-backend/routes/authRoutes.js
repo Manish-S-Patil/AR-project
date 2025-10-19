@@ -4,7 +4,8 @@ import jwt from "jsonwebtoken";
 import crypto from "crypto";
 import prisma from "../prisma/client.js";
 import redis from "../redis/client.js";
-import { sendVerificationCode, sendPasswordResetCode } from "../env-configs/mailer-improved.js";
+import { sendPasswordResetCode } from "../env-configs/mailer-improved.js";
+import { sendSmsVerificationCode } from "../env-configs/sms-service.js";
 
 const router = express.Router();
 
@@ -36,16 +37,17 @@ async function issueRefreshToken(res, userId) {
 // Register new user
 router.post("/register", async (req, res) => {
   try {
-    const { username, email, password, name } = req.body;
+    const { username, email, password, name, phoneNumber } = req.body;
 
     // Validate required fields
-    if (!username || !email || !password) {
+    if (!username || !email || !password || !phoneNumber) {
       return res.status(400).json({ 
-        error: "Username, email, and password are required" 
+        error: "Username, email, password, and phoneNumber are required" 
       });
     }
 
     const normalizedEmail = email.trim().toLowerCase();
+    const normalizedPhone = String(phoneNumber).trim();
 
     // Check if username already exists
     const existingByUsername = await prisma.user.findUnique({ where: { username } });
@@ -58,46 +60,40 @@ router.post("/register", async (req, res) => {
       return res.status(400).json({ error: "Email already in use" });
     }
 
+    // Check if phone already exists
+    const existingByPhone = await prisma.user.findUnique({ where: { phoneNumber: normalizedPhone } });
+    if (existingByPhone) {
+      return res.status(400).json({ error: "Phone number already in use" });
+    }
+
     // Hash password
     const saltRounds = 10;
     const hashedPassword = await bcrypt.hash(password, saltRounds);
 
-    // Create user (unverified)
+    // Create user (phone not verified yet)
     const user = await prisma.user.create({
       data: {
         username,
         email: normalizedEmail,
+        phoneNumber: normalizedPhone,
         password: hashedPassword,
         name: name || username,
-        isVerified: false
+        isPhoneVerified: false
       }
     });
 
-    // Update password to Pass_UserID format
-    const passUserIdPassword = `Pass_${user.id}`;
-    const hashedPassUserId = await bcrypt.hash(passUserIdPassword, saltRounds);
-    await prisma.user.update({
-      where: { id: user.id },
-      data: { password: hashedPassUserId }
-    });
-
-    // Create email verification code (6 digits)
+    // Generate and store SMS verification code
     const code = Math.floor(100000 + Math.random() * 900000).toString();
-    const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
-    await prisma.emailVerification.create({ data: { userId: user.id, code, expiresAt } });
-    
-    console.log(`📧 Sending verification code ${code} to ${normalizedEmail} for user ${user.id}`);
-    const emailResult = await sendVerificationCode(normalizedEmail, code);
-    
-    if (emailResult.success) {
-      console.log(`📧 Verification code sent successfully via ${emailResult.provider} (ID: ${emailResult.messageId})`);
-    } else {
-      console.error(`📧 Failed to send verification code:`, emailResult.error);
-    }
+    const expiresAt = new Date(Date.now() + 15 * 60 * 1000);
+    await prisma.smsVerification.create({ data: { userId: user.id, code, expiresAt } });
 
-    // Generate tokens
-    const token = createAccessToken({ userId: user.id, username: user.username, role: user.role });
-    await issueRefreshToken(res, user.id);
+    // Send SMS
+    const smsResult = await sendSmsVerificationCode(normalizedPhone, code);
+    if (!smsResult.success) {
+      console.error("📱 Failed to send verification SMS:", smsResult.error);
+    } else {
+      console.log(`📱 SMS sent via ${smsResult.provider} (ID: ${smsResult.messageId || "n/a"})`);
+    }
 
     // Clear users cache
     if (redis.isOpen) {
@@ -105,14 +101,14 @@ router.post("/register", async (req, res) => {
     }
 
     res.status(201).json({
-      message: "User created successfully. Please verify your email.",
-      token,
+      message: "User created successfully. Please verify your phone to sign in.",
       user: {
         id: user.id,
         username: user.username,
         email: user.email,
+        phoneNumber: user.phoneNumber,
         name: user.name,
-        isVerified: user.isVerified
+        isPhoneVerified: user.isPhoneVerified
       }
     });
   } catch (error) {
@@ -157,11 +153,12 @@ router.post("/login", async (req, res) => {
       });
     }
 
-    if (!user.isVerified) {
-      return res.status(200).json({ 
-        message: "Email verification required",
-        requiresVerification: true,
-        user: { id: user.id, email: user.email, username: user.username }
+    // Enforce phone verification before login
+    if (!user.isPhoneVerified) {
+      return res.status(403).json({ 
+        error: "Phone verification required",
+        requiresPhoneVerification: true,
+        phoneNumber: user.phoneNumber
       });
     }
 
@@ -377,7 +374,7 @@ router.get("/admin/users", async (req, res) => {
         password: true,
         name: true,
         role: true,
-        isVerified: true,
+        isPhoneVerified: true,
         createdAt: true,
         updatedAt: true
       },
@@ -431,7 +428,7 @@ router.delete('/admin/user/:id', async (req, res) => {
 
     // Cleanup related auth records (best-effort)
     await prisma.refreshToken.deleteMany({ where: { userId: targetUserId } }).catch(() => {});
-    await prisma.emailVerification.deleteMany({ where: { userId: targetUserId } }).catch(() => {});
+    await prisma.smsVerification.deleteMany({ where: { userId: targetUserId } }).catch(() => {});
     await prisma.passwordReset.deleteMany({ where: { userId: targetUserId } }).catch(() => {});
 
     await prisma.user.delete({ where: { id: targetUserId } });
@@ -450,92 +447,52 @@ router.delete('/admin/user/:id', async (req, res) => {
 
 export default router;
 
-// Verify email with code
-router.post('/verify-email', async (req, res) => {
+// Phone verification endpoints
+router.post('/verify-phone', async (req, res) => {
   try {
-    const { email, code } = req.body;
-    if (!email || !code) return res.status(400).json({ error: 'email and code are required' });
-    
-    const user = await prisma.user.findUnique({ where: { email: email.trim().toLowerCase() } });
+    const { phoneNumber, code } = req.body;
+    if (!phoneNumber || !code) return res.status(400).json({ error: 'phoneNumber and code are required' });
+
+    const user = await prisma.user.findUnique({ where: { phoneNumber: String(phoneNumber).trim() } });
     if (!user) return res.status(404).json({ error: 'User not found' });
-    
-    // Find the most recent verification code for this user
-    const record = await prisma.emailVerification.findFirst({
-      where: { userId: user.id },
-      orderBy: { createdAt: 'desc' }
-    });
-    
-    if (!record) {
-      console.log(`No verification record found for user ${user.id}`);
-      return res.status(400).json({ error: 'No verification code found' });
-    }
-    
-    console.log(`Verification attempt - User: ${user.id}, Provided code: ${code}, Stored code: ${record.code}, Expires: ${record.expiresAt}`);
-    
-    if (record.code !== code) {
-      console.log(`Code mismatch - Expected: ${record.code}, Got: ${code}`);
-      return res.status(400).json({ error: 'Invalid code' });
-    }
-    
-    if (new Date(record.expiresAt) < new Date()) {
-      console.log(`Code expired - Expires: ${record.expiresAt}, Now: ${new Date()}`);
-      return res.status(400).json({ error: 'Code expired' });
-    }
-    
-    // Verify the user
-    await prisma.user.update({ where: { id: user.id }, data: { isVerified: true } });
-    
-    // Clean up the verification record
-    await prisma.emailVerification.delete({ where: { id: record.id } });
-    
-    console.log(`User ${user.id} verified successfully`);
-    res.json({ message: 'Email verified successfully' });
+
+    const record = await prisma.smsVerification.findFirst({ where: { userId: user.id }, orderBy: { createdAt: 'desc' } });
+    if (!record) return res.status(400).json({ error: 'No verification code found' });
+    if (record.code !== code) return res.status(400).json({ error: 'Invalid code' });
+    if (new Date(record.expiresAt) < new Date()) return res.status(400).json({ error: 'Code expired' });
+
+    await prisma.user.update({ where: { id: user.id }, data: { isPhoneVerified: true } });
+    await prisma.smsVerification.delete({ where: { id: record.id } }).catch(() => {});
+    return res.json({ message: 'Phone verified successfully' });
   } catch (e) {
-    console.error('Verify email error:', e);
-    res.status(500).json({ error: 'Failed to verify email' });
+    console.error('Verify phone error:', e);
+    res.status(500).json({ error: 'Failed to verify phone' });
   }
 });
 
-// Resend verification code
-router.post('/resend-code', async (req, res) => {
+router.post('/resend-phone-code', async (req, res) => {
   try {
-    const { email } = req.body;
-    if (!email) return res.status(400).json({ error: 'email is required' });
-    
-    const user = await prisma.user.findUnique({ where: { email: email.trim().toLowerCase() } });
+    const { phoneNumber } = req.body;
+    if (!phoneNumber) return res.status(400).json({ error: 'phoneNumber is required' });
+
+    const normalizedPhone = String(phoneNumber).trim();
+    const user = await prisma.user.findUnique({ where: { phoneNumber: normalizedPhone } });
     if (!user) return res.status(404).json({ error: 'User not found' });
-    if (user.isVerified) return res.json({ message: 'Email already verified' });
-    
-    // Generate new verification code
+    if (user.isPhoneVerified) return res.json({ message: 'Phone already verified' });
+
+    await prisma.smsVerification.deleteMany({ where: { userId: user.id } }).catch(() => {});
     const code = Math.floor(100000 + Math.random() * 900000).toString();
     const expiresAt = new Date(Date.now() + 15 * 60 * 1000);
-    
-    // Delete old verification codes for this user
-    await prisma.emailVerification.deleteMany({ where: { userId: user.id } });
-    
-    // Create new verification record
-    await prisma.emailVerification.create({ 
-      data: { 
-        userId: user.id, 
-        code, 
-        expiresAt 
-      } 
-    });
-    
-    console.log(`📧 Resending verification code ${code} to ${email} for user ${user.id}`);
-    
-    // Send verification code
-    const emailResult = await sendVerificationCode(email.trim().toLowerCase(), code);
-    
-    if (emailResult.success) {
-      console.log(`📧 Verification code resent successfully via ${emailResult.provider} (ID: ${emailResult.messageId}) to ${email}`);
-      res.json({ message: 'Verification code sent' });
-    } else {
-      console.error(`📧 Failed to resend email to ${email}:`, emailResult.error);
-      res.status(500).json({ error: 'Failed to send verification code' });
+    await prisma.smsVerification.create({ data: { userId: user.id, code, expiresAt } });
+
+    const smsResult = await sendSmsVerificationCode(normalizedPhone, code);
+    if (!smsResult.success) {
+      console.error('📱 Failed to resend verification SMS:', smsResult.error);
+      return res.status(500).json({ error: 'Failed to send verification code' });
     }
+    return res.json({ message: 'Verification code sent' });
   } catch (e) {
-    console.error('Resend code error:', e);
+    console.error('Resend phone code error:', e);
     res.status(500).json({ error: 'Failed to resend code' });
   }
 });

@@ -13,14 +13,15 @@ model User {
   id       Int     @id @default(autoincrement())
   username String  @unique
   email    String  @unique
+  phoneNumber String @unique
   password String
   name     String?
   role     String  @default("user") // "user" or "admin"
-  isVerified Boolean @default(false)
+  isPhoneVerified Boolean @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   refreshTokens RefreshToken[]
-  emailVerifications EmailVerification[]
+  smsVerifications SmsVerification[]
   passwordResets PasswordReset[]
   progress UserProgress[]
   quizAttempts QuizAttempt[]
@@ -81,8 +82,8 @@ model PhishingEmail {
   updatedAt  DateTime @updatedAt
 }
 
-// Email verification codes
-model EmailVerification {
+// SMS verification codes
+model SmsVerification {
   id        Int      @id @default(autoincrement())
   userId    Int
   user      User     @relation(fields: [userId], references: [id])
