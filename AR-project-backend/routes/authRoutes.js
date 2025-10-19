@@ -4,8 +4,7 @@ import jwt from "jsonwebtoken";
 import crypto from "crypto";
 import prisma from "../prisma/client.js";
 import redis from "../redis/client.js";
-import { sendPasswordResetCode } from "../env-configs/mailer-improved.js";
-import { sendSmsVerificationCode } from "../env-configs/sms-service.js";
+import { sendSmsVerificationCode, sendPasswordResetSms } from "../env-configs/sms-service.js";
 
 const router = express.Router();
 
@@ -497,19 +496,23 @@ router.post('/resend-phone-code', async (req, res) => {
   }
 });
 
-// Request password reset code
+// Request password reset code via SMS
 router.post('/forgot-password', async (req, res) => {
   try {
-    const { email } = req.body;
-    if (!email) return res.status(400).json({ message: 'Email is required' });
-    const user = await prisma.user.findUnique({ where: { email: email.trim().toLowerCase() } });
+    const { phoneNumber } = req.body;
+    if (!phoneNumber) return res.status(400).json({ message: 'Phone number is required' });
+    const normalizedPhone = String(phoneNumber).trim();
+    const user = await prisma.user.findUnique({ where: { phoneNumber: normalizedPhone } });
     // For privacy, always return success
-    if (!user) return res.json({ message: 'If the email exists, a code has been sent' });
+    if (!user) return res.json({ message: 'If the phone number exists, a code has been sent' });
     const code = Math.floor(100000 + Math.random() * 900000).toString();
     const expiresAt = new Date(Date.now() + 15 * 60 * 1000);
     await prisma.passwordReset.create({ data: { userId: user.id, code, expiresAt } });
-    await sendPasswordResetCode(user.email, code);
-    return res.json({ message: 'If the email exists, a code has been sent' });
+    const smsResult = await sendPasswordResetSms(normalizedPhone, code);
+    if (!smsResult.success) {
+      console.error('📱 Failed to send password reset SMS:', smsResult.error);
+    }
+    return res.json({ message: 'If the phone number exists, a code has been sent' });
   } catch (e) {
     console.error('Forgot password error:', e);
     res.status(500).json({ message: 'Unable to process request' });
@@ -519,10 +522,11 @@ router.post('/forgot-password', async (req, res) => {
 // Verify reset code and set new password
 router.post('/reset-password', async (req, res) => {
   try {
-    const { email, code, newPassword } = req.body;
-    if (!email || !code || !newPassword) return res.status(400).json({ message: 'Email, code and new password are required' });
+    const { phoneNumber, code, newPassword } = req.body;
+    if (!phoneNumber || !code || !newPassword) return res.status(400).json({ message: 'Phone number, code and new password are required' });
     if (newPassword.length < 6) return res.status(400).json({ message: 'New password must be at least 6 characters' });
-    const user = await prisma.user.findUnique({ where: { email: email.trim().toLowerCase() } });
+    const normalizedPhone = String(phoneNumber).trim();
+    const user = await prisma.user.findUnique({ where: { phoneNumber: normalizedPhone } });
     if (!user) return res.status(404).json({ message: 'User not found' });
     const record = await prisma.passwordReset.findFirst({ where: { userId: user.id, code }, orderBy: { id: 'desc' } });
     if (!record) return res.status(400).json({ message: 'Invalid code' });
