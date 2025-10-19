@@ -10,12 +10,12 @@ const API_CONFIG = {
       register: '/api/auth/register',
       profile: '/api/auth/profile',
       changePassword: '/api/auth/change-password',
-    verifyEmail: '/api/auth/verify-email',
-    resendCode: '/api/auth/resend-code',
-    forgotPassword: '/api/auth/forgot-password',
-    resetPassword: '/api/auth/reset-password',
-    adminUsers: '/api/auth/admin/users',
-    adminDeleteUser: (id) => `/api/auth/admin/user/${id}`
+      verifyPhone: '/api/auth/verify-phone',
+      resendPhoneCode: '/api/auth/resend-phone-code',
+      forgotPassword: '/api/auth/forgot-password',
+      resetPassword: '/api/auth/reset-password',
+      adminUsers: '/api/auth/admin/users',
+      adminDeleteUser: (id) => `/api/auth/admin/user/${id}`
     },
     users: {
       all: '/api/users/',
