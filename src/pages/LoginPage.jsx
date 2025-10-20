@@ -16,6 +16,7 @@ const LoginPage = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [awaitingVerification, setAwaitingVerification] = useState(false);
   const [verificationCode, setVerificationCode] = useState('');
+  const [verificationId, setVerificationId] = useState('');
   const [forgotStage, setForgotStage] = useState(false);
   const [resetStage, setResetStage] = useState(false);
   const [resetCode, setResetCode] = useState('');
@@ -99,6 +100,12 @@ const LoginPage = () => {
       });
 
       const data = await response.json();
+      console.group('API Auth Response')
+      console.log('Status:', response.status, response.statusText)
+      console.log('URL:', API_CONFIG.getUrl(endpoint))
+      console.log('Body:', requestData)
+      console.log('Response:', data)
+      console.groupEnd()
 
       if (!response.ok) {
         throw new Error(data.error || 'Authentication failed');
@@ -123,6 +130,7 @@ const LoginPage = () => {
         // After registration, prompt for verification
         setAwaitingVerification(true);
         setCurrentView('verify');
+        if (data.verificationId) setVerificationId(String(data.verificationId));
       }
 
       // Store user data and token in localStorage
@@ -330,7 +338,7 @@ const LoginPage = () => {
                           <Mail className="w-4 h-4" />
                           Email
                         </Label>
-                        <Input
+                      <Input
                           id="verify-email"
                           name="email"
                           type="email"
@@ -361,7 +369,7 @@ const LoginPage = () => {
                     </div>
                     <div className="flex gap-2">
                       <Button onClick={handleVerify} disabled={isSubmitting} className="w-full bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600">
-                        Verify Email
+                        Verify
                       </Button>
                       <Button onClick={handleResend} variant="outline" disabled={isSubmitting} className="w-full glass-effect">
                         Resend Code
@@ -464,7 +472,7 @@ const LoginPage = () => {
                         onClick={async () => {
                           try {
                             setIsSubmitting(true);
-                            const res = await fetch(API_CONFIG.getUrl(API_CONFIG.endpoints.auth.forgotPassword), {
+                      const res = await fetch(API_CONFIG.getUrl(API_CONFIG.endpoints.auth.forgotPassword), {
                               method: 'POST',
                               headers: API_CONFIG.getDefaultHeaders(),
                               body: JSON.stringify({ email: formData.email })
