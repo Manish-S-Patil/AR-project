@@ -35,12 +35,25 @@ export default function Login() {
         body: JSON.stringify({ username, password })
       })
       const data = await res.json()
+      console.group('API Login Response')
+      console.log('Status:', res.status, res.statusText)
+      console.log('URL:', API_CONFIG.getUrl(API_CONFIG.endpoints.auth.login))
+      console.log('Body:', { username })
+      console.log('Response:', data)
+      console.groupEnd()
+      // If phone not verified, route to verification screen
+      if (res.status === 403 && data?.requiresPhoneVerification) {
+        toast({ title: 'Phone Verification Required', description: 'Please verify your phone number to continue.' })
+        navigate('/verify', { state: { mode: 'phone', phoneNumber: data.phoneNumber, username } })
+        return
+      }
       if (!res.ok) throw new Error(data.error || 'Authentication failed')
       
       // Check if user needs verification
+      // Legacy email verification (kept for safety)
       if (data.requiresVerification) {
-        toast({ title: 'Email Verification Required', description: 'Please verify your email to continue.' })
-        navigate('/verify', { state: { email: data.user.email, username: data.user.username } })
+        toast({ title: 'Verification Required', description: 'Please verify your account to continue.' })
+        navigate('/verify', { state: { email: data.user?.email, username: data.user?.username } })
         return
       }
       

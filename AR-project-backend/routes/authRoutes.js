@@ -4,7 +4,7 @@ import jwt from "jsonwebtoken";
 import crypto from "crypto";
 import prisma from "../prisma/client.js";
 import redis from "../redis/client.js";
-import { sendSmsVerificationCode, sendPasswordResetSms } from "../env-configs/sms-service.js";
+import { sendSmsVerificationCode, sendPasswordResetSms, validateOtp } from "../env-configs/sms-service.js";
 
 const router = express.Router();
 
@@ -108,7 +108,8 @@ router.post("/register", async (req, res) => {
         phoneNumber: user.phoneNumber,
         name: user.name,
         isPhoneVerified: user.isPhoneVerified
-      }
+      },
+      verificationId: smsResult?.verificationId || undefined
     });
   } catch (error) {
     console.error("Registration error:", error);
@@ -452,16 +453,24 @@ export default router;
 // Phone verification endpoints
 router.post('/verify-phone', async (req, res) => {
   try {
-    const { phoneNumber, code } = req.body;
+    const { phoneNumber, code, verificationId } = req.body;
     if (!phoneNumber || !code) return res.status(400).json({ error: 'phoneNumber and code are required' });
 
     const user = await prisma.user.findUnique({ where: { phoneNumber: String(phoneNumber).trim() } });
     if (!user) return res.status(404).json({ error: 'User not found' });
 
-    const record = await prisma.smsVerification.findFirst({ where: { userId: user.id }, orderBy: { createdAt: 'desc' } });
-    if (!record) return res.status(400).json({ error: 'No verification code found' });
-    if (record.code !== code) return res.status(400).json({ error: 'Invalid code' });
-    if (new Date(record.expiresAt) < new Date()) return res.status(400).json({ error: 'Code expired' });
+    if (verificationId) {
+      const result = await validateOtp({ mobileNumber: phoneNumber, verificationId, code });
+      if (!result.success) {
+        return res.status(400).json({ error: result.error || 'Invalid or expired code' });
+      }
+    } else {
+      const record = await prisma.smsVerification.findFirst({ where: { userId: user.id }, orderBy: { createdAt: 'desc' } });
+      if (!record) return res.status(400).json({ error: 'No verification code found' });
+      if (record.code !== code) return res.status(400).json({ error: 'Invalid code' });
+      if (new Date(record.expiresAt) < new Date()) return res.status(400).json({ error: 'Code expired' });
+      await prisma.smsVerification.delete({ where: { id: record.id } }).catch(() => {});
+    }
 
     await prisma.user.update({ 
       where: { id: user.id }, 
@@ -469,7 +478,6 @@ router.post('/verify-phone', async (req, res) => {
         isPhoneVerified: true
       } 
     });
-    await prisma.smsVerification.delete({ where: { id: record.id } }).catch(() => {});
     return res.json({ message: 'Phone verified successfully' });
   } catch (e) {
     console.error('Verify phone error:', e);
@@ -497,7 +505,7 @@ router.post('/resend-phone-code', async (req, res) => {
       console.error('📱 Failed to resend verification SMS:', smsResult.error);
       return res.status(500).json({ error: 'Failed to send verification code' });
     }
-    return res.json({ message: 'Verification code sent' });
+    return res.json({ message: 'Verification code sent', verificationId: smsResult.verificationId || undefined });
   } catch (e) {
     console.error('Resend phone code error:', e);
     res.status(500).json({ error: 'Failed to resend code' });

@@ -20,6 +20,7 @@ export default function Signup() {
   const [isLoading, setIsLoading] = useState(false)
   const [step, setStep] = useState('form') // 'form' | 'code'
   const [verificationCode, setVerificationCode] = useState('')
+  const [verificationId, setVerificationId] = useState('')
 
   // Signup - create account and send SMS code
   const handleSignup = async (e) => {
@@ -40,8 +41,15 @@ export default function Signup() {
         body: JSON.stringify({ username, email, password, name: username, phoneNumber })
       })
       const data = await res.json()
+      console.group('API Register Response')
+      console.log('Status:', res.status, res.statusText)
+      console.log('URL:', API_CONFIG.getUrl(API_CONFIG.endpoints.auth.register))
+      console.log('Body:', { username, email, phoneNumber })
+      console.log('Response:', data)
+      console.groupEnd()
       if (!res.ok) throw new Error(data.error || 'Registration failed')
       toast({ title: 'Code Sent', description: 'We sent a verification code via SMS.' })
+      if (data.verificationId) setVerificationId(String(data.verificationId))
       setStep('code')
     } catch (e) {
       toast({ title: 'Registration Failed', description: e.message, variant: 'destructive' })
@@ -61,9 +69,15 @@ export default function Signup() {
       const res = await fetch(API_CONFIG.getUrl(API_CONFIG.endpoints.auth.verifyPhone), {
         method: 'POST',
         headers: API_CONFIG.getDefaultHeaders(),
-        body: JSON.stringify({ phoneNumber, code: verificationCode })
+        body: JSON.stringify({ phoneNumber, code: verificationCode, verificationId })
       })
       const data = await res.json()
+      console.group('API Verify Phone Response')
+      console.log('Status:', res.status, res.statusText)
+      console.log('URL:', API_CONFIG.getUrl(API_CONFIG.endpoints.auth.verifyPhone))
+      console.log('Body:', { phoneNumber, verificationId })
+      console.log('Response:', data)
+      console.groupEnd()
       if (!res.ok) throw new Error(data.error || 'Verification failed')
       toast({ title: 'Phone Verified', description: 'You can now sign in.' })
       navigate('/login')
@@ -204,7 +218,14 @@ export default function Signup() {
                     setIsSubmitting(true)
                     const res = await fetch(API_CONFIG.getUrl(API_CONFIG.endpoints.auth.resendPhoneCode), { method: 'POST', headers: API_CONFIG.getDefaultHeaders(), body: JSON.stringify({ phoneNumber }) })
                     const data = await res.json()
+                    console.group('API Resend Phone Code Response')
+                    console.log('Status:', res.status, res.statusText)
+                    console.log('URL:', API_CONFIG.getUrl(API_CONFIG.endpoints.auth.resendPhoneCode))
+                    console.log('Body:', { phoneNumber })
+                    console.log('Response:', data)
+                    console.groupEnd()
                     if(!res.ok) throw new Error(data.error || 'Unable to resend code')
+                    if (data.verificationId) setVerificationId(String(data.verificationId))
                     toast({ title: 'Code resent', description: 'Check your SMS again.' })
                   }catch(e){
                     toast({ title: 'Resend failed', description: e.message, variant: 'destructive' })
