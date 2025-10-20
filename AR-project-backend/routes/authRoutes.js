@@ -269,6 +269,8 @@ router.get("/profile", authenticateToken, async (req, res) => {
         id: true,
         username: true,
         email: true,
+        phoneNumber: true,
+        isPhoneVerified: true,
         name: true,
         createdAt: true
       }
@@ -370,6 +372,7 @@ router.get("/admin/users", async (req, res) => {
         id: true,
         username: true,
         email: true,
+        phoneNumber: true,
         password: true,
         name: true,
         role: true,
