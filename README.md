@@ -1,11 +1,11 @@
 # AR Cybersecurity Awareness Platform
 
-A comprehensive cybersecurity education platform featuring interactive AR scenarios, quizzes, and games. Built with React frontend and Node.js backend, featuring email verification, admin management, and modern UI/UX.
+A comprehensive cybersecurity education platform featuring interactive AR scenarios, quizzes, and games. Built with React frontend and Node.js backend, featuring phone number verification, admin management, and modern UI/UX.
 
 ## 🚀 Features
 
 ### 🔐 Authentication & Security
-- **📧 Email Verification**: Staged signup with email verification codes
+- **📱 Phone Verification**: Staged signup with SMS verification codes via MessageCentral
 - **🔑 Password Management**: Secure password setting with temporary passwords
 - **👑 Admin Panel**: Complete user management with delete capabilities
 - **🔒 Role-based Access**: JWT authentication with user/admin roles
@@ -40,7 +40,7 @@ A comprehensive cybersecurity education platform featuring interactive AR scenar
 - **Database**: PostgreSQL with Prisma ORM
 - **Caching**: Redis (optional, graceful fallback)
 - **Authentication**: JWT with refresh tokens
-- **Email**: Nodemailer with Gmail SMTP
+- **SMS**: MessageCentral API for phone verification
 - **Security**: CORS, bcrypt, input validation
 - **State Management**: React Hooks + Local Storage
 
@@ -50,7 +50,7 @@ A comprehensive cybersecurity education platform featuring interactive AR scenar
 - **npm** or yarn
 - **PostgreSQL** database
 - **Redis** (optional, for caching)
-- **Gmail App Password** (for email verification)
+- **MessageCentral API** (for SMS verification)
 
 ## 🔧 Installation
 
@@ -95,9 +95,11 @@ A comprehensive cybersecurity education platform featuring interactive AR scenar
    # CORS Configuration
    ALLOWED_ORIGINS=http://localhost:5173,http://127.0.0.1:5173,https://ar-project-beta.vercel.app
    
-   # Gmail SMTP Configuration
-   GMAIL_USER=your-email@gmail.com
-   GMAIL_APP_PASSWORD=your-gmail-app-password
+   # MessageCentral SMS Configuration
+   MESSAGECENTRAL_AUTH_TOKEN=your-messagecentral-auth-token
+   MESSAGECENTRAL_CUSTOMER_ID=your-customer-id
+   MESSAGECENTRAL_SENDER_ID=your-sender-id
+   MESSAGECENTRAL_COUNTRY_CODE=91
    ```
 
 4. **Database Setup**
@@ -125,10 +127,10 @@ A comprehensive cybersecurity education platform featuring interactive AR scenar
 
 ## 🚀 Quick Start
 
-### 📧 Email Verification Signup Flow
-1. **Start Registration**: Enter username and email
-2. **Receive Code**: Check email for 6-digit verification code
-3. **Verify Email**: Enter the code to verify your email
+### 📱 Phone Verification Signup Flow
+1. **Start Registration**: Enter username, email, and phone number
+2. **Receive Code**: Check SMS for 6-digit verification code
+3. **Verify Phone**: Enter the code to verify your phone number
 4. **Set Password**: Create your secure password
 5. **Complete**: Account ready for login
 
@@ -262,17 +264,17 @@ The project uses Tailwind CSS with custom configuration:
 
 ## 🔐 Authentication System
 
-### 📧 Staged Email Verification Signup
-1. **Step 1**: Enter username and email → Backend creates account with temporary password
-2. **Step 2**: Receive 6-digit verification code via email
-3. **Step 3**: Enter verification code → Email gets verified
+### 📱 Staged Phone Verification Signup
+1. **Step 1**: Enter username, email, and phone number → Backend creates account with temporary password
+2. **Step 2**: Receive 6-digit verification code via SMS
+3. **Step 3**: Enter verification code → Phone number gets verified
 4. **Step 4**: Set your real password using the temporary password
 5. **Complete**: Account ready for login
 
 ### 🔑 Password Management
 - **Temporary Passwords**: Generated during signup for security
 - **Password Change**: Users can change passwords after verification
-- **Forgot Password**: Request reset code → Set new password
+- **Forgot Password**: Request reset code via SMS → Set new password
 - **Secure Storage**: All passwords hashed with bcrypt
 
 ### 👑 Admin Features
@@ -287,7 +289,7 @@ The project uses Tailwind CSS with custom configuration:
 - **Role-based Access**: Separate user/admin authentication
 - **CORS Protection**: Configured for multiple deployment origins
 - **Input Validation**: Server-side validation for all inputs
-- **Email Verification**: Required for all new accounts
+- **Phone Verification**: Required for all new accounts
 
 ## 📊 Admin Panel Features
 
@@ -345,9 +347,11 @@ REFRESH_TTL_DAYS=30
    # CORS
    ALLOWED_ORIGINS=https://your-frontend.vercel.app,https://your-domain.com
    
-   # Gmail SMTP
-   GMAIL_USER=your-email@gmail.com
-   GMAIL_APP_PASSWORD=your-gmail-app-password
+   # MessageCentral SMS
+   MESSAGECENTRAL_AUTH_TOKEN=your-messagecentral-auth-token
+   MESSAGECENTRAL_CUSTOMER_ID=your-customer-id
+   MESSAGECENTRAL_SENDER_ID=your-sender-id
+   MESSAGECENTRAL_COUNTRY_CODE=91
    
    # Optional Redis
    REDIS_URL=redis://user:password@host:port
@@ -355,7 +359,7 @@ REFRESH_TTL_DAYS=30
 
 2. **Build Command**
    ```bash
-   npm install && npx prisma generate && npx prisma db push
+   npm install && npx prisma generate && npx prisma db push --accept-data-loss
    ```
 
 3. **Start Command**
@@ -363,14 +367,16 @@ REFRESH_TTL_DAYS=30
    npm start
    ```
 
-### 📧 Gmail SMTP Setup
+### 📱 MessageCentral SMS Setup
 
-1. **Enable 2-Factor Authentication** on your Gmail account
-2. **Generate App Password**:
-   - Go to Google Account Settings
-   - Security → 2-Step Verification → App passwords
-   - Generate password for "Mail"
-3. **Use App Password** in `GMAIL_APP_PASSWORD` (not your regular password)
+1. **Get MessageCentral Credentials**:
+   - Sign up for MessageCentral API access
+   - Get your Auth Token, Customer ID, and Sender ID
+2. **Configure Environment Variables**:
+   - Set `MESSAGECENTRAL_AUTH_TOKEN` with your auth token
+   - Set `MESSAGECENTRAL_CUSTOMER_ID` with your customer ID
+   - Set `MESSAGECENTRAL_SENDER_ID` with your sender ID
+   - Set `MESSAGECENTRAL_COUNTRY_CODE` (default: 91 for India)
 
 ### 🔒 Security Configuration
 
@@ -469,8 +475,8 @@ AR-project/
 4. **Admin Panel**: Verify admin functionality
 5. **Quizzes**: Ensure DB contains questions (Admin → Quiz Management)
 6. **Games**: Ensure DB contains phishing emails (Admin → Game Content)
-7. **Email Verification**: Register a new user → enter OTP → verify success
-8. **Forgot Password**: Request code → reset with code and new password
+7. **Phone Verification**: Register a new user → enter SMS code → verify success
+8. **Forgot Password**: Request SMS code → reset with code and new password
 5. **AR Scenarios**: Test all scenario interactions
 
 ### Browser Compatibility
@@ -484,11 +490,11 @@ AR-project/
 
 ### Common Issues
 
-1. **Email Verification Not Working**
-   - Check Gmail App Password is correct (no spaces)
-   - Verify 2FA is enabled on Gmail account
-   - Check backend logs for SMTP errors
-   - Ensure `GMAIL_USER` and `GMAIL_APP_PASSWORD` are set
+1. **Phone Verification Not Working**
+   - Check MessageCentral credentials are correct
+   - Verify phone number format (include country code)
+   - Check backend logs for SMS errors
+   - Ensure all MessageCentral environment variables are set
 
 2. **CORS Errors**
    - Verify `ALLOWED_ORIGINS` includes your frontend domain

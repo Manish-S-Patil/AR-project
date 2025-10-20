@@ -1,11 +1,11 @@
 # AR Cybersecurity Awareness Platform - Backend
 
-A robust Node.js backend API for the AR Cybersecurity Awareness Platform, featuring email verification, user management, admin controls, and comprehensive security features.
+A robust Node.js backend API for the AR Cybersecurity Awareness Platform, featuring phone number verification, user management, admin controls, and comprehensive security features.
 
 ## 🚀 Features
 
 ### 🔐 Authentication & Security
-- **📧 Email Verification**: Staged signup with Gmail SMTP integration
+- **📱 Phone Verification**: Staged signup with MessageCentral SMS integration
 - **🔑 JWT Authentication**: Access tokens with refresh token support
 - **👑 Admin Management**: Role-based access control and user management
 - **🛡️ Security**: CORS protection, input validation, password hashing
@@ -31,7 +31,7 @@ A robust Node.js backend API for the AR Cybersecurity Awareness Platform, featur
 - **Database**: PostgreSQL with Prisma ORM
 - **Caching**: Redis (optional, graceful fallback)
 - **Authentication**: JWT with refresh tokens
-- **Email**: Nodemailer with Gmail SMTP
+- **SMS**: MessageCentral API for phone verification
 - **Security**: bcrypt, CORS, input validation
 - **Logging**: Custom request/response logger
 
@@ -40,7 +40,7 @@ A robust Node.js backend API for the AR Cybersecurity Awareness Platform, featur
 - **Node.js** (v18 or higher)
 - **PostgreSQL** database
 - **Redis** (optional, for caching)
-- **Gmail Account** with App Password
+- **MessageCentral API** credentials
 - **npm** or yarn
 
 ## 🔧 Installation
@@ -74,9 +74,11 @@ A robust Node.js backend API for the AR Cybersecurity Awareness Platform, featur
    # CORS Configuration
    ALLOWED_ORIGINS=http://localhost:5173,http://127.0.0.1:5173,https://ar-project-beta.vercel.app
    
-   # Gmail SMTP Configuration
-   GMAIL_USER=your-email@gmail.com
-   GMAIL_APP_PASSWORD=your-gmail-app-password
+   # MessageCentral SMS Configuration
+   MESSAGECENTRAL_AUTH_TOKEN=your-messagecentral-auth-token
+   MESSAGECENTRAL_CUSTOMER_ID=your-customer-id
+   MESSAGECENTRAL_SENDER_ID=your-sender-id
+   MESSAGECENTRAL_COUNTRY_CODE=91
    
    # Optional Redis Configuration
    REDIS_URL=redis://localhost:6379
@@ -101,38 +103,34 @@ A robust Node.js backend API for the AR Cybersecurity Awareness Platform, featur
 
    **Server will be available at:** `http://localhost:5001`
 
-## 📧 Gmail SMTP Setup
+## 📱 MessageCentral SMS Setup
 
-### Step 1: Enable 2-Factor Authentication
-1. Go to [Google Account Settings](https://myaccount.google.com/)
-2. Security → 2-Step Verification
-3. Enable 2FA if not already enabled
+### Step 1: Get MessageCentral Credentials
+1. Sign up for MessageCentral API access
+2. Get your Auth Token, Customer ID, and Sender ID
+3. Note your country code (default: 91 for India)
 
-### Step 2: Generate App Password
-1. Go to Security → 2-Step Verification → App passwords
-2. Select "Mail" as the app
-3. Generate password (16 characters)
-4. Use this password in `GMAIL_APP_PASSWORD` (not your regular password)
-
-### Step 3: Configure Environment
+### Step 2: Configure Environment
 ```env
-GMAIL_USER=your-email@gmail.com
-GMAIL_APP_PASSWORD=your-16-character-app-password
+MESSAGECENTRAL_AUTH_TOKEN=your-messagecentral-auth-token
+MESSAGECENTRAL_CUSTOMER_ID=your-customer-id
+MESSAGECENTRAL_SENDER_ID=your-sender-id
+MESSAGECENTRAL_COUNTRY_CODE=91
 ```
 
 ## 🔐 Authentication System
 
-### 📧 Staged Email Verification Signup
+### 📱 Staged Phone Verification Signup
 
 **Flow:**
 1. **POST** `/api/auth/register`
    - Creates user with temporary password
-   - Sends verification code via email
+   - Sends verification code via SMS
    - Returns JWT token for verification step
 
-2. **POST** `/api/auth/verify-email`
+2. **POST** `/api/auth/verify-phone`
    - Verifies 6-digit code
-   - Marks email as verified
+   - Marks phone as verified
    - Proceeds to password setting
 
 3. **POST** `/api/auth/change-password`
@@ -144,7 +142,7 @@ GMAIL_APP_PASSWORD=your-16-character-app-password
 
 - **Temporary Passwords**: Generated during signup (`Tmp-{random}-{timestamp}`)
 - **Password Hashing**: bcrypt with salt rounds 10
-- **Password Reset**: Forgot password with email verification
+- **Password Reset**: Forgot password with SMS verification
 - **Password Change**: Authenticated users can change passwords
 
 ### 👑 Admin Features
@@ -164,8 +162,8 @@ GMAIL_APP_PASSWORD=your-16-character-app-password
 | POST | `/api/auth/register` | Create new user account | No |
 | POST | `/api/auth/login` | User login | No |
 | POST | `/api/auth/admin/login` | Admin login | No |
-| POST | `/api/auth/verify-email` | Verify email with code | No |
-| POST | `/api/auth/resend-code` | Resend verification code | No |
+| POST | `/api/auth/verify-phone` | Verify phone with code | No |
+| POST | `/api/auth/resend-phone-code` | Resend phone verification code | No |
 | POST | `/api/auth/forgot-password` | Request password reset | No |
 | POST | `/api/auth/reset-password` | Reset password with code | No |
 | POST | `/api/auth/change-password` | Change password | Yes |
@@ -213,12 +211,13 @@ model User {
   password    String
   name        String?
   role        String   @default("user")
-  isVerified  Boolean  @default(false)
+  phoneNumber String? @unique
+  isPhoneVerified Boolean @default(false)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   
   refreshTokens      RefreshToken[]
-  emailVerifications EmailVerification[]
+  smsVerifications   SmsVerification[]
   passwordResets     PasswordReset[]
 }
 ```
@@ -236,7 +235,7 @@ model RefreshToken {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
-model EmailVerification {
+model SmsVerification {
   id        Int      @id @default(autoincrement())
   userId    Int
   code      String
@@ -278,9 +277,11 @@ model PasswordReset {
    # CORS
    ALLOWED_ORIGINS=https://your-frontend.vercel.app,https://your-domain.com
    
-   # Gmail SMTP
-   GMAIL_USER=your-email@gmail.com
-   GMAIL_APP_PASSWORD=your-gmail-app-password
+   # MessageCentral SMS
+   MESSAGECENTRAL_AUTH_TOKEN=your-messagecentral-auth-token
+   MESSAGECENTRAL_CUSTOMER_ID=your-customer-id
+   MESSAGECENTRAL_SENDER_ID=your-sender-id
+   MESSAGECENTRAL_COUNTRY_CODE=91
    
    # Optional Redis
    REDIS_URL=redis://user:password@host:port
@@ -290,7 +291,7 @@ model PasswordReset {
    ```
 
 3. **Build Settings**
-   - **Build Command**: `npm install && npx prisma generate && npx prisma db push`
+   - **Build Command**: `npm install && npx prisma generate && npx prisma db push --accept-data-loss`
    - **Start Command**: `npm start`
    - **Node Version**: 18.x
 
@@ -340,11 +341,11 @@ model PasswordReset {
 - **User Protection**: Cannot delete admin accounts or self
 - **Secure Headers**: Proper security headers configuration
 
-### 📧 Email Security
-- **SMTP Authentication**: Gmail App Password authentication
+### 📱 SMS Security
+- **API Authentication**: MessageCentral API token authentication
 - **Code Expiration**: Verification codes expire in 15 minutes
-- **Rate Limiting**: Built-in email sending rate limits
-- **Secure Headers**: Email security headers
+- **Rate Limiting**: Built-in SMS sending rate limits
+- **Secure Headers**: SMS security headers
 
 ## 📊 Performance Features
 
@@ -363,11 +364,11 @@ model PasswordReset {
 
 ### Common Issues
 
-1. **Email Verification Not Working**
-   - Check Gmail App Password is correct (no spaces)
-   - Verify 2FA is enabled on Gmail account
-   - Check logs for SMTP errors
-   - Ensure `GMAIL_USER` and `GMAIL_APP_PASSWORD` are set
+1. **Phone Verification Not Working**
+   - Check MessageCentral credentials are correct
+   - Verify phone number format (include country code)
+   - Check logs for SMS errors
+   - Ensure all MessageCentral environment variables are set
 
 2. **Database Connection Issues**
    - Verify `DATABASE_URL` format: `postgresql://user:password@host:port/database`
@@ -477,10 +478,10 @@ REDIS_URL=redis://localhost:6379
    - Test content management
    - Test role-based access
 
-3. **Email System**
+3. **SMS System**
    - Test verification code sending
-   - Test password reset emails
-   - Test email delivery to different providers
+   - Test password reset SMS
+   - Test SMS delivery to different carriers
 
 4. **API Endpoints**
    - Test all CRUD operations
@@ -508,7 +509,7 @@ REDIS_URL=redis://localhost:6379
 
 - [Frontend README](../README.md)
 - [Deployment Guide](../DEPLOYMENT_GUIDE.md)
-- [Email Verification Guide](../EMAIL_VERIFICATION.md)
+- [Phone Verification Guide](../PHONE_VERIFICATION.md)
 
 ## 📄 License
 
