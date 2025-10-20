@@ -10,8 +10,8 @@ const MESSAGECENTRAL_CONFIG = {
   type: process.env.MESSAGECENTRAL_TYPE || 'SMS',
   // Optional: strict template exactly as approved on DLT (India)
   template: process.env.MESSAGECENTRAL_MESSAGE_TEMPLATE || 'Your verification code is: {CODE}. This code expires in 15 minutes.',
-  sendMessageParam: String(process.env.MESSAGECENTRAL_SEND_MESSAGE || 'true').toLowerCase() !== 'false',
-  includeSenderId: String(process.env.MESSAGECENTRAL_INCLUDE_SENDER || 'true').toLowerCase() !== 'false'
+  sendMessageParam: String(process.env.MESSAGECENTRAL_SEND_MESSAGE || 'false').toLowerCase() !== 'false',
+  includeSenderId: String(process.env.MESSAGECENTRAL_INCLUDE_SENDER || 'false').toLowerCase() !== 'false'
 };
 
 function normalizePhoneNumber(rawPhone, countryCode = '91') {
