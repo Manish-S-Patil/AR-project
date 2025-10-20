@@ -26,7 +26,7 @@ This guide covers deploying both your **Frontend** (React/Vite) and **Backend** 
 ### Step 2: Configure Backend Settings
 - **Name**: `ar-project-backend` (or your preferred name)
 - **Environment**: `Node`
-- **Build Command**: `npm install && npx prisma generate && npx prisma db push`
+- **Build Command**: `npm install && npx prisma generate && npx prisma db push --accept-data-loss`
 - **Start Command**: `npm start`
 - **Node Version**: `18` or `20`
 
@@ -36,6 +36,10 @@ Add these in the **Environment** tab:
 DATABASE_URL = your-postgresql-connection-string
 JWT_SECRET = your-secure-jwt-secret-key
 NODE_ENV = production
+MESSAGECENTRAL_AUTH_TOKEN = your-messagecentral-auth-token
+MESSAGECENTRAL_CUSTOMER_ID = your-customer-id
+MESSAGECENTRAL_SENDER_ID = your-sender-id
+MESSAGECENTRAL_COUNTRY_CODE = 91
 REDIS_URL = your-redis-url (optional)
 ```
 
@@ -99,7 +103,7 @@ curl https://your-backend-name.onrender.com/
 # Test registration
 curl -X POST https://your-backend-name.onrender.com/api/auth/register \
   -H "Content-Type: application/json" \
-  -d '{"username":"testuser","email":"test@example.com","password":"testpass123","name":"Test User"}'
+  -d '{"username":"testuser","email":"test@example.com","phoneNumber":"1234567890","password":"testpass123","name":"Test User"}'
 
 # Test login
 curl -X POST https://your-backend-name.onrender.com/api/auth/login \
@@ -109,7 +113,7 @@ curl -X POST https://your-backend-name.onrender.com/api/auth/login \
 
 ### Test Frontend
 1. Visit your frontend URL
-2. Try registering a new account
+2. Try registering a new account with phone number
 3. Try logging in with existing credentials
 4. Check browser console for any errors
 

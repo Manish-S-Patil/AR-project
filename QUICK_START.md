@@ -45,7 +45,7 @@ npm run preview      # Preview production build
 
 ### 1. **Login to Application**
 - Go to: http://localhost:5173 (local) or https://ar-project-frontend.onrender.com
-- Use existing credentials or register new account
+- Use existing credentials or register new account with phone number
 
 ### 2. **Access Admin Panel**
 - Click "Admin Panel" button in dashboard
@@ -70,7 +70,7 @@ curl https://ar-project-5ojn.onrender.com/
 
 ### Test Frontend
 1. Open http://localhost:5173
-2. Try logging in
+2. Try logging in or register with phone number
 3. Access admin panel
 4. Check browser console for API calls
 
