@@ -41,10 +41,10 @@ export default function Login() {
       console.log('Body:', { username })
       console.log('Response:', data)
       console.groupEnd()
-      // If phone not verified, route to verification screen
+      // If phone not verified, route to signup page for verification
       if (res.status === 403 && data?.requiresPhoneVerification) {
         toast({ title: 'Phone Verification Required', description: 'Please verify your phone number to continue.' })
-        navigate('/verify', { state: { mode: 'phone', phoneNumber: data.phoneNumber, username } })
+        navigate('/signup', { state: { mode: 'verify', phoneNumber: data.phoneNumber, username } })
         return
       }
       if (!res.ok) throw new Error(data.error || 'Authentication failed')
@@ -53,7 +53,7 @@ export default function Login() {
       // Legacy email verification (kept for safety)
       if (data.requiresVerification) {
         toast({ title: 'Verification Required', description: 'Please verify your account to continue.' })
-        navigate('/verify', { state: { email: data.user?.email, username: data.user?.username } })
+        navigate('/signup', { state: { mode: 'verify', email: data.user?.email, username: data.user?.username } })
         return
       }
       

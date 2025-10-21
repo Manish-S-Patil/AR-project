@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
+import { useNavigate, Link, useLocation } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { Users, Loader2, Shield, Eye, EyeOff } from 'lucide-react'
 import { Button } from '../components/ui/button'
@@ -11,16 +11,17 @@ import API_CONFIG from '../lib/api'
 
 export default function Signup() {
   const navigate = useNavigate()
-  const [username, setUsername] = useState('')
-  const [email, setEmail] = useState('')
+  const location = useLocation()
+  const [username, setUsername] = useState(location.state?.username || '')
+  const [email, setEmail] = useState(location.state?.email || '')
   const [password, setPassword] = useState('')
-  const [phoneNumber, setPhoneNumber] = useState('')
+  const [phoneNumber, setPhoneNumber] = useState(location.state?.phoneNumber || '')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
-  const [step, setStep] = useState('form') // 'form' | 'code'
+  const [step, setStep] = useState(location.state?.mode === 'verify' ? 'code' : 'form') // 'form' | 'code'
   const [verificationCode, setVerificationCode] = useState('')
-  const [verificationId, setVerificationId] = useState('')
+  const [verificationId, setVerificationId] = useState(localStorage.getItem('verificationId') || '')
 
   // Signup - create account and send SMS code
   const handleSignup = async (e) => {
