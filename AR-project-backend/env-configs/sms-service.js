@@ -6,8 +6,8 @@ const MESSAGECENTRAL_CONFIG = {
   senderId: process.env.MESSAGECENTRAL_SENDER_ID || 'UTOMOB',
   authToken: process.env.MESSAGECENTRAL_AUTH_TOKEN || 'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJDLUY5REJGOTY2NENFNTQ4NyIsImlhdCI6MTc2MDg3MTg4OCwiZXhwIjoxOTE4NTUxODg4fQ.NmZPs5nBesV61UjmA8GG_8bCIfNVWScXYCgRyKLGYqcizZpxOEIXTs-AFckR0kP0LuSA5XD1q0IKKO1l6-mx-g',
   countryCode: process.env.MESSAGECENTRAL_COUNTRY_CODE || '91',
-  flowType: process.env.MESSAGECENTRAL_FLOW_TYPE || 'SMS & WHATSAPP', // Use SMS & WHATSAPP as per API docs
-  type: process.env.MESSAGECENTRAL_TYPE || 'SMS',
+  flowType: process.env.MESSAGECENTRAL_FLOW_TYPE || 'SMS', // Use SMS as per API docs
+  type: process.env.MESSAGECENTRAL_TYPE || 'OTP', // Use OTP for VerifyNow
   // Optional: strict template exactly as approved on DLT (India)
   template: process.env.MESSAGECENTRAL_MESSAGE_TEMPLATE || 'Your verification code is: {CODE}. This code expires in 15 minutes.',
   sendMessageParam: String(process.env.MESSAGECENTRAL_SEND_MESSAGE || 'false').toLowerCase() !== 'false',
@@ -77,14 +77,14 @@ export async function sendSmsVerificationCode(phoneNumber, code, countryCode = M
       });
     };
 
-    // First try with configured flowType; on Invalid FlowType, retry with 'SMS & WHATSAPP'
+    // First try with configured flowType; on Invalid FlowType, retry with 'SMS'
     const first = await sendOnce(MESSAGECENTRAL_CONFIG.flowType);
     console.log('📱 MessageCentral SMS Response:', first.rawResponse || first.response?.statusCode);
     const resp = first.rawResponse;
     const invalidFlow = resp && (resp.message === 'Invalid FlowType selected' || /invalid flowtype/i.test(String(resp.message)));
     if (invalidFlow) {
-      console.warn('📱 FlowType invalid, retrying with flowType=SMS & WHATSAPP');
-      const retry = await sendOnce('SMS & WHATSAPP');
+      console.warn('📱 FlowType invalid, retrying with flowType=SMS');
+      const retry = await sendOnce('SMS');
       console.log('📱 MessageCentral SMS Retry Response:', retry.rawResponse || retry.response?.statusCode);
       return translateMessageCentralResponse(retry.response, retry.rawResponse);
     }
@@ -152,8 +152,8 @@ export async function sendPasswordResetSms(phoneNumber, code, countryCode = MESS
     const resp = first.rawResponse;
     const invalidFlow = resp && (resp.message === 'Invalid FlowType selected' || /invalid flowtype/i.test(String(resp.message)));
     if (invalidFlow) {
-      console.warn('📱 FlowType invalid, retrying password reset with flowType=SMS & WHATSAPP');
-      const retry = await sendOnce('SMS & WHATSAPP');
+      console.warn('📱 FlowType invalid, retrying password reset with flowType=SMS');
+      const retry = await sendOnce('SMS');
       console.log('📱 MessageCentral Password Reset Retry Response:', retry.rawResponse || retry.response?.statusCode);
       return translateMessageCentralResponse(retry.response, retry.rawResponse);
     }
