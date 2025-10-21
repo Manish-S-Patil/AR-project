@@ -85,41 +85,41 @@ const Dashboard = () => {
   const arScenarios = [
     {
       id: 'phishing',
-      title: 'Phishing Email Demo',
+      title: 'Phishing Email Detection',
       description: 'Learn to identify suspicious emails through AR visualization',
       icon: Mail,
       color: 'from-red-500 to-pink-500',
       difficulty: 'Beginner'
     },
     {
-      id: 'fake-login',
-      title: 'Fake Login Page',
-      description: 'Detect fraudulent login pages with AR warnings',
-      icon: Lock,
+      id: 'social-engineering',
+      title: 'Social Engineering Attack',
+      description: 'Recognize manipulation tactics through AR visualization',
+      icon: User,
       color: 'from-orange-500 to-red-500',
       difficulty: 'Intermediate'
     },
     {
-      id: 'weak-password',
-      title: 'Password Security',
-      description: 'Visualize password strength and vulnerabilities',
+      id: 'ransomware',
+      title: 'Ransomware Attack Simulation',
+      description: 'Understand ransomware threats through AR demonstration',
       icon: Shield,
       color: 'from-yellow-500 to-orange-500',
-      difficulty: 'Beginner'
-    },
-    {
-      id: 'malware-usb',
-      title: 'Malware USB Detection',
-      description: 'AR warnings for potentially dangerous USB devices',
-      icon: Usb,
-      color: 'from-purple-500 to-pink-500',
       difficulty: 'Advanced'
     },
     {
-      id: 'safe-browsing',
-      title: 'Safe Browsing Tips',
-      description: 'AR overlays showing website security indicators',
+      id: 'public-wifi',
+      title: 'Public WiFi Security',
+      description: 'Learn about public WiFi risks through AR visualization',
       icon: Globe,
+      color: 'from-purple-500 to-pink-500',
+      difficulty: 'Intermediate'
+    },
+    {
+      id: 'social-media',
+      title: 'Social Media Security',
+      description: 'Protect yourself from social media threats with AR guidance',
+      icon: User,
       color: 'from-blue-500 to-purple-500',
       difficulty: 'Beginner'
     }
@@ -224,7 +224,18 @@ const Dashboard = () => {
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
                       className="group cursor-pointer"
-                      onClick={() => navigate('/ar-scenarios', { state: { scenario: scenario.id } })}
+                      onClick={() => {
+                        try {
+                          navigate('/ar-scenarios', { state: { scenario: scenario.id } });
+                        } catch (error) {
+                          console.error('Navigation error:', error);
+                          toast({
+                            title: "Navigation Error",
+                            description: "Unable to navigate to AR scenario. Please try again.",
+                            variant: "destructive"
+                          });
+                        }
+                      }}
                     >
                       <Card className="glass-effect hover:glow-effect transition-all duration-300 h-full">
                         <CardContent className="p-6">
@@ -249,7 +260,16 @@ const Dashboard = () => {
                                   className="text-purple-400 hover:text-purple-300"
                                   onClick={(e) => {
                                     e.stopPropagation();
-                                    navigate(`/quiz/${scenario.id}`);
+                                    try {
+                                      navigate(`/quiz/${scenario.id}`);
+                                    } catch (error) {
+                                      console.error('Quiz navigation error:', error);
+                                      toast({
+                                        title: "Navigation Error",
+                                        description: "Unable to navigate to quiz. Please try again.",
+                                        variant: "destructive"
+                                      });
+                                    }
                                   }}
                                 >
                                   Take Quiz
