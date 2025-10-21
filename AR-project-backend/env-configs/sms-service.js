@@ -6,9 +6,8 @@ const MESSAGECENTRAL_CONFIG = {
   senderId: process.env.MESSAGECENTRAL_SENDER_ID || 'UTOMOB',
   authToken: process.env.MESSAGECENTRAL_AUTH_TOKEN || 'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJDLUY5REJGOTY2NENFNTQ4NyIsImlhdCI6MTc2MDg3MTg4OCwiZXhwIjoxOTE4NTUxODg4fQ.NmZPs5nBesV61UjmA8GG_8bCIfNVWScXYCgRyKLGYqcizZpxOEIXTs-AFckR0kP0LuSA5XD1q0IKKO1l6-mx-g',
   countryCode: process.env.MESSAGECENTRAL_COUNTRY_CODE || '91',
-  flowType: process.env.MESSAGECENTRAL_FLOW_TYPE || 'SMS', // SMS/WHATSAPP/RCS/SAUTH
+  flowType: process.env.MESSAGECENTRAL_FLOW_TYPE || 'SMS & WHATSAPP', // Use SMS & WHATSAPP as per API docs
   type: process.env.MESSAGECENTRAL_TYPE || 'SMS',
-  messageType: process.env.MESSAGECENTRAL_MESSAGE_TYPE || 'OTP', // OTP
   // Optional: strict template exactly as approved on DLT (India)
   template: process.env.MESSAGECENTRAL_MESSAGE_TEMPLATE || 'Your verification code is: {CODE}. This code expires in 15 minutes.',
   sendMessageParam: String(process.env.MESSAGECENTRAL_SEND_MESSAGE || 'false').toLowerCase() !== 'false',
@@ -50,7 +49,6 @@ export async function sendSmsVerificationCode(phoneNumber, code, countryCode = M
         customerId: MESSAGECENTRAL_CONFIG.customerId,
         type: MESSAGECENTRAL_CONFIG.type,
         flowType: flowTypeValue,
-        messageType: MESSAGECENTRAL_CONFIG.messageType,
         mobileNumber: normalized
       });
       if (MESSAGECENTRAL_CONFIG.includeSenderId && MESSAGECENTRAL_CONFIG.senderId) {
@@ -79,14 +77,14 @@ export async function sendSmsVerificationCode(phoneNumber, code, countryCode = M
       });
     };
 
-    // First try with configured flowType; on Invalid FlowType, retry with 'SMS'
+    // First try with configured flowType; on Invalid FlowType, retry with 'SMS & WHATSAPP'
     const first = await sendOnce(MESSAGECENTRAL_CONFIG.flowType);
     console.log('📱 MessageCentral SMS Response:', first.rawResponse || first.response?.statusCode);
     const resp = first.rawResponse;
     const invalidFlow = resp && (resp.message === 'Invalid FlowType selected' || /invalid flowtype/i.test(String(resp.message)));
     if (invalidFlow) {
-      console.warn('📱 FlowType invalid, retrying with flowType=SMS');
-      const retry = await sendOnce('SMS');
+      console.warn('📱 FlowType invalid, retrying with flowType=SMS & WHATSAPP');
+      const retry = await sendOnce('SMS & WHATSAPP');
       console.log('📱 MessageCentral SMS Retry Response:', retry.rawResponse || retry.response?.statusCode);
       return translateMessageCentralResponse(retry.response, retry.rawResponse);
     }
@@ -121,7 +119,6 @@ export async function sendPasswordResetSms(phoneNumber, code, countryCode = MESS
         customerId: MESSAGECENTRAL_CONFIG.customerId,
         type: MESSAGECENTRAL_CONFIG.type,
         flowType: flowTypeValue,
-        messageType: MESSAGECENTRAL_CONFIG.messageType,
         mobileNumber: normalized
       });
       if (MESSAGECENTRAL_CONFIG.includeSenderId && MESSAGECENTRAL_CONFIG.senderId) {
@@ -155,8 +152,8 @@ export async function sendPasswordResetSms(phoneNumber, code, countryCode = MESS
     const resp = first.rawResponse;
     const invalidFlow = resp && (resp.message === 'Invalid FlowType selected' || /invalid flowtype/i.test(String(resp.message)));
     if (invalidFlow) {
-      console.warn('📱 FlowType invalid, retrying password reset with flowType=SMS');
-      const retry = await sendOnce('SMS');
+      console.warn('📱 FlowType invalid, retrying password reset with flowType=SMS & WHATSAPP');
+      const retry = await sendOnce('SMS & WHATSAPP');
       console.log('📱 MessageCentral Password Reset Retry Response:', retry.rawResponse || retry.response?.statusCode);
       return translateMessageCentralResponse(retry.response, retry.rawResponse);
     }
@@ -198,16 +195,13 @@ function translateMessageCentralResponse(response, responseBody) {
 
 /**
  * Validate OTP with MessageCentral Verify Now API
- * GET /verification/v3/validateOtp?countryCode=..&mobileNumber=..&verificationId=..&customerId=..&code=..
+ * GET /verification/v3/validateOtp?verificationId=..&code=..&langId=..
  */
-export async function validateOtp({ countryCode = MESSAGECENTRAL_CONFIG.countryCode, mobileNumber, verificationId, code }) {
-  const normalized = normalizePhoneNumber(mobileNumber, countryCode);
+export async function validateOtp({ verificationId, code, langId = 'en' }) {
   const params = new URLSearchParams({
-    countryCode: String(countryCode),
-    mobileNumber: normalized,
     verificationId: String(verificationId),
-    customerId: MESSAGECENTRAL_CONFIG.customerId,
-    code: String(code)
+    code: String(code),
+    langId: String(langId)
   });
   const options = {
     method: 'GET',

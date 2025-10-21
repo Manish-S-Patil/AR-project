@@ -460,7 +460,7 @@ router.post('/verify-phone', async (req, res) => {
     if (!user) return res.status(404).json({ error: 'User not found' });
 
     if (verificationId) {
-      const result = await validateOtp({ mobileNumber: phoneNumber, verificationId, code });
+      const result = await validateOtp({ verificationId, code });
       if (!result.success) {
         return res.status(400).json({ error: result.error || 'Invalid or expired code' });
       }
