@@ -71,16 +71,18 @@ export default function Signup() {
     }
     try {
       setIsSubmitting(true)
+      const requestBody = { phoneNumber, code: verificationCode, verificationId }
+      console.log('📤 Verification Request Body:', requestBody)
       const res = await fetch(API_CONFIG.getUrl(API_CONFIG.endpoints.auth.verifyPhone), {
         method: 'POST',
         headers: API_CONFIG.getDefaultHeaders(),
-        body: JSON.stringify({ phoneNumber, code: verificationCode, verificationId })
+        body: JSON.stringify(requestBody)
       })
       const data = await res.json()
       console.group('API Verify Phone Response')
       console.log('Status:', res.status, res.statusText)
       console.log('URL:', API_CONFIG.getUrl(API_CONFIG.endpoints.auth.verifyPhone))
-      console.log('Body:', { phoneNumber, verificationId })
+      console.log('Body:', requestBody)
       console.log('Response:', data)
       console.groupEnd()
       if (!res.ok) throw new Error(data.error || 'Verification failed')
@@ -208,8 +210,8 @@ export default function Signup() {
               ) : (
                 'Create Account'
               )}
-            </Button>
-          </form>
+              </Button>
+            </form>
           )}
 
           {step === 'code' && (
@@ -247,7 +249,7 @@ export default function Signup() {
                   {isSubmitting ? (<span className="inline-flex items-center gap-2"><Loader2 className="w-4 h-4 animate-spin" />Verifying...</span>) : 'Verify'}
                 </Button>
               </div>
-            </form>
+          </form>
           )}
           <div className="mt-2 text-center text-sm">
             <span className="text-muted-foreground mr-1">Already have an account?</span>
