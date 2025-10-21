@@ -7,7 +7,6 @@ import Login from './pages/Login';
 import AdminLogin from './pages/AdminLogin';
 import Signup from './pages/Signup';
 import ForgotPassword from './pages/ForgotPassword';
-import Verify from './pages/Verify';
 import IntroductionPage from './pages/IntroductionPage';
 import Dashboard from './pages/Dashboard';
 import ARScenarios from './pages/ARScenarios';
@@ -30,7 +29,6 @@ function App() {
             <Route path="/signup" element={<Signup />} />
             <Route path="/admin-login" element={<AdminLogin />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
-            <Route path="/verify" element={<Verify />} />
             <Route 
               path="/introduction" 
               element={
