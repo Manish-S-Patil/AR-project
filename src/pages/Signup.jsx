@@ -49,7 +49,11 @@ export default function Signup() {
       console.groupEnd()
       if (!res.ok) throw new Error(data.error || 'Registration failed')
       toast({ title: 'Code Sent', description: 'We sent a verification code via SMS.' })
-      if (data.verificationId) setVerificationId(String(data.verificationId))
+      if (data.verificationId) {
+        const id = String(data.verificationId)
+        setVerificationId(id)
+        localStorage.setItem('verificationId', id)
+      }
       setStep('code')
     } catch (e) {
       toast({ title: 'Registration Failed', description: e.message, variant: 'destructive' })
@@ -79,6 +83,7 @@ export default function Signup() {
       console.log('Response:', data)
       console.groupEnd()
       if (!res.ok) throw new Error(data.error || 'Verification failed')
+      localStorage.removeItem('verificationId')
       toast({ title: 'Phone Verified', description: 'You can now sign in.' })
       navigate('/login')
     } catch (e) {
@@ -225,7 +230,11 @@ export default function Signup() {
                     console.log('Response:', data)
                     console.groupEnd()
                     if(!res.ok) throw new Error(data.error || 'Unable to resend code')
-                    if (data.verificationId) setVerificationId(String(data.verificationId))
+                    if (data.verificationId) {
+                      const id = String(data.verificationId)
+                      setVerificationId(id)
+                      localStorage.setItem('verificationId', id)
+                    }
                     toast({ title: 'Code resent', description: 'Check your SMS again.' })
                   }catch(e){
                     toast({ title: 'Resend failed', description: e.message, variant: 'destructive' })
