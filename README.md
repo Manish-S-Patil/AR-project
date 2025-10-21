@@ -10,6 +10,7 @@ A comprehensive cybersecurity education platform featuring interactive AR scenar
 - **👑 Admin Panel**: Complete user management with delete capabilities
 - **🔒 Role-based Access**: JWT authentication with user/admin roles
 - **🛡️ CORS Protection**: Configured for multiple deployment origins
+- **🗑️ Safe User Deletion**: Proper cleanup of all related records when deleting users
 
 ### 📱 User Experience
 - **📱 Responsive Design**: Mobile-first with glass effects and animations
@@ -43,6 +44,8 @@ A comprehensive cybersecurity education platform featuring interactive AR scenar
 - **Authentication**: JWT with refresh tokens
 - **SMS**: MessageCentral API for phone verification
 - **Security**: CORS, bcrypt, input validation
+- **Logging**: Advanced request/response logging with performance monitoring
+- **Error Handling**: Comprehensive error handling with specific error codes
 - **State Management**: React Hooks + Local Storage
 
 ## 📋 Prerequisites
@@ -125,6 +128,25 @@ A comprehensive cybersecurity education platform featuring interactive AR scenar
    **Access the application:**
    - Frontend: `http://localhost:5173`
    - Backend API: `http://localhost:5001`
+
+## 🔄 Recent Updates
+
+### 🐛 Bug Fixes & Improvements
+- **Fixed User Deletion Issue**: Resolved 500 Internal Server Error when deleting users
+  - Added proper cleanup of all related database records (UserProgress, QuizAttempt, ScenarioCompletion)
+  - Improved error handling with specific error messages for different failure scenarios
+  - Enhanced foreign key constraint handling in delete operations
+- **Enhanced Error Handling**: Better error messages for admin operations
+- **Database Integrity**: Ensured proper cascade deletion of user-related data
+
+### 🔧 Backend Enhancements
+- **Advanced Request Logging**: Comprehensive API request/response logging with sensitive data redaction
+- **Performance Monitoring**: Request duration tracking and performance metrics
+- **Enhanced CORS Configuration**: Multi-origin support with detailed logging
+- **Improved SMS Integration**: MessageCentral API integration with fallback handling
+- **Database Connection Management**: Prisma ORM with connection pooling and error handling
+- **Redis Caching**: Optional Redis integration with graceful fallback
+- **Security Headers**: Enhanced security with proper CORS, JWT, and cookie configuration
 
 ## 🚀 Quick Start
 
@@ -297,25 +319,27 @@ The platform includes 5 high-quality 3D models for AR scenarios:
 
 ## 🔐 Authentication System
 
-### 📱 Staged Phone Verification Signup
-1. **Step 1**: Enter username, email, and phone number → Backend creates account with temporary password
-2. **Step 2**: Receive 6-digit verification code via SMS
+### 📱 Enhanced Phone Verification Signup
+1. **Step 1**: Enter username, email, phone number, and password → Backend creates account with phone verification pending
+2. **Step 2**: Receive 6-digit verification code via SMS (MessageCentral API)
 3. **Step 3**: Enter verification code → Phone number gets verified
-4. **Step 4**: Set your real password using the temporary password
-5. **Complete**: Account ready for login
+4. **Step 4**: Account ready for immediate login
+5. **Complete**: Full access to platform features
 
-### 🔑 Password Management
-- **Temporary Passwords**: Generated during signup for security
+### 🔑 Enhanced Password Management
+- **Direct Password Setting**: Users set their password during signup (no temporary passwords)
 - **Password Change**: Users can change passwords after verification
 - **Forgot Password**: Request reset code via SMS → Set new password
-- **Secure Storage**: All passwords hashed with bcrypt
+- **Secure Storage**: All passwords hashed with bcrypt (10 salt rounds)
+- **Password Validation**: Minimum 6 characters required
 
 ### 👑 Admin Features
 - **User Management**: View all users with complete information
-- **Delete Users**: Remove non-admin users (admin protection)
+- **Delete Users**: Remove non-admin users with proper data cleanup (admin protection)
 - **Content Management**: Create quizzes and game content
 - **Statistics**: User metrics and analytics
 - **Role Protection**: Cannot delete admin accounts or self
+- **Data Integrity**: Safe deletion with automatic cleanup of related records
 
 ### 🔒 Security Features
 - **JWT Tokens**: 7-day access tokens with refresh tokens
@@ -418,30 +442,63 @@ REFRESH_TTL_DAYS=30
 - **Database**: Use connection pooling and SSL in production
 - **Redis**: Optional but recommended for caching
 
-## 🔐 Login Interface
+## 🔐 Enhanced Login Interface
 
 ### User Login Features
-- **Username/Email**: Login with username or email address
-- **Password**: Secure password authentication
-- **Registration**: New user account creation
+- **Dual Authentication**: Username/email and password authentication
+- **Phone Verification Enforcement**: Must verify phone before login access
+- **Smart Routing**: Automatic redirection based on verification status
 - **Guest Access**: Explore platform without registration
-- **Form Validation**: Real-time input validation
-- **Password Visibility**: Toggle password visibility
+- **Form Validation**: Real-time input validation with error messages
+- **Password Visibility**: Toggle password visibility for better UX
+- **Responsive Design**: Mobile-first design with glass effects
 
 ### Admin Login Features
-- **Dedicated Interface**: Separate admin login card
+- **Role-Based Access**: Separate admin authentication with role verification
 - **Admin Credentials**: Username and password authentication
 - **Visual Distinction**: Amber/orange theme for admin interface
 - **Credential Display**: Default admin credentials shown
-- **Role Validation**: Server-side admin role verification
-- **Secure Access**: JWT tokens with admin role information
-- **Email Verified**: Admin accounts must be verified like users (if created via register)
+- **Server-Side Validation**: Backend role verification for security
+- **JWT Token Management**: Secure token-based authentication
+- **Admin Panel Access**: Direct routing to admin dashboard
 
-### Login Type Toggle
-- **User Mode**: Standard user login and registration
-- **Admin Mode**: Admin-only login interface
+### Enhanced Authentication Flow
+- **Unified Interface**: Single page with toggle between user and admin modes
 - **Visual Indicators**: Clear distinction between login types
-- **Responsive Design**: Works on desktop and mobile devices
+- **Smart Error Handling**: Specific error messages for different failure scenarios
+- **Phone Verification Integration**: Seamless integration with SMS verification
+- **Session Management**: Persistent login with refresh token support
+- **Security Features**: CORS protection, input validation, and secure headers
+
+## 🔌 API Endpoints & Backend Features
+
+### 🔐 Authentication Endpoints
+- **POST `/api/auth/register`**: User registration with phone verification
+- **POST `/api/auth/login`**: User login with phone verification check
+- **POST `/api/auth/admin/login`**: Admin-specific login endpoint
+- **POST `/api/auth/verify-phone`**: Phone number verification
+- **POST `/api/auth/resend-phone-code`**: Resend verification SMS
+- **POST `/api/auth/forgot-password`**: Password reset via SMS
+- **POST `/api/auth/reset-password`**: Set new password with SMS code
+- **POST `/api/auth/change-password`**: Change password (authenticated users)
+- **POST `/api/auth/refresh`**: Refresh JWT tokens
+- **POST `/api/auth/logout`**: Logout and revoke refresh tokens
+
+### 👑 Admin Endpoints
+- **GET `/api/auth/admin/users`**: Get all users (admin only)
+- **DELETE `/api/auth/admin/user/:id`**: Delete user with proper cleanup (admin only)
+- **POST `/api/auth/admin/verify-user`**: Manually verify user (admin only)
+- **POST `/api/auth/create-admin`**: Create admin user (setup only)
+- **POST `/api/auth/manual-verify-admin`**: Make user admin (testing only)
+
+### 🔧 Backend Features
+- **Request Logging**: Comprehensive API logging with sensitive data redaction
+- **Performance Monitoring**: Request duration tracking and metrics
+- **Error Handling**: Specific error codes (P2003, P2025) with detailed messages
+- **Database Cleanup**: Proper foreign key constraint handling
+- **SMS Integration**: MessageCentral API with fallback handling
+- **Security Headers**: CORS, JWT, and cookie security configuration
+- **Connection Management**: Prisma ORM with connection pooling
 
 ## 📁 Project Structure
 
@@ -555,6 +612,12 @@ AR-project/
    - Clear browser cache and cookies
    - Verify admin credentials are correct
    - Check if user has admin role in database
+
+7. **User Deletion Issues**
+   - Fixed: 500 error when deleting users is now resolved
+   - All related records (progress, quiz attempts, scenarios) are properly cleaned up
+   - Enhanced error messages provide specific feedback for deletion failures
+   - Foreign key constraints are properly handled during user deletion
 
 ## 📝 Contributing
 
