@@ -8,10 +8,7 @@ const MESSAGECENTRAL_CONFIG = {
   countryCode: process.env.MESSAGECENTRAL_COUNTRY_CODE || '91',
   flowType: process.env.MESSAGECENTRAL_FLOW_TYPE || 'SMS', // Use SMS as per API docs
   type: process.env.MESSAGECENTRAL_TYPE || 'OTP', // Use OTP for VerifyNow
-  // Optional: strict template exactly as approved on DLT (India)
-  template: process.env.MESSAGECENTRAL_MESSAGE_TEMPLATE || 'Your verification code is: {CODE}. This code expires in 15 minutes.',
-  sendMessageParam: String(process.env.MESSAGECENTRAL_SEND_MESSAGE || 'false').toLowerCase() !== 'false',
-  includeSenderId: String(process.env.MESSAGECENTRAL_INCLUDE_SENDER || 'false').toLowerCase() !== 'false'
+  // MessageCentral VerifyNow uses predefined templates and sender IDs
 };
 
 function normalizePhoneNumber(rawPhone, countryCode = '91') {
@@ -46,17 +43,9 @@ export async function sendSmsVerificationCode(phoneNumber, code, countryCode = M
     const sendOnce = (flowTypeValue) => {
       const params = new URLSearchParams({
         countryCode: String(countryCode),
-        customerId: MESSAGECENTRAL_CONFIG.customerId,
-        type: MESSAGECENTRAL_CONFIG.type,
         flowType: flowTypeValue,
         mobileNumber: normalized
       });
-      if (MESSAGECENTRAL_CONFIG.includeSenderId && MESSAGECENTRAL_CONFIG.senderId) {
-        params.set('senderId', MESSAGECENTRAL_CONFIG.senderId);
-      }
-      if (MESSAGECENTRAL_CONFIG.sendMessageParam && message) {
-        params.set('message', message);
-      }
       const options = {
         method: 'POST',
         url: `${MESSAGECENTRAL_CONFIG.baseUrl}?${params.toString()}`,
@@ -116,17 +105,9 @@ export async function sendPasswordResetSms(phoneNumber, code, countryCode = MESS
     const sendOnce = (flowTypeValue) => {
       const params = new URLSearchParams({
         countryCode: String(countryCode),
-        customerId: MESSAGECENTRAL_CONFIG.customerId,
-        type: MESSAGECENTRAL_CONFIG.type,
         flowType: flowTypeValue,
         mobileNumber: normalized
       });
-      if (MESSAGECENTRAL_CONFIG.includeSenderId && MESSAGECENTRAL_CONFIG.senderId) {
-        params.set('senderId', MESSAGECENTRAL_CONFIG.senderId);
-      }
-      if (MESSAGECENTRAL_CONFIG.sendMessageParam && message) {
-        params.set('message', message);
-      }
       const options = {
         method: 'POST',
         url: `${MESSAGECENTRAL_CONFIG.baseUrl}?${params.toString()}`,
