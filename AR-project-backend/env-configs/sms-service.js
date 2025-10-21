@@ -11,6 +11,15 @@ const MESSAGECENTRAL_CONFIG = {
   // MessageCentral VerifyNow uses predefined templates and sender IDs
 };
 
+function resolveOtpLength() {
+  const raw = process.env.MESSAGECENTRAL_OTP_LENGTH;
+  if (!raw) return undefined;
+  const parsed = Number(raw);
+  if (!Number.isFinite(parsed)) return undefined;
+  if (parsed < 4 || parsed > 8) return undefined;
+  return String(parsed);
+}
+
 function normalizePhoneNumber(rawPhone, countryCode = '91') {
   if (!rawPhone) return '';
   const digits = String(rawPhone).replace(/\D/g, '');
@@ -22,9 +31,7 @@ function normalizePhoneNumber(rawPhone, countryCode = '91') {
   return digits.replace(/^0+/, '');
 }
 
-function buildMessageFromTemplate(code) {
-  return MESSAGECENTRAL_CONFIG.template.replace('{CODE}', code);
-}
+// VerifyNow handles OTP content and sender; no local message templating needed
 
 /**
  * Send SMS verification code via MessageCentral
@@ -36,7 +43,6 @@ function buildMessageFromTemplate(code) {
 export async function sendSmsVerificationCode(phoneNumber, code, countryCode = MESSAGECENTRAL_CONFIG.countryCode) {
   try {
     const normalized = normalizePhoneNumber(phoneNumber, countryCode);
-    const message = buildMessageFromTemplate(code);
 
     console.log(`📱 Sending SMS verification code ${code} to +${countryCode}${normalized}`);
 
@@ -46,6 +52,8 @@ export async function sendSmsVerificationCode(phoneNumber, code, countryCode = M
         flowType: flowTypeValue,
         mobileNumber: normalized
       });
+      const otpLength = resolveOtpLength();
+      if (otpLength) params.set('otpLength', otpLength);
       const options = {
         method: 'POST',
         url: `${MESSAGECENTRAL_CONFIG.baseUrl}?${params.toString()}`,
@@ -98,7 +106,6 @@ export async function sendSmsVerificationCode(phoneNumber, code, countryCode = M
 export async function sendPasswordResetSms(phoneNumber, code, countryCode = MESSAGECENTRAL_CONFIG.countryCode) {
   try {
     const normalized = normalizePhoneNumber(phoneNumber, countryCode);
-    const message = buildMessageFromTemplate(code);
 
     console.log(`📱 Sending password reset SMS code ${code} to +${countryCode}${normalized}`);
 
@@ -108,6 +115,8 @@ export async function sendPasswordResetSms(phoneNumber, code, countryCode = MESS
         flowType: flowTypeValue,
         mobileNumber: normalized
       });
+      const otpLength = resolveOtpLength();
+      if (otpLength) params.set('otpLength', otpLength);
       const options = {
         method: 'POST',
         url: `${MESSAGECENTRAL_CONFIG.baseUrl}?${params.toString()}`,
