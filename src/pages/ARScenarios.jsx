@@ -82,64 +82,64 @@ const ARScenarios = () => {
         { type: 'Suspicious link', position: 'bottom-right', color: 'red' }
       ]
     },
-    'fake-login': {
-      title: 'Fake Login Page Detection',
-      description: 'Detect fraudulent login pages with AR warnings',
+    'social-engineering': {
+      title: 'Social Engineering Attack',
+      description: 'Recognize manipulation tactics through AR visualization',
       steps: [
-        'Open login page AR model',
-        'AR model shows URL authenticity cues',
-        'Identifies security indicators',
-        'Shows safety recommendations'
+        'View social engineering AR model',
+        'AR model shows manipulation techniques',
+        'Identifies psychological triggers',
+        'Learn to resist manipulation'
       ],
       threats: [
-        { type: 'Fake URL', position: 'top-center', color: 'red' },
-        { type: 'No HTTPS', position: 'top-right', color: 'orange' },
-        { type: 'Missing security badge', position: 'bottom-left', color: 'yellow' }
+        { type: 'Authority pressure', position: 'top-left', color: 'red' },
+        { type: 'Urgency tactics', position: 'center', color: 'orange' },
+        { type: 'Emotional manipulation', position: 'bottom-right', color: 'red' }
       ]
     },
-    'weak-password': {
-      title: 'Password Security Visualization',
-      description: 'Visualize password strength and vulnerabilities',
+    'ransomware': {
+      title: 'Ransomware Attack Simulation',
+      description: 'Understand ransomware threats through AR demonstration',
       steps: [
-        'Enter a password',
-        'AR shows strength meter',
-        'Highlights weaknesses',
-        'Suggests improvements'
+        'View ransomware AR model',
+        'AR model shows attack vectors',
+        'Demonstrates encryption process',
+        'Learn prevention strategies'
       ],
       threats: [
-        { type: 'Too short', position: 'left', color: 'red' },
-        { type: 'No special chars', position: 'center', color: 'orange' },
-        { type: 'Common word', position: 'right', color: 'yellow' }
+        { type: 'File encryption', position: 'top-center', color: 'red' },
+        { type: 'Ransom demand', position: 'center', color: 'orange' },
+        { type: 'Data hostage', position: 'bottom-center', color: 'red' }
       ]
     },
-    'malware-usb': {
-      title: 'Malware USB Detection',
-      description: 'AR warnings for potentially dangerous USB devices',
+    'public-wifi': {
+      title: 'Public WiFi Security',
+      description: 'Learn about public WiFi risks through AR visualization',
       steps: [
-        'View USB device AR model',
-        'AR model explains potential threats',
-        'Shows risk assessment',
-        'Provides safety guidance'
+        'View public WiFi AR model',
+        'AR model shows security risks',
+        'Identifies potential threats',
+        'Learn safe browsing practices'
       ],
       threats: [
-        { type: 'Unknown device', position: 'top-center', color: 'red' },
-        { type: 'Suspicious files', position: 'bottom-left', color: 'orange' },
-        { type: 'Auto-run detected', position: 'bottom-right', color: 'red' }
+        { type: 'Unencrypted network', position: 'top-left', color: 'red' },
+        { type: 'Man-in-the-middle', position: 'center', color: 'orange' },
+        { type: 'Data interception', position: 'bottom-right', color: 'red' }
       ]
     },
-    'safe-browsing': {
-      title: 'Safe Browsing Tips',
-      description: 'AR overlays showing website security indicators',
+    'social-media': {
+      title: 'Social Media Security',
+      description: 'Protect yourself from social media threats with AR guidance',
       steps: [
-        'Open website AR model',
-        'AR model shows security status',
-        'Shows trust indicators',
-        'Provides browsing tips'
+        'View social media AR model',
+        'AR model shows privacy settings',
+        'Identifies sharing risks',
+        'Learn secure social practices'
       ],
       threats: [
-        { type: 'Unsecured connection', position: 'top-left', color: 'orange' },
-        { type: 'Suspicious ads', position: 'center-right', color: 'yellow' },
-        { type: 'Download warning', position: 'bottom-center', color: 'red' }
+        { type: 'Oversharing', position: 'top-left', color: 'orange' },
+        { type: 'Privacy exposure', position: 'center', color: 'red' },
+        { type: 'Identity theft', position: 'bottom-right', color: 'red' }
       ]
     }
   };
@@ -241,8 +241,23 @@ const ARScenarios = () => {
       phishing: {
         glb: '/models/phishing_email_.glb',
         usdz: null
+      },
+      'social-engineering': {
+        glb: '/models/social_engineering.glb',
+        usdz: null
+      },
+      ransomware: {
+        glb: '/models/ransomware_attack2.glb',
+        usdz: null
+      },
+      'public-wifi': {
+        glb: '/models/public_wifi.glb',
+        usdz: null
+      },
+      'social-media': {
+        glb: '/models/social_media.glb',
+        usdz: null
       }
-      // Add more mappings here when assets are available
     };
 
     const mapping = scenarioToModel[selectedScenario] || { glb: null, usdz: null };
