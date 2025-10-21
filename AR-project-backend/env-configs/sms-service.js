@@ -6,8 +6,9 @@ const MESSAGECENTRAL_CONFIG = {
   senderId: process.env.MESSAGECENTRAL_SENDER_ID || 'UTOMOB',
   authToken: process.env.MESSAGECENTRAL_AUTH_TOKEN || 'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJDLUY5REJGOTY2NENFNTQ4NyIsImlhdCI6MTc2MDg3MTg4OCwiZXhwIjoxOTE4NTUxODg4fQ.NmZPs5nBesV61UjmA8GG_8bCIfNVWScXYCgRyKLGYqcizZpxOEIXTs-AFckR0kP0LuSA5XD1q0IKKO1l6-mx-g',
   countryCode: process.env.MESSAGECENTRAL_COUNTRY_CODE || '91',
-  flowType: process.env.MESSAGECENTRAL_FLOW_TYPE || 'OTP', // OTP recommended for Verify Now
+  flowType: process.env.MESSAGECENTRAL_FLOW_TYPE || 'SMS', // SMS/WHATSAPP/RCS/SAUTH
   type: process.env.MESSAGECENTRAL_TYPE || 'SMS',
+  messageType: process.env.MESSAGECENTRAL_MESSAGE_TYPE || 'OTP', // OTP
   // Optional: strict template exactly as approved on DLT (India)
   template: process.env.MESSAGECENTRAL_MESSAGE_TEMPLATE || 'Your verification code is: {CODE}. This code expires in 15 minutes.',
   sendMessageParam: String(process.env.MESSAGECENTRAL_SEND_MESSAGE || 'false').toLowerCase() !== 'false',
@@ -49,6 +50,7 @@ export async function sendSmsVerificationCode(phoneNumber, code, countryCode = M
         customerId: MESSAGECENTRAL_CONFIG.customerId,
         type: MESSAGECENTRAL_CONFIG.type,
         flowType: flowTypeValue,
+        messageType: MESSAGECENTRAL_CONFIG.messageType,
         mobileNumber: normalized
       });
       if (MESSAGECENTRAL_CONFIG.includeSenderId && MESSAGECENTRAL_CONFIG.senderId) {
@@ -119,6 +121,7 @@ export async function sendPasswordResetSms(phoneNumber, code, countryCode = MESS
         customerId: MESSAGECENTRAL_CONFIG.customerId,
         type: MESSAGECENTRAL_CONFIG.type,
         flowType: flowTypeValue,
+        messageType: MESSAGECENTRAL_CONFIG.messageType,
         mobileNumber: normalized
       });
       if (MESSAGECENTRAL_CONFIG.includeSenderId && MESSAGECENTRAL_CONFIG.senderId) {
