@@ -503,7 +503,8 @@ router.post('/resend-phone-code', async (req, res) => {
     const smsResult = await sendSmsVerificationCode(normalizedPhone, code);
     if (!smsResult.success) {
       console.error('📱 Failed to resend verification SMS:', smsResult.error);
-      return res.status(500).json({ error: 'Failed to send verification code' });
+      // Still return success but without verificationId - user can verify with stored code
+      return res.json({ message: 'Verification code generated. SMS service temporarily unavailable.', verificationId: undefined });
     }
     return res.json({ message: 'Verification code sent', verificationId: smsResult.verificationId || undefined });
   } catch (e) {
