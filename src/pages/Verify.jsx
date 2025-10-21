@@ -14,7 +14,7 @@ export default function Verify() {
   const navigate = useNavigate()
   const [email, setEmail] = useState(location.state?.email || '')
   const [phoneNumber, setPhoneNumber] = useState(location.state?.phoneNumber || '')
-  const [verificationId, setVerificationId] = useState(location.state?.verificationId || '')
+  const [verificationId, setVerificationId] = useState(location.state?.verificationId || localStorage.getItem('verificationId') || '')
   const [mode, setMode] = useState(location.state?.mode || (email ? 'email' : 'phone'))
   const [code, setCode] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -35,6 +35,7 @@ export default function Verify() {
         console.log('Response:', data)
         console.groupEnd()
         if (!res.ok) throw new Error(data.error || 'Verification failed')
+        localStorage.removeItem('verificationId')
         toast({ title: 'Verified', description: 'Your phone number has been verified.' })
         navigate('/login')
       } catch (e) {
@@ -79,6 +80,10 @@ export default function Verify() {
         console.log('Response:', data)
         console.groupEnd()
         if (!res.ok) throw new Error(data.error || 'Failed to resend code')
+        if (data.verificationId) {
+          localStorage.setItem('verificationId', String(data.verificationId))
+          setVerificationId(String(data.verificationId))
+        }
         toast({ title: 'Code Sent', description: 'A new verification code has been sent via SMS.' })
       } else {
         if (!email) { toast({ title: 'Missing email', description: 'Enter your email first.', variant: 'destructive' }); return }
