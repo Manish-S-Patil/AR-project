@@ -21,7 +21,7 @@ export default function Verify() {
 
   const verify = async () => {
     if (mode === 'phone') {
-      if (!phoneNumber || !code) { toast({ title: 'Missing code', description: 'Enter phone and code.', variant: 'destructive' }); return }
+      if (!phoneNumber || !code || !verificationId) { toast({ title: 'Missing data', description: 'Enter phone, code, and ensure verification ID is present.', variant: 'destructive' }); return }
       try {
         setIsSubmitting(true)
         const res = await fetch(API_CONFIG.getUrl(API_CONFIG.endpoints.auth.verifyPhone), {
@@ -31,7 +31,7 @@ export default function Verify() {
         console.group('API Verify Phone Response')
         console.log('Status:', res.status, res.statusText)
         console.log('URL:', API_CONFIG.getUrl(API_CONFIG.endpoints.auth.verifyPhone))
-        console.log('Body:', { phoneNumber })
+        console.log('Body:', { phoneNumber, code, verificationId })
         console.log('Response:', data)
         console.groupEnd()
         if (!res.ok) throw new Error(data.error || 'Verification failed')
