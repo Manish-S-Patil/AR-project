@@ -19,10 +19,11 @@ A comprehensive cybersecurity education platform featuring interactive AR scenar
 - **🌐 PWA Ready**: Progressive Web App capabilities
 
 ### 🎯 Educational Content
-- **📧 Phishing Detection**: Learn to identify suspicious emails
-- **🔐 Password Security**: Visualize password strength and vulnerabilities
-- **🌐 Safe Browsing**: Website security indicators and warnings
-- **💾 USB Security**: AR warnings for potentially dangerous devices
+- **📧 Phishing Detection**: Learn to identify suspicious emails through AR visualization
+- **🎭 Social Engineering**: Recognize manipulation tactics with AR demonstrations
+- **🔒 Ransomware Awareness**: Understand ransomware threats through AR simulation
+- **📶 Public WiFi Security**: Learn about public WiFi risks with AR guidance
+- **📱 Social Media Security**: Protect yourself from social media threats with AR
 - **🎯 Quiz System**: Category-based knowledge testing
 
 ## 🛠️ Tech Stack
@@ -176,11 +177,11 @@ A comprehensive cybersecurity education platform featuring interactive AR scenar
 - **Admin Access**: Link to admin panel
 
 ### 🎯 AR Scenarios (`/ar-scenarios`)
-- **Phishing Email Demo**: Learn to identify suspicious emails
-- **Fake Login Page**: Detect fraudulent login pages
-- **Password Security**: Visualize password strength
-- **Malware USB Detection**: AR warnings for dangerous devices
-- **Safe Browsing Tips**: Website security indicators
+- **📧 Phishing Email Detection**: Learn to identify suspicious emails through AR visualization
+- **🎭 Social Engineering Attack**: Recognize manipulation tactics through AR demonstrations
+- **🔒 Ransomware Attack Simulation**: Understand ransomware threats through AR simulation
+- **📶 Public WiFi Security**: Learn about public WiFi risks through AR guidance
+- **📱 Social Media Security**: Protect yourself from social media threats with AR
 
 ### 🧠 Quiz System (`/quiz/:scenario?`)
 - **DB‑Driven**: Questions are fetched from the backend per category
@@ -237,30 +238,62 @@ The project uses Tailwind CSS with custom configuration:
 
 ## 🎯 AR Scenarios Details
 
-### 1. Phishing Email Demo
+### 1. 📧 Phishing Email Detection
 - **Difficulty**: Beginner
-- **Learning**: Email security awareness
-- **AR Features**: Visual email analysis
+- **Learning**: Email security awareness and threat identification
+- **AR Features**: Visual email analysis with suspicious element highlighting
+- **Model**: `phishing_email_.glb`
 
-### 2. Fake Login Page
+### 2. 🎭 Social Engineering Attack
 - **Difficulty**: Intermediate
-- **Learning**: Website authentication security
-- **AR Features**: Login page validation
+- **Learning**: Psychological manipulation tactics and resistance strategies
+- **AR Features**: Manipulation technique demonstrations with threat indicators
+- **Model**: `social_engineering.glb`
 
-### 3. Password Security
-- **Difficulty**: Beginner
-- **Learning**: Password strength and vulnerabilities
-- **AR Features**: Password visualization
-
-### 4. Malware USB Detection
+### 3. 🔒 Ransomware Attack Simulation
 - **Difficulty**: Advanced
-- **Learning**: Hardware security threats
-- **AR Features**: USB device warnings
+- **Learning**: Ransomware threat understanding and prevention strategies
+- **AR Features**: Attack vector visualization and encryption process demonstration
+- **Model**: `ransomware_attack2.glb`
 
-### 5. Safe Browsing Tips
+### 4. 📶 Public WiFi Security
+- **Difficulty**: Intermediate
+- **Learning**: Public network security risks and safe browsing practices
+- **AR Features**: Network security visualization with risk indicators
+- **Model**: `public_wifi.glb`
+
+### 5. 📱 Social Media Security
 - **Difficulty**: Beginner
-- **Learning**: Web browsing security
-- **AR Features**: Website security indicators
+- **Learning**: Social media privacy protection and secure sharing practices
+- **AR Features**: Privacy settings visualization and sharing risk indicators
+- **Model**: `social_media.glb`
+
+## 🎮 AR Technology & 3D Models
+
+### 🚀 AR Capabilities
+- **WebXR Support**: Immersive AR experiences on compatible devices
+- **Scene Viewer**: Android AR support via Google Scene Viewer
+- **Quick Look**: iOS AR support via Apple Quick Look
+- **Model Viewer**: Cross-platform 3D model viewing with AR activation
+- **Fallback Support**: 3D preview when AR is not available
+
+### 📦 3D Model Assets
+The platform includes 5 high-quality 3D models for AR scenarios:
+
+| Model File | Scenario | Size | Description |
+|------------|----------|------|-------------|
+| `phishing_email_.glb` | Phishing Detection | 609KB | Interactive email model with threat indicators |
+| `social_engineering.glb` | Social Engineering | 323KB | Manipulation tactics visualization |
+| `ransomware_attack2.glb` | Ransomware Simulation | 328KB | Attack process demonstration |
+| `public_wifi.glb` | Public WiFi Security | 359KB | Network security visualization |
+| `social_media.glb` | Social Media Security | 288KB | Privacy settings and sharing risks |
+
+### 🎯 AR Experience Features
+- **Interactive Models**: Users can rotate, zoom, and explore 3D models
+- **Threat Highlighting**: Visual indicators show security risks and vulnerabilities
+- **Step-by-Step Guidance**: Progressive learning through AR demonstrations
+- **Real-time Feedback**: Immediate visual feedback on security concepts
+- **Cross-Platform**: Works on mobile devices with AR capabilities
 
 ## 🔐 Authentication System
 
