@@ -454,22 +454,15 @@ export default router;
 router.post('/verify-phone', async (req, res) => {
   try {
     const { phoneNumber, code, verificationId } = req.body;
-    if (!phoneNumber || !code) return res.status(400).json({ error: 'phoneNumber and code are required' });
+    if (!phoneNumber || !code || !verificationId) return res.status(400).json({ error: 'phoneNumber, code and verificationId are required' });
 
     const user = await prisma.user.findUnique({ where: { phoneNumber: String(phoneNumber).trim() } });
     if (!user) return res.status(404).json({ error: 'User not found' });
 
-    if (verificationId) {
-      const result = await validateOtp({ verificationId, code });
-      if (!result.success) {
-        return res.status(400).json({ error: result.error || 'Invalid or expired code' });
-      }
-    } else {
-      const record = await prisma.smsVerification.findFirst({ where: { userId: user.id }, orderBy: { createdAt: 'desc' } });
-      if (!record) return res.status(400).json({ error: 'No verification code found' });
-      if (record.code !== code) return res.status(400).json({ error: 'Invalid code' });
-      if (new Date(record.expiresAt) < new Date()) return res.status(400).json({ error: 'Code expired' });
-      await prisma.smsVerification.delete({ where: { id: record.id } }).catch(() => {});
+    // Always validate via MessageCentral VerifyNow
+    const result = await validateOtp({ verificationId, code });
+    if (!result.success) {
+      return res.status(400).json({ error: result.error || 'Invalid or expired code' });
     }
 
     await prisma.user.update({ 
