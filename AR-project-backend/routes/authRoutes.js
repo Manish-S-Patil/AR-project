@@ -429,10 +429,13 @@ router.delete('/admin/user/:id', async (req, res) => {
       return res.status(400).json({ error: 'Admins cannot delete themselves' });
     }
 
-    // Cleanup related auth records (best-effort)
+    // Cleanup all related records (best-effort)
     await prisma.refreshToken.deleteMany({ where: { userId: targetUserId } }).catch(() => {});
     await prisma.smsVerification.deleteMany({ where: { userId: targetUserId } }).catch(() => {});
     await prisma.passwordReset.deleteMany({ where: { userId: targetUserId } }).catch(() => {});
+    await prisma.userProgress.deleteMany({ where: { userId: targetUserId } }).catch(() => {});
+    await prisma.quizAttempt.deleteMany({ where: { userId: targetUserId } }).catch(() => {});
+    await prisma.scenarioCompletion.deleteMany({ where: { userId: targetUserId } }).catch(() => {});
 
     await prisma.user.delete({ where: { id: targetUserId } });
 
@@ -444,7 +447,15 @@ router.delete('/admin/user/:id', async (req, res) => {
     return res.json({ message: 'User deleted successfully' });
   } catch (error) {
     console.error('Admin delete user error:', error);
-    return res.status(500).json({ error: 'Failed to delete user' });
+    
+    // Provide more specific error messages based on the error type
+    if (error.code === 'P2003') {
+      return res.status(500).json({ error: 'Cannot delete user due to foreign key constraints' });
+    } else if (error.code === 'P2025') {
+      return res.status(404).json({ error: 'User not found' });
+    } else {
+      return res.status(500).json({ error: 'Failed to delete user', details: error.message });
+    }
   }
 });
 
