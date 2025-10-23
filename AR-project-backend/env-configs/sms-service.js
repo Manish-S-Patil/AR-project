@@ -103,11 +103,11 @@ export async function sendSmsVerificationCode(phoneNumber, code, countryCode = M
  * @param {string} countryCode - Country code (default: 91 for India)
  * @returns {Promise<{success: boolean, messageId?: string, error?: string}>}
  */
-export async function sendPasswordResetSms(phoneNumber, code, countryCode = MESSAGECENTRAL_CONFIG.countryCode) {
+export async function sendPasswordResetSms(phoneNumber, countryCode = MESSAGECENTRAL_CONFIG.countryCode) {
   try {
     const normalized = normalizePhoneNumber(phoneNumber, countryCode);
 
-    console.log(`📱 Sending password reset SMS code ${code} to +${countryCode}${normalized}`);
+    console.log(`📱 Sending password reset SMS to +${countryCode}${normalized}`);
 
     const sendOnce = (flowTypeValue) => {
       const params = new URLSearchParams({
