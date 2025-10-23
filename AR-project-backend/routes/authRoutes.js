@@ -81,17 +81,12 @@ router.post("/register", async (req, res) => {
       }
     });
 
-    // Generate and store SMS verification code
-    const code = Math.floor(100000 + Math.random() * 900000).toString();
-    const expiresAt = new Date(Date.now() + 15 * 60 * 1000);
-    await prisma.smsVerification.create({ data: { userId: user.id, code, expiresAt } });
-
-    // Send SMS
-    const smsResult = await sendSmsVerificationCode(normalizedPhone, code);
+    // Send SMS via MessageCentral VerifyNow (generates its own code)
+    const smsResult = await sendPasswordResetSms(normalizedPhone); // Use same function as forgot password
     if (!smsResult.success) {
       console.error("📱 Failed to send verification SMS:", smsResult.error);
     } else {
-      console.log(`📱 SMS sent via ${smsResult.provider} (ID: ${smsResult.messageId || "n/a"})`);
+      console.log(`📱 SMS sent via MessageCentral VerifyNow (ID: ${smsResult.messageId || "n/a"})`);
     }
 
     // Clear users cache
@@ -499,18 +494,13 @@ router.post('/resend-phone-code', async (req, res) => {
     if (!user) return res.status(404).json({ error: 'User not found' });
     if (user.isPhoneVerified) return res.json({ message: 'Phone already verified' });
 
-    await prisma.smsVerification.deleteMany({ where: { userId: user.id } }).catch(() => {});
-    const code = Math.floor(100000 + Math.random() * 900000).toString();
-    const expiresAt = new Date(Date.now() + 15 * 60 * 1000);
-    await prisma.smsVerification.create({ data: { userId: user.id, code, expiresAt } });
-
-    const smsResult = await sendSmsVerificationCode(normalizedPhone, code);
+    // Send SMS via MessageCentral VerifyNow (generates its own code)
+    const smsResult = await sendPasswordResetSms(normalizedPhone); // Use same function as forgot password
     if (!smsResult.success) {
       console.error('📱 Failed to resend verification SMS:', smsResult.error);
-      // Still return success but without verificationId - user can verify with stored code
-      return res.json({ message: 'Verification code generated. SMS service temporarily unavailable.', verificationId: undefined });
+      return res.json({ message: 'SMS service temporarily unavailable. Please try again later.', verificationId: undefined });
     }
-    return res.json({ message: 'Verification code sent', verificationId: smsResult.verificationId || undefined });
+    return res.json({ message: 'Verification code sent', verificationId: smsResult?.verificationId || undefined });
   } catch (e) {
     console.error('Resend phone code error:', e);
     res.status(500).json({ error: 'Failed to resend code' });
