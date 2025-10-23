@@ -517,7 +517,7 @@ router.post('/resend-phone-code', async (req, res) => {
   }
 });
 
-// Request password reset code via SMS
+// Request password reset code via SMS (using MessageCentral VerifyNow)
 router.post('/forgot-password', async (req, res) => {
   try {
     const { phoneNumber } = req.body;
@@ -526,34 +526,52 @@ router.post('/forgot-password', async (req, res) => {
     const user = await prisma.user.findUnique({ where: { phoneNumber: normalizedPhone } });
     // For privacy, always return success
     if (!user) return res.json({ message: 'If the phone number exists, a code has been sent' });
-    const code = Math.floor(100000 + Math.random() * 900000).toString();
-    const expiresAt = new Date(Date.now() + 15 * 60 * 1000);
-    await prisma.passwordReset.create({ data: { userId: user.id, code, expiresAt } });
-    const smsResult = await sendPasswordResetSms(normalizedPhone, code);
+    
+    // Use MessageCentral VerifyNow (same as signup flow)
+    const smsResult = await sendPasswordResetSms(normalizedPhone);
     if (!smsResult.success) {
       console.error('📱 Failed to send password reset SMS:', smsResult.error);
     }
-    return res.json({ message: 'If the phone number exists, a code has been sent' });
+    return res.json({ 
+      message: 'If the phone number exists, a code has been sent',
+      verificationId: smsResult?.verificationId || undefined
+    });
   } catch (e) {
     console.error('Forgot password error:', e);
     res.status(500).json({ message: 'Unable to process request' });
   }
 });
 
-// Verify reset code and set new password
+// Verify reset code and set new password (using MessageCentral VerifyNow)
 router.post('/reset-password', async (req, res) => {
   try {
-    const { phoneNumber, code, newPassword } = req.body;
+    const { phoneNumber, code, newPassword, verificationId } = req.body;
     if (!phoneNumber || !code || !newPassword) return res.status(400).json({ message: 'Phone number, code and new password are required' });
     if (newPassword.length < 6) return res.status(400).json({ message: 'New password must be at least 6 characters' });
+    
     const normalizedPhone = String(phoneNumber).trim();
     const user = await prisma.user.findUnique({ where: { phoneNumber: normalizedPhone } });
     if (!user) return res.status(404).json({ message: 'User not found' });
-    const record = await prisma.passwordReset.findFirst({ where: { userId: user.id, code }, orderBy: { id: 'desc' } });
-    if (!record) return res.status(400).json({ message: 'Invalid code' });
-    if (new Date(record.expiresAt) < new Date()) return res.status(400).json({ message: 'Code expired' });
+    
+    // Use MessageCentral VerifyNow validation (same as signup flow)
+    if (verificationId) {
+      const result = await validateOtp({ verificationId, code });
+      if (!result.success) {
+        return res.status(400).json({ message: result.error || 'Invalid or expired code' });
+      }
+    } else {
+      // Fallback to database validation if no verificationId
+      const record = await prisma.passwordReset.findFirst({ where: { userId: user.id, code }, orderBy: { id: 'desc' } });
+      if (!record) return res.status(400).json({ message: 'Invalid code' });
+      if (new Date(record.expiresAt) < new Date()) return res.status(400).json({ message: 'Code expired' });
+    }
+    
     const hashed = await bcrypt.hash(newPassword, 10);
     await prisma.user.update({ where: { id: user.id }, data: { password: hashed } });
+    
+    // Clean up password reset records
+    await prisma.passwordReset.deleteMany({ where: { userId: user.id } }).catch(() => {});
+    
     return res.json({ message: 'Password updated successfully' });
   } catch (e) {
     console.error('Reset password error:', e);
