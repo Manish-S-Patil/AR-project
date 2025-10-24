@@ -16,7 +16,7 @@ async function createAdminUser() {
     }
     
     // Create admin user
-    const hashedPassword = await bcrypt.hash('AdminSecure@123', 10);
+    const hashedPassword = await bcrypt.hash('AdminSecure123!', 10);
     
     const admin = await prisma.user.create({
       data: {
@@ -33,7 +33,7 @@ async function createAdminUser() {
     console.log('✅ Admin user created successfully:');
     console.log(`   Username: admin`);
     console.log(`   Email: admin@arcyberguard.com`);
-    console.log(`   Password: AdminSecure@123`);
+    console.log(`   Password: AdminSecure123!`);
     console.log(`   Phone: 9999999999`);
     console.log(`   ID: ${admin.id}`);
     
