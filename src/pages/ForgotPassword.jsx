@@ -112,7 +112,7 @@ export default function ForgotPassword() {
             </div>
           ) : (
             <div className="space-y-4">
-              <div className="space-y-2"><Label htmlFor="code"><Key className="inline w-4 h-4 mr-1"/>Verification Code</Label><Input id="code" value={code} onChange={e=>setCode(e.target.value)} className="glass-effect" placeholder="Enter verification code" /></div>
+              <div className="space-y-2"><Label htmlFor="code"><Key className="inline w-4 h-4 mr-1"/>Verification Code</Label><Input id="code" value={code} onChange={e=>setCode(e.target.value)} className="glass-effect" placeholder="Enter 4-digit code" /></div>
               <div className="space-y-2"><Label htmlFor="newpass"><Lock className="inline w-4 h-4 mr-1"/>New Password</Label><Input id="newpass" type="password" value={newPassword} onChange={e=>setNewPassword(e.target.value)} className="glass-effect" placeholder="Enter new password" /></div>
               <div className="flex gap-2">
                 <Button onClick={reset} disabled={isSubmitting || !code || !newPassword} className="w-full bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600">{isSubmitting ? (<span className="inline-flex items-center gap-2"><Loader2 className="w-4 h-4 animate-spin"/>Updating...</span>):'Update Password'}</Button>

@@ -218,7 +218,7 @@ export default function Signup() {
             <form onSubmit={handleVerifyPhone} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="code">Verification Code</Label>
-                <Input id="code" value={verificationCode} onChange={e=>setVerificationCode(e.target.value)} className="glass-effect" placeholder="Enter SMS code" />
+                <Input id="code" value={verificationCode} onChange={e=>setVerificationCode(e.target.value)} className="glass-effect" placeholder="Enter 4-digit code" />
               </div>
               <div className="flex gap-2">
                 <Button type="button" variant="secondary" className="w-1/2" disabled={isSubmitting} onClick={async ()=>{
