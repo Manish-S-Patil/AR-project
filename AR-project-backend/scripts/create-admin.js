@@ -16,7 +16,7 @@ const createAdmin = async () => {
     // Create admin user
     const adminUsername = "admin";
     const adminEmail = "admin@arcyberguard.com";
-    const adminPassword = "AdminSecure@123";
+    const adminPassword = "AdminSecure123!";
     const adminPhone = "9999999999";
     
     // Hash password
