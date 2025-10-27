@@ -141,7 +141,7 @@ const Logger = {
     console.group(`❌ [${timestamp}] API Error`);
     console.log(`📤 ${method} ${url}`);
     console.log(`⏱️ Duration: ${duration}ms`);
-    console.error('🚨 Error:', error);
+    console.error('Error:', error);
     console.groupEnd();
   }
 };
