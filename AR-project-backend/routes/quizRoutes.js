@@ -146,16 +146,20 @@ router.delete("/admin/question/:id", authenticateToken, async (req, res) => {
       return res.status(400).json({ error: "Invalid question ID" });
     }
 
-    // Delete the question (options will be deleted due to cascade)
-    await prisma.quizQuestion.delete({
-      where: { id: questionId }
-    });
+    // Delete child options first, then the question, to satisfy FK constraints
+    await prisma.$transaction([
+      prisma.quizOption.deleteMany({ where: { questionId } }),
+      prisma.quizQuestion.delete({ where: { id: questionId } })
+    ]);
 
     res.json({ message: "Question deleted successfully" });
   } catch (err) {
     console.error("Admin delete question error:", err);
     if (err.code === 'P2025') {
       res.status(404).json({ error: "Question not found" });
+    } else if (err.code === 'P2003') {
+      // FK constraint error (should be avoided by the transaction above)
+      res.status(409).json({ error: "Cannot delete question due to related records" });
     } else {
       res.status(500).json({ error: "Failed to delete question" });
     }
