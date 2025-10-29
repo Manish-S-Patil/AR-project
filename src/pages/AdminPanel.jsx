@@ -1098,7 +1098,7 @@ const QuizManager = () => {
 
   const preset = [
     { key: 'general', title: 'General Cybersecurity Quiz' },
-    { key: 'phishing', title: 'Phishing Detection Quiz' },
+    { key: 'phishing', title: 'Phishing email Detection Quiz' },
     { key: 'fake-login', title: 'Fake Login Page Quiz' },
     { key: 'weak-password', title: 'Password Security Quiz' },
     { key: 'malware-usb', title: 'USB Security Quiz' },
