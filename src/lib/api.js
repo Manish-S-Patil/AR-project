@@ -28,7 +28,7 @@ const API_CONFIG = {
         upsertCategory: '/api/quiz/admin/category',
         createQuestion: '/api/quiz/admin/question',
         getAllQuestions: '/api/quiz/admin/questions',
-        deleteQuestion: '/api/quiz/admin/question',
+        deleteQuestion: (id) => `/api/quiz/admin/question/${id}`,
         updateQuestion: (id) => `/api/quiz/admin/question/${id}`
       }
     },
@@ -378,11 +378,10 @@ const ApiService = {
 
       // Delete question
       deleteQuestion: async (questionId, token) => {
-        const url = API_CONFIG.getUrl(API_CONFIG.endpoints.quiz.admin.deleteQuestion);
+        const url = API_CONFIG.getUrl(API_CONFIG.endpoints.quiz.admin.deleteQuestion(questionId));
         const { data } = await apiFetch(url, {
           method: 'DELETE',
-          headers: API_CONFIG.getAuthHeaders(token),
-          body: JSON.stringify({ id: questionId })
+          headers: API_CONFIG.getAuthHeaders(token)
         });
         return data;
       }
