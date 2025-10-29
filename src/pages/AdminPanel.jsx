@@ -1099,10 +1099,10 @@ const QuizManager = () => {
   const preset = [
     { key: 'general', title: 'General Cybersecurity Quiz' },
     { key: 'phishing', title: 'Phishing Detection Quiz' },
-    { key: 'fake-login', title: 'Fake Login Page Quiz' },
-    { key: 'weak-password', title: 'Password Security Quiz' },
-    { key: 'malware-usb', title: 'USB Security Quiz' },
-    { key: 'safe-browsing', title: 'Safe Browsing Quiz' }
+    { key: 'social-engineering', title: 'Social Engineering Quiz' },
+    { key: 'ransomware', title: 'Ransomware Quiz' },
+    { key: 'public-wifi', title: 'Public Wi-Fi Quiz' },
+    { key: 'social-media', title: 'Social Media Quiz' }
   ];
 
   const upsertCategory = async () => {
@@ -1169,7 +1169,7 @@ const QuizManager = () => {
     if (!confirm('Are you sure you want to delete this question?')) return;
     
     try {
-      const res = await fetch(API_CONFIG.getUrl(`${API_CONFIG.endpoints.quiz.admin.deleteQuestion}/${questionId}`), {
+      const res = await fetch(API_CONFIG.getUrl(API_CONFIG.endpoints.quiz.admin.deleteQuestion(questionId)), {
         method: 'DELETE',
         headers: API_CONFIG.getAuthHeaders(userData.token)
       });
@@ -1370,7 +1370,7 @@ const QuestionRow = ({ q, onDeleted }) => {
 
   const remove = async () => {
     try {
-      const res = await fetch(API_CONFIG.getUrl(`${API_CONFIG.endpoints.quiz.admin.deleteQuestion}/${q.id}`), {
+      const res = await fetch(API_CONFIG.getUrl(API_CONFIG.endpoints.quiz.admin.deleteQuestion(q.id)), {
         method: 'DELETE',
         headers: API_CONFIG.getAuthHeaders(userData.token)
       });

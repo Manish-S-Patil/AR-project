@@ -305,10 +305,10 @@ const Quiz = () => {
     const keyMap = {
       general: 'general',
       phishing: 'phishing',
-      'fake-login': 'fake-login',
-      'weak-password': 'weak-password',
-      'malware-usb': 'malware-usb',
-      'safe-browsing': 'safe-browsing'
+      'social-engineering': 'social-engineering',
+      'ransomware': 'ransomware',
+      'public-wifi': 'public-wifi',
+      'social-media': 'social-media'
     };
     const key = keyMap[scenario] || 'general';
     let cancelled = false;
