@@ -15,7 +15,7 @@ import {
 import { Button } from '../components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import { toast } from '../components/ui/use-toast';
-import API_CONFIG from '../lib/api';
+import API_CONFIG, { ApiService } from '../lib/api';
 import { progressTracker } from '../lib/progressTracker';
 import '../styles/pages.css';
 
@@ -36,6 +36,8 @@ const Game = () => {
   const [clickedHackers, setClickedHackers] = useState([]);
   const [noGameContent, setNoGameContent] = useState(false);
   const [gameStartTime, setGameStartTime] = useState(null);
+  const [userScenarioScores, setUserScenarioScores] = useState({}); // { [scenarioKey]: score }
+  const [totalGamePoints, setTotalGamePoints] = useState(0);
   
   const userData = JSON.parse(localStorage.getItem('userData') || '{}');
 
@@ -143,6 +145,35 @@ const Game = () => {
       generateHackers();
     }
   }, [selectedGame, gameState]);
+
+  // Load user's scenario scores from DB (fallback to local high scores if not logged in)
+  useEffect(() => {
+    (async () => {
+      try {
+        if (userData.token && !userData.isGuest) {
+          const result = await ApiService.progress.getScenarioCompletions(userData.token);
+          const completions = result?.completions || result?.data?.completions || [];
+          const map = {};
+          completions.forEach(c => {
+            map[c.scenarioKey] = c.score ?? 0;
+          });
+          setUserScenarioScores(map);
+        } else {
+          const gameScores = JSON.parse(localStorage.getItem('gameScores') || '{}');
+          setUserScenarioScores(gameScores);
+        }
+      } catch (e) {
+        const gameScores = JSON.parse(localStorage.getItem('gameScores') || '{}');
+        setUserScenarioScores(gameScores);
+      }
+    })();
+  }, [gameState]);
+
+  // Derive total game points from scenario scores
+  useEffect(() => {
+    const total = Object.values(userScenarioScores || {}).reduce((sum, val) => sum + (Number(val) || 0), 0);
+    setTotalGamePoints(total);
+  }, [userScenarioScores]);
 
   const shuffleArray = (array) => {
     const shuffled = [...array];
@@ -307,6 +338,11 @@ const Game = () => {
                 <span className={`text-xs px-2 py-1 rounded-full bg-gradient-to-r ${game.color} text-white`}>
                   {game.difficulty}
                 </span>
+              {userScenarioScores[game.id] !== undefined && (
+                <span className="text-xs px-2 py-1 rounded-full bg-muted/30 border">
+                  Your Score: {userScenarioScores[game.id]}
+                </span>
+              )}
                 <Button
                   className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
                 >
@@ -556,6 +592,11 @@ const Game = () => {
           <p className="text-muted-foreground">
             Learn cybersecurity through interactive games and challenges
           </p>
+          <div className="mt-3">
+            <span className="text-sm px-3 py-1 rounded-full border bg-muted/30">
+              Total Game Points: <span className="font-mono">{totalGamePoints}</span>
+            </span>
+          </div>
         </motion.div>
 
         <AnimatePresence mode="wait">
