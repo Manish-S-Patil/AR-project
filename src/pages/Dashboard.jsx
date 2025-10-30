@@ -150,9 +150,12 @@ const Dashboard = () => {
           className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-8"
         >
           <div className="min-w-0">
-            <h1 className="text-3xl sm:text-4xl font-bold cyber-text mb-1 sm:mb-2 break-words">
-              AR CyberGuard Dashboard
-            </h1>
+            <div className="flex items-center gap-3 mb-1 sm:mb-2">
+              <img src="/models/cyberLogo.png" alt="Cyber Logo" className="w-10 h-10 object-contain" />
+              <h1 className="text-3xl sm:text-4xl font-bold cyber-text">
+                AR CyberGuard Dashboard
+              </h1>
+            </div>
             <p className="text-sm sm:text-base text-muted-foreground">
               Welcome back, {userData.username || 'User'}! Ready to explore cybersecurity through AR?
             </p>

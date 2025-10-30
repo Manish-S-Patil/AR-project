@@ -84,9 +84,9 @@ export default function Login() {
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
             transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
-            className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 mb-4 glow-effect"
+            className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 mb-4 glow-effect overflow-hidden"
           >
-            <Shield className="w-8 h-8 text-white" />
+            <img src="/models/cyberLogo.png" alt="Cyber Logo" className="w-14 h-14 object-contain" />
           </motion.div>
           <motion.h1
             initial={{ opacity: 0 }}
