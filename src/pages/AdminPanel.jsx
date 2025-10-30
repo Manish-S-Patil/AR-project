@@ -480,10 +480,12 @@ const AdminPanel = () => {
             {/* Welcome Card */}
             <Card className="glass-effect cyber-border">
               <CardHeader className="p-4 sm:p-6">
-                <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
-                  <Shield className="w-5 h-5 sm:w-6 sm:h-6 text-purple-400" />
-                  Admin Panel Overview
-                </CardTitle>
+                <div className="flex items-center gap-3 mb-2">
+                  <img src="/models/cyberLogo.png" alt="Cyber Logo" className="w-10 h-10 object-contain" />
+                  <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+                    Admin Panel Overview
+                  </CardTitle>
+                </div>
                 <CardDescription className="text-xs sm:text-sm">
                   Welcome to the AR Cybersecurity Platform administration panel
                 </CardDescription>
