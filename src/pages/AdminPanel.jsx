@@ -133,11 +133,19 @@ const AdminPanel = () => {
   };
 
   useEffect(() => {
-    if (userData.token) {
-      fetchUsers();
+    if (!userData.token) return;
+    if (currentSection === 'overview' || currentSection === 'progress') {
       fetchProgressData();
     }
-  }, [userData.token]);
+    if (currentSection === 'users') {
+      fetchUsers();
+    }
+    // You may need to expose a fetch function from Game/Quiz/Reports components
+    if (currentSection === 'quizzes' && typeof fetchQuestions === 'function') {
+      fetchQuestions();
+    }
+    // Add your game and reports fetching logic here as needed
+  }, [currentSection, userData.token]);
 
   const handleLogout = () => {
     localStorage.removeItem('userData');
@@ -263,15 +271,15 @@ const AdminPanel = () => {
               </div>
             ) : (
               <div className="overflow-x-auto">
-                <table className="w-full">
+                <table className="w-full min-w-[800px]">
                   <thead>
                     <tr className="border-b border-muted">
                       <th className="text-left p-2 sm:p-4 font-medium text-xs sm:text-sm">User</th>
-                      <th className="text-left p-2 sm:p-4 font-medium text-xs sm:text-sm hidden sm:table-cell">Scenarios</th>
-                      <th className="text-left p-2 sm:p-4 font-medium text-xs sm:text-sm hidden sm:table-cell">Quizzes</th>
+                      <th className="text-left p-2 sm:p-4 font-medium text-xs sm:text-sm">Scenarios</th>
+                      <th className="text-left p-2 sm:p-4 font-medium text-xs sm:text-sm">Quizzes</th>
                       <th className="text-left p-2 sm:p-4 font-medium text-xs sm:text-sm">Score</th>
-                      <th className="text-left p-2 sm:p-4 font-medium text-xs sm:text-sm hidden lg:table-cell">Last Activity</th>
-                      <th className="text-left p-2 sm:p-4 font-medium text-xs sm:text-sm hidden md:table-cell">Progress</th>
+                      <th className="text-left p-2 sm:p-4 font-medium text-xs sm:text-sm">Last Activity</th>
+                      <th className="text-left p-2 sm:p-4 font-medium text-xs sm:text-sm">Progress</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -283,7 +291,7 @@ const AdminPanel = () => {
                             <p className="text-xs sm:text-sm text-muted-foreground truncate">{user.email}</p>
                           </div>
                         </td>
-                        <td className="p-2 sm:p-4 hidden sm:table-cell">
+                        <td className="p-2 sm:p-4">
                           <div className="flex items-center gap-2">
                             <span className="font-medium text-xs sm:text-sm">{user.scenariosCompleted}/5</span>
                             <div className="w-12 sm:w-16 bg-muted rounded-full h-2">
@@ -294,7 +302,7 @@ const AdminPanel = () => {
                             </div>
                           </div>
                         </td>
-                        <td className="p-2 sm:p-4 hidden sm:table-cell">
+                        <td className="p-2 sm:p-4">
                           <div className="flex items-center gap-2">
                             <span className="font-medium text-xs sm:text-sm">{user.quizzesPassed}/5</span>
                             <div className="w-12 sm:w-16 bg-muted rounded-full h-2">
@@ -308,12 +316,12 @@ const AdminPanel = () => {
                         <td className="p-2 sm:p-4">
                           <span className="font-medium text-green-400 text-sm sm:text-base">{user.totalScore}</span>
                         </td>
-                        <td className="p-2 sm:p-4 hidden lg:table-cell">
+                        <td className="p-2 sm:p-4">
                           <span className="text-xs sm:text-sm text-muted-foreground">
                             {formatDate(user.lastActivity)}
                           </span>
                         </td>
-                        <td className="p-2 sm:p-4 hidden md:table-cell">
+                        <td className="p-2 sm:p-4">
                           <div className="flex items-center gap-1">
                             {user.completedScenarios.map((scenario, index) => (
                               <div
@@ -1647,3 +1655,4 @@ const GameItemRow = ({ item, onRefresh, onUpdate, onDelete }) => {
     </div>
   );
 };
+

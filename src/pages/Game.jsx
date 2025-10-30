@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { 
@@ -24,6 +24,7 @@ const Game = () => {
   const [selectedGame, setSelectedGame] = useState(null);
   const [gameState, setGameState] = useState('menu'); // menu, playing, paused, completed
   const [score, setScore] = useState(0);
+  const scoreRef = useRef(0);
   const [timeLeft, setTimeLeft] = useState(60);
   const [level, setLevel] = useState(1);
 
@@ -37,7 +38,6 @@ const Game = () => {
   const [noGameContent, setNoGameContent] = useState(false);
   const [gameStartTime, setGameStartTime] = useState(null);
   const [userScenarioScores, setUserScenarioScores] = useState({}); // { [scenarioKey]: score }
-  const [totalGamePoints, setTotalGamePoints] = useState(0);
   
   const userData = JSON.parse(localStorage.getItem('userData') || '{}');
 
@@ -109,6 +109,11 @@ const Game = () => {
     }
   }, [timeLeft, gameState]);
 
+  // Keep a ref of the latest score to avoid stale closures when ending the game
+  useEffect(() => {
+    scoreRef.current = score;
+  }, [score]);
+
   // Load phishing emails from backend when starting the phishing game
   useEffect(() => {
     if (selectedGame === 'phishing-detector' && gameState === 'playing') {
@@ -152,7 +157,8 @@ const Game = () => {
       try {
         if (userData.token && !userData.isGuest) {
           const result = await ApiService.progress.getScenarioCompletions(userData.token);
-          const completions = result?.completions || result?.data?.completions || [];
+          const completionsRaw = result?.completions || result?.data?.completions || [];
+          const completions = Array.isArray(completionsRaw) ? completionsRaw : Object.values(completionsRaw || {});
           const map = {};
           completions.forEach(c => {
             map[c.scenarioKey] = c.score ?? 0;
@@ -169,11 +175,7 @@ const Game = () => {
     })();
   }, [gameState]);
 
-  // Derive total game points from scenario scores
-  useEffect(() => {
-    const total = Object.values(userScenarioScores || {}).reduce((sum, val) => sum + (Number(val) || 0), 0);
-    setTotalGamePoints(total);
-  }, [userScenarioScores]);
+  
 
   const shuffleArray = (array) => {
     const shuffled = [...array];
@@ -222,18 +224,20 @@ const Game = () => {
     
     // Record game completion
     if (selectedGame) {
-      recordGameCompletion(selectedGame, score);
+      const finalScore = scoreRef.current;
+      recordGameCompletion(selectedGame, finalScore);
     }
     
     // Save score to localStorage
     const gameScores = JSON.parse(localStorage.getItem('gameScores') || '{}');
     const gameKey = selectedGame;
-    if (!gameScores[gameKey] || score > gameScores[gameKey]) {
-      gameScores[gameKey] = score;
+    const finalScoreForLocal = scoreRef.current;
+    if (!gameScores[gameKey] || finalScoreForLocal > gameScores[gameKey]) {
+      gameScores[gameKey] = finalScoreForLocal;
       localStorage.setItem('gameScores', JSON.stringify(gameScores));
       toast({
         title: "New High Score!",
-        description: `You scored ${score} points in ${games.find(g => g.id === selectedGame)?.title}!`
+        description: `You scored ${finalScoreForLocal} points in ${games.find(g => g.id === selectedGame)?.title}!`
       });
     }
   };
@@ -253,7 +257,7 @@ const Game = () => {
     const correct = email.isPhishing === isPhishing;
     
     if (correct) {
-      setScore(score + 10);
+      setScore((prev) => prev + 1);
       toast({
         title: "Correct!",
         description: isPhishing ? "You spotted the phishing email!" : "You correctly identified this as safe!",
@@ -592,11 +596,6 @@ const Game = () => {
           <p className="text-muted-foreground">
             Learn cybersecurity through interactive games and challenges
           </p>
-          <div className="mt-3">
-            <span className="text-sm px-3 py-1 rounded-full border bg-muted/30">
-              Total Game Points: <span className="font-mono">{totalGamePoints}</span>
-            </span>
-          </div>
         </motion.div>
 
         <AnimatePresence mode="wait">
