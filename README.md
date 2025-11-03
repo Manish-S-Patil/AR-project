@@ -5,8 +5,8 @@ A comprehensive cybersecurity education platform featuring interactive AR scenar
 ## 🚀 Features
 
 ### 🔐 Authentication & Security
-- **📱 Phone Verification**: Staged signup with SMS verification codes via MessageCentral
-- **🔑 Password Management**: Secure password setting with temporary passwords
+- **📱 Phone Verification**: Signup with SMS verification codes via MessageCentral
+- **🔑 Password Management**: Direct password set during signup; secure reset and change flows
 - **👑 Admin Panel**: Complete user management with delete capabilities
 - **🔒 Role-based Access**: JWT authentication with user/admin roles
 - **🛡️ CORS Protection**: Configured for multiple deployment origins
@@ -156,6 +156,9 @@ A comprehensive cybersecurity education platform featuring interactive AR scenar
 3. **Verify Phone**: Enter the code to verify your phone number
 4. **Set Password**: Create your secure password
 5. **Complete**: Account ready for login
+
+### 📚 Workflow Documentation
+- For end-to-end architecture, flowcharts, and detailed system diagrams, see the comprehensive [WORKFLOW.md](./WORKFLOW.md).
 
 ### 👑 Admin Access
 - **Default Admin**: `admin` / `AdminSecure123!`
@@ -374,7 +377,7 @@ npm run build
 
 3. **Environment Variables** (Vercel Dashboard)
 ```env
-   VITE_API_URL=https://your-backend-url.onrender.com
+   VITE_API_URL=https://ar-project-backend.onrender.com
    ```
 
 4. **SPA Routing** (`vercel.json` - already configured)
@@ -677,5 +680,4 @@ For support and questions:
 - [Backend API Documentation](../AR-project-backend/README.md)
 - [Deployment Guide](../DEPLOYMENT_GUIDE.md)
 - [Component Library](./src/components/ui/)
-
-- [Component Library](./src/components/ui/)
+- [Workflow Documentation](./WORKFLOW.md)
