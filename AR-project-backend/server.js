@@ -21,9 +21,8 @@ const allowedOrigins = (process.env.ALLOWED_ORIGINS || [
   'http://192.168.0.111:5173',
   'http://192.168.106.213:5173',
   'https://ar-cybersecurity.netlify.app',
-  'https://ar-project-5ojn.onrender.com',
-  'https://ar-project-frontend.onrender.com',
-  'https://ar-project-beta.vercel.app'
+  'https://ar-project-beta.vercel.app',
+  'https://ar-project-mocha.vercel.app'
 ].join(',')).split(',').map(s => s.trim());
 
 app.use(cors({
@@ -110,6 +109,20 @@ app.use("/api/auth", authRoutes);
 app.use("/api/quiz", quizRoutes);
 app.use("/api/game", gameRoutes);
 app.use("/api/progress", progressRoutes);
+
+// Global error handler to log and standardize error responses
+app.use((err, req, res, next) => {
+  try {
+    const url = req.originalUrl || req.url;
+    console.error("💥 Error handling", req.method, url, "=>", err && err.stack ? err.stack : err);
+  } catch (e) {
+    console.error("💥 Error logging failure", e);
+  }
+  if (res.headersSent) return next(err);
+  const status = err && err.status ? err.status : 500;
+  const message = err && err.message ? err.message : "Internal server error";
+  res.status(status).json({ error: message });
+});
 
 // Startup
 async function start() {
