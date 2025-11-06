@@ -1,7 +1,7 @@
 // API Configuration with Request/Response Logging
 const API_CONFIG = {
   // Get API URL from environment variables or use default
-  baseURL: import.meta.env.VITE_API_URL || 'https://ar-project-5ojn.onrender.com',
+  baseURL: import.meta.env.VITE_API_URL || 'https://ar-project-backend.onrender.com',
   
   // API endpoints
   endpoints: {

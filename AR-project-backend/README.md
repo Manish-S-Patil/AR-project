@@ -120,27 +120,21 @@ MESSAGECENTRAL_COUNTRY_CODE=91
 
 ## 🔐 Authentication System
 
-### 📱 Staged Phone Verification Signup
+### 📱 Phone Verification Signup (Current)
 
 **Flow:**
 1. **POST** `/api/auth/register`
-   - Creates user with temporary password
+   - Creates user with provided password (bcrypt hashed)
    - Sends verification code via SMS
-   - Returns JWT token for verification step
 
 2. **POST** `/api/auth/verify-phone`
    - Verifies 6-digit code
    - Marks phone as verified
-   - Proceeds to password setting
-
-3. **POST** `/api/auth/change-password`
-   - Uses temporary password as current password
-   - Sets user's real password
    - Account ready for login
 
 ### 🔑 Password Management
 
-- **Temporary Passwords**: Generated during signup (`Tmp-{random}-{timestamp}`)
+- **Direct Passwords**: Users set their password during signup
 - **Password Hashing**: bcrypt with salt rounds 10
 - **Password Reset**: Forgot password with SMS verification
 - **Password Change**: Authenticated users can change passwords
@@ -510,6 +504,7 @@ REDIS_URL=redis://localhost:6379
 - [Frontend README](../README.md)
 - [Deployment Guide](../DEPLOYMENT_GUIDE.md)
 - [Phone Verification Guide](../PHONE_VERIFICATION.md)
+- [Workflow Documentation](../WORKFLOW.md)
 
 ## 📄 License
 

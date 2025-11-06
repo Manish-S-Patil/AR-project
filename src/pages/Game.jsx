@@ -449,9 +449,9 @@ const Game = () => {
         <CardContent>
           <div className="relative w-full game-field-height bg-gradient-to-br from-gray-900 to-gray-800 rounded-lg overflow-hidden border-2 border-purple-500/30">
             <img 
-              className="w-full h-full object-cover opacity-40" 
-              alt="Cyber network background"
-             src="https://images.unsplash.com/photo-1471896486552-5dc315aa7ea3" />
+              className="w-full h-full object-contain opacity-40" 
+              alt="Cyber logo background"
+              src="/models/cyberLogo.png" />
             
             {hackers.map((hacker) => (
               <motion.button
